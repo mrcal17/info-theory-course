@@ -46,8 +46,8 @@ def _(mo):
 
     The two terms already *look* like a trade-off, and that is not an accident. The first term wants $z$ to remember enough about $x$ to reconstruct it. The second term wants $z$ to forget $x$ and look like the prior. Remember-versus-forget is compression. The next sections make that exact.
 
-    > [MacKay Ch 33](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) develops variational free energy — the ELBO is its negative.
-    > [Alemi et al., *Fixing a Broken ELBO*](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) is the rate-distortion reading we build on here.
+    > [MacKay Ch 33](https://www.inference.org.uk/itprnn/book.pdf) develops variational free energy — the ELBO is its negative.
+    > [Alemi et al., *Fixing a Broken ELBO*](https://arxiv.org/abs/1711.00464) is the rate-distortion reading we build on here.
     """)
     return
 
@@ -72,8 +72,8 @@ def _(mo):
 
     There is also an *aggregate* picture across the whole dataset. Averaging over data, the average rate $\mathbb{E}_x[R(x)]$ upper-bounds the mutual information $I(x; z)$ between data and code under the encoder — this is the same variational MI bound you met in 6D. So the VAE rate is, on average, *information the latent carries about the data*. Compression in the literal coding sense and compression in the information-theoretic sense are the same number here.
 
-    > [Alemi et al., *Fixing a Broken ELBO*](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) §2 derives this $R + D$ split and the $R \ge I(x;z) \ge \dots$ sandwich.
-    > [Cover & Thomas Ch 10](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) for the $R(D)$ object this mirrors.
+    > [Alemi et al., *Fixing a Broken ELBO*](https://arxiv.org/abs/1711.00464) §2 derives this $R + D$ split and the $R \ge I(x;z) \ge \dots$ sandwich.
+    > [Cover & Thomas Ch 10](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) for the $R(D)$ object this mirrors.
     """)
     return
 
@@ -105,7 +105,7 @@ def _(mo):
 
     in squared-error units. Two knobs $(m, s)$, two closed-form curves. That is the whole laboratory. The code cell below implements these formulas and sanity-checks the limiting cases.
 
-    > [Higgins et al., $\beta$-VAE](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) introduced the $\beta$ knob we sweep next; the linear-Gaussian VAE is the standard pencil-and-paper testbed.
+    > [Higgins et al., $\beta$-VAE](https://openreview.net/forum?id=Sy2fzU9gl) introduced the $\beta$ knob we sweep next; the linear-Gaussian VAE is the standard pencil-and-paper testbed.
     """)
     return
 
@@ -335,8 +335,8 @@ def _(mo):
 
     **BB-ANS** (bits-back with asymmetric numeral systems) is Townsend et al.'s clean realization of this: ANS is a stack-like entropy coder whose "decode-to-sample / encode-to-push" structure makes the bits-back borrow-and-return *automatic*. It turns any trained VAE into a near-ELBO-rate lossless codec. The demo below numerically verifies the bits-back accounting on our toy: the messy three-term ledger collapses to the ELBO.
 
-    > [Townsend et al., *Practical Lossless Compression with Bits-Back Coding (BB-ANS)*](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) is the modern construction.
-    > [MacKay Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) explains arithmetic/stream coding and the bits-back idea.
+    > [Townsend et al., *Practical Lossless Compression with Bits-Back Coding (BB-ANS)*](https://arxiv.org/abs/1901.04866) is the modern construction.
+    > [MacKay Ch 6](https://www.inference.org.uk/itprnn/book.pdf) explains arithmetic/stream coding and the bits-back idea.
     """)
     return
 
@@ -407,8 +407,8 @@ def _(mo):
 
     The demo builds a tiny but faithful transform coder: a learned-ish linear transform on toy 1-D "image patches," uniform-noise quantization, a Gaussian entropy model giving an honest bit count, and a $\lambda$-sweep that draws the codec's operational rate-distortion curve.
 
-    > [Higgins et al., $\beta$-VAE](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) for the $\beta \leftrightarrow \lambda$ knob; the transform-coding view is the Ballé/Theis line of work.
-    > [Cover & Thomas Ch 10](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) for the underlying $R(D)$ these codecs chase.
+    > [Higgins et al., $\beta$-VAE](https://openreview.net/forum?id=Sy2fzU9gl) for the $\beta \leftrightarrow \lambda$ knob; the transform-coding view is the Ballé/Theis line of work.
+    > [Cover & Thomas Ch 10](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) for the underlying $R(D)$ these codecs chase.
     """)
     return
 

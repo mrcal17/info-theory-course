@@ -46,8 +46,8 @@ def _(mo):
 
     The trick is **dictionary coding**: instead of coding symbols, build a growing dictionary of *phrases* the data has already shown you, and replace each new occurrence of a phrase with a short pointer to its dictionary entry. Repetition becomes brevity. Let us make it concrete.
 
-    > [MacKay Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) treats stream codes and Lempel–Ziv as the practical counterpart to the symbol codes of Ch 5.
-    > [Cover & Thomas Ch 13](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the rigorous home of universal source coding and the LZ optimality proof.
+    > [MacKay Ch 6](https://www.inference.org.uk/itprnn/book.pdf) treats stream codes and Lempel–Ziv as the practical counterpart to the symbol codes of Ch 5.
+    > [Cover & Thomas Ch 13](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the rigorous home of universal source coding and the LZ optimality proof.
     """)
     return
 
@@ -78,7 +78,7 @@ def _(mo):
 
     Here is LZ78 encode/decode in pure numpy/Python — run it and watch the parse.
 
-    > [Cover & Thomas Ch 13.4](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) gives the LZ78 algorithm and its analysis.
+    > [Cover & Thomas Ch 13.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) gives the LZ78 algorithm and its analysis.
     """)
     return
 
@@ -223,7 +223,7 @@ def _(mo):
 
     Build it and watch a repetitive string collapse into back-references.
 
-    > [MacKay Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) describes the sliding-window idea and its place among stream codes.
+    > [MacKay Ch 6](https://www.inference.org.uk/itprnn/book.pdf) describes the sliding-window idea and its place among stream codes.
     """)
     return
 
@@ -383,7 +383,7 @@ def _(mo):
 
     The slider below makes this visible. Pick a source entropy rate (a biased binary source, or a Markov-correlated source) and watch the compression ratio computed by an actual LZ78 coder fall toward $H$ as the sequence grows. Short inputs compress poorly — the dictionary has not learned yet. Long inputs ride the floor. *That descent toward $H$ is universality, measured.*
 
-    > [Cover & Thomas Ch 13.5](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) proves LZ78 optimality for stationary ergodic sources.
+    > [Cover & Thomas Ch 13.5](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) proves LZ78 optimality for stationary ergodic sources.
     """)
     return
 

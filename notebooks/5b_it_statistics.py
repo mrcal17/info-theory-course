@@ -54,8 +54,8 @@ def _(mo):
 
     The cross-entropy $H(P) + D(P\|Q)$ controls the per-sequence probability. When $P = Q$ this is just $2^{-nH(Q)}$ — the familiar AEP statement, recovered as a special case.
 
-    > [Cover & Thomas Ch 11.1](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the canonical treatment of types.
-    > [Csiszár & Körner Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/CsiszarKorner.pdf) is the deep source — the "method of types" is essentially their invention.
+    > [Cover & Thomas Ch 11.1](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the canonical treatment of types.
+    > [Csiszár & Körner Ch 2](https://www.cambridge.org/core/books/information-theory/contents/EE0A80439BEAC23B499A71942AFF7B34) is the deep source — the "method of types" is essentially their invention.
     """)
     return
 
@@ -122,7 +122,7 @@ def _(mo):
 
     The $\doteq$ symbol means "equal to first order in the exponent": $a_n \doteq b_n$ iff $\frac1n \log \frac{a_n}{b_n} \to 0$. The polynomial $(n+1)^a$ factors are exactly the terms that vanish under $\frac1n\log(\cdot)$, which is why they never appear in the final exponents.
 
-    > [Cover & Thomas Ch 11.1–11.2](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) proves the size bounds and the $Q^n(T(P)) \doteq 2^{-nD(P\|Q)}$ estimate.
+    > [Cover & Thomas Ch 11.1–11.2](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) proves the size bounds and the $Q^n(T(P)) \doteq 2^{-nD(P\|Q)}$ estimate.
     """)
     return
 
@@ -244,8 +244,8 @@ def _(mo):
 
     The punchline for statistics: **the probability of being fooled by data decays exponentially, and the rate is a KL divergence to the boundary of the "fooling" set.** Confidence levels, $p$-values, and false-alarm rates are all secretly large-deviation exponents.
 
-    > [Cover & Thomas Ch 11.4–11.6](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) for Sanov + the conditional-limit / I-projection theorems.
-    > [Polyanskiy & Wu](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) gives the modern large-deviations framing.
+    > [Cover & Thomas Ch 11.4–11.6](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) for Sanov + the conditional-limit / I-projection theorems.
+    > [Polyanskiy & Wu](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf) gives the modern large-deviations framing.
     """)
     return
 
@@ -323,8 +323,8 @@ def _(mo):
 
     which is the largest "Rényi-tilted" gap and is symmetric in the two hypotheses, unlike Stein's asymmetric $D(P_0\|P_1)$.
 
-    > [Cover & Thomas Ch 11.7–11.9](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) — Neyman–Pearson, Stein, Chernoff.
-    > [Polyanskiy & Wu](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) develops binary hypothesis testing as the foundation for channel converses.
+    > [Cover & Thomas Ch 11.7–11.9](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) — Neyman–Pearson, Stein, Chernoff.
+    > [Polyanskiy & Wu](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf) develops binary hypothesis testing as the foundation for channel converses.
     """)
     return
 
@@ -477,8 +477,8 @@ def _(mo):
 
     **Worked example (Bernoulli).** For $X \sim \text{Bernoulli}(\theta)$, the score is $\partial_\theta \log p = (x-\theta)/(\theta(1-\theta))$, giving $I(\theta) = 1/(\theta(1-\theta))$. The Cramér–Rao floor for the sample mean is $\theta(1-\theta)/n$ — which is *exactly* the variance of the sample mean. The obvious estimator is already optimal, and information theory told us so.
 
-    > [Cover & Thomas Ch 11.10](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) — Fisher information and Cramér–Rao via the method of types.
-    > [Polyanskiy & Wu](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) — KL as the local metric and information geometry.
+    > [Cover & Thomas Ch 11.10](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) — Fisher information and Cramér–Rao via the method of types.
+    > [Polyanskiy & Wu](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf) — KL as the local metric and information geometry.
     """)
     return
 

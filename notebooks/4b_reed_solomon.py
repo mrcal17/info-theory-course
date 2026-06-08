@@ -44,8 +44,8 @@ def _(mo):
 
     **What a field is.** A field is a set with $+$ and $\times$ obeying the usual rules — commutativity, associativity, distributivity — plus: an additive identity $0$, a multiplicative identity $1$, every element has an additive inverse, and *every nonzero element has a multiplicative inverse*. That last property is the whole point: in a field you can always solve $a x = b$ for $x$ (just $x = b a^{-1}$).
 
-    > [Roth Ch 3](file:///C:/Users/landa/info-theory-course/textbooks/Roth.pdf) develops finite fields from the ground up; this is the cleanest reference for the whole module.
-    > [Lin & Costello Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) introduces finite-field arithmetic specifically for code construction.
+    > [Roth Ch 3](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) develops finite fields from the ground up; this is the cleanest reference for the whole module.
+    > [Lin & Costello Ch 6](https://openlibrary.org/books/OL3301344M/Error_control_coding) introduces finite-field arithmetic specifically for code construction.
     """)
     return
 
@@ -73,7 +73,7 @@ def _(mo):
 
     The code below builds $\mathrm{GF}(2^3)$ with $p(x) = x^3+x+1$, prints the powers of $\alpha$, and verifies the field axioms numerically.
 
-    > [Roth Ch 3.2–3.3](file:///C:/Users/landa/info-theory-course/textbooks/Roth.pdf) is the canonical treatment of constructing $\mathrm{GF}(q)$ as polynomials mod an irreducible.
+    > [Roth Ch 3.2–3.3](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) is the canonical treatment of constructing $\mathrm{GF}(q)$ as polynomials mod an irreducible.
     """)
     return
 
@@ -251,8 +251,8 @@ def _(mo):
 
     Worked example: an RS code with $n = 7$, $k = 3$ over $\mathrm{GF}(2^3)$ has $d = 5$, so it corrects up to 2 symbol errors or up to 4 erasures. The code below builds exactly this code, encodes a message, and confirms the minimum distance by brute force over all codewords.
 
-    > [Roth Ch 5–6](file:///C:/Users/landa/info-theory-course/textbooks/Roth.pdf) covers RS codes, the Singleton bound, and MDS codes in depth.
-    > [Lin & Costello Ch 7](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) gives the engineering view of RS construction and decoding.
+    > [Roth Ch 5–6](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) covers RS codes, the Singleton bound, and MDS codes in depth.
+    > [Lin & Costello Ch 7](https://openlibrary.org/books/OL3301344M/Error_control_coding) gives the engineering view of RS construction and decoding.
     """)
     return
 
@@ -328,8 +328,8 @@ def _(mo):
 
     **The punchline connecting them.** A **Reed-Solomon code is exactly a BCH code whose symbol field and root field are the same** — RS is "BCH with $n = q - 1$." Both are cyclic; both are decoded by the same machinery (syndromes → error-locator polynomial → roots). RS is MDS and works on byte symbols; BCH is binary and slightly suboptimal in distance but very cheap in hardware. The demo below builds a narrow-sense RS generator $g(x) = \prod_{i=1}^{n-k}(x - \alpha^i)$ and confirms it divides $x^n - 1$ — the defining property of a cyclic code.
 
-    > [Lin & Costello Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) is the standard reference for cyclic and BCH codes, including the BCH bound.
-    > [Roth Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/Roth.pdf) treats the cyclic / generator-polynomial structure of RS rigorously.
+    > [Lin & Costello Ch 6](https://openlibrary.org/books/OL3301344M/Error_control_coding) is the standard reference for cyclic and BCH codes, including the BCH bound.
+    > [Roth Ch 6](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) treats the cyclic / generator-polynomial structure of RS rigorously.
     """)
     return
 
@@ -419,7 +419,7 @@ def _(mo):
 
     Section 7 turns this into a live demo you can break and watch repair. The cell below verifies the core claim once, cleanly: erase $n-k$ symbols, interpolate from the survivors, and check the recovered codeword matches the original bit for bit.
 
-    > [Roth Ch 5](file:///C:/Users/landa/info-theory-course/textbooks/Roth.pdf) treats RS decoding including the erasure (interpolation) case.
+    > [Roth Ch 5](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) treats RS decoding including the erasure (interpolation) case.
     """)
     return
 
@@ -642,8 +642,8 @@ def _(mo):
 
     The demo below carries out **stage 1** concretely — it shows syndromes vanishing for a clean codeword and lighting up the moment an error is injected, which is the trigger the full decoder keys on. (We implement the easy, fully-worked erasure path live in Sections 6–7; the full error-locator solve is sketched here to keep the module focused.)
 
-    > [Lin & Costello Ch 6–7](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) gives the complete Berlekamp-Massey + Chien + Forney decoder.
-    > [Roth Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/Roth.pdf) presents the key equation and decoding from the algebraic side.
+    > [Lin & Costello Ch 6–7](https://openlibrary.org/books/OL3301344M/Error_control_coding) gives the complete Berlekamp-Massey + Chien + Forney decoder.
+    > [Roth Ch 6](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) presents the key equation and decoding from the algebraic side.
     """)
     return
 

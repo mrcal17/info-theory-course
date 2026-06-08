@@ -26,11 +26,11 @@ def _(mo):
     - **Run the code cells** — don't just read, experiment. Compress real text, corrupt a channel, watch a decoder fight noise
     - **Interactive widgets** (sliders, dropdowns) let you explore concepts in real-time — this is where the intuition forms
     - **Animations** visualize key ideas — the typical set, the rate cliff, water-filling, message passing
-    - **Textbook links** open the relevant PDF pages for deeper reading
+    - **References** link to public book pages, author PDFs, arXiv papers, and OpenReview entries for deeper reading
     - **Practice exercises** are at the end of each module — do them
 
     > **Prerequisite:** a solid grip on probability (random variables, expectation, Bayes, common distributions).
-    > This course does **not** re-teach probability — if you want a refresher, see Module 0D of the ML course.
+    > This course does **not** re-teach probability — if you want a refresher, revisit random variables, expectation, conditioning, Bayes, and common distributions before starting.
 
     To open any module, run: `marimo edit notebooks/<filename>.py`
     Or use: `bash launch.sh 1a` (opens Module 1A)
@@ -49,7 +49,7 @@ def _(mo):
 
     | # | Module | Topics | Interactive Elements |
     |---|--------|--------|---------------------|
-    | 0A | [Orientation & Notation](./0a_orientation/) | What information theory is, the bit, log conventions, the three pillars, notation | "20 questions" entropy teaser |
+    | 0A | [Orientation & Notation](/info-theory-course/0a_orientation/) | What information theory is, the bit, log conventions, the three pillars, notation | "20 questions" entropy teaser |
     """)
     return
 
@@ -63,9 +63,9 @@ def _(mo):
 
     | # | Module | Topics | Interactive Elements |
     |---|--------|--------|---------------------|
-    | 1A | [Entropy & Self-Information](./1a_entropy/) | Surprise, bits, entropy, joint/conditional entropy, chain rule, binary entropy | Biased-coin entropy slider, 1 animation |
-    | 1B | [Relative Entropy & Mutual Information](./1b_kl_mutual_information/) | KL divergence, mutual information, the I-diagram, data-processing inequality, Jensen | KL explorer, MI heatmap, 1 animation |
-    | 1C | [Entropy Rate & the AEP](./1c_aep/) | Stochastic sources, entropy rate, typical sets, the asymptotic equipartition property | Typical-set sampler, Markov entropy rate, 1 animation |
+    | 1A | [Entropy & Self-Information](/info-theory-course/1a_entropy/) | Surprise, bits, entropy, joint/conditional entropy, chain rule, binary entropy | Biased-coin entropy slider, 1 animation |
+    | 1B | [Relative Entropy & Mutual Information](/info-theory-course/1b_kl_mutual_information/) | KL divergence, mutual information, the I-diagram, data-processing inequality, Jensen | KL explorer, MI heatmap, 1 animation |
+    | 1C | [Entropy Rate & the AEP](/info-theory-course/1c_aep/) | Stochastic sources, entropy rate, typical sets, the asymptotic equipartition property | Typical-set sampler, Markov entropy rate, 1 animation |
     """)
     return
 
@@ -79,10 +79,10 @@ def _(mo):
 
     | # | Module | Topics | Interactive Elements |
     |---|--------|--------|---------------------|
-    | 2A | [Source Coding Theorem & Symbol Codes](./2a_source_coding/) | Kraft inequality, prefix codes, optimal length = entropy, Shannon code | Prefix-tree builder, Kraft budget visualizer |
-    | 2B | [Huffman Coding](./2b_huffman/) | The algorithm, optimality, extended/block Huffman, limits | Live Huffman tree on text, 1 animation |
-    | 2C | [Arithmetic & Range Coding](./2c_arithmetic/) | Stream codes, interval coding, near-optimality, adaptive models | Interval-narrowing visualizer, 1 animation |
-    | 2D | [Universal Compression](./2d_lempel_ziv/) | Lempel-Ziv (LZ77/78/W), dictionary coding, universality, gzip/PNG | Dictionary-growth explorer, compression ratio |
+    | 2A | [Source Coding Theorem & Symbol Codes](/info-theory-course/2a_source_coding/) | Kraft inequality, prefix codes, optimal length = entropy, Shannon code | Prefix-tree builder, Kraft budget visualizer |
+    | 2B | [Huffman Coding](/info-theory-course/2b_huffman/) | The algorithm, optimality, extended/block Huffman, limits | Live Huffman tree on text, 1 animation |
+    | 2C | [Arithmetic & Range Coding](/info-theory-course/2c_arithmetic/) | Stream codes, interval coding, near-optimality, adaptive models | Interval-narrowing visualizer, 1 animation |
+    | 2D | [Universal Compression](/info-theory-course/2d_lempel_ziv/) | Lempel-Ziv (LZ77/78/W), dictionary coding, universality, gzip/PNG | Dictionary-growth explorer, compression ratio |
     """)
     return
 
@@ -96,9 +96,9 @@ def _(mo):
 
     | # | Module | Topics | Interactive Elements |
     |---|--------|--------|---------------------|
-    | 3A | [Channels & Channel Capacity](./3a_channel_capacity/) | DMC, BSC, BEC, capacity as max mutual information, Blahut-Arimoto | Capacity-vs-noise sliders, BA solver |
-    | 3B | [The Noisy-Channel Coding Theorem](./3b_channel_coding_theorem/) | Joint typicality, random coding, Fano, the converse, the rate cliff | Error-vs-rate cliff demo, 1 animation |
-    | 3C | [Differential Entropy & the Gaussian Channel](./3c_gaussian_channel/) | Continuous entropy, the Gaussian channel, Shannon-Hartley, water-filling | SNR→capacity slider, water-filling, 1 animation |
+    | 3A | [Channels & Channel Capacity](/info-theory-course/3a_channel_capacity/) | DMC, BSC, BEC, capacity as max mutual information, Blahut-Arimoto | Capacity-vs-noise sliders, BA solver |
+    | 3B | [The Noisy-Channel Coding Theorem](/info-theory-course/3b_channel_coding_theorem/) | Joint typicality, random coding, Fano, the converse, the rate cliff | Error-vs-rate cliff demo, 1 animation |
+    | 3C | [Differential Entropy & the Gaussian Channel](/info-theory-course/3c_gaussian_channel/) | Continuous entropy, the Gaussian channel, Shannon-Hartley, water-filling | SNR→capacity slider, water-filling, 1 animation |
     """)
     return
 
@@ -112,10 +112,10 @@ def _(mo):
 
     | # | Module | Topics | Interactive Elements |
     |---|--------|--------|---------------------|
-    | 4A | [Linear & Hamming Codes](./4a_linear_codes/) | Generator/parity-check matrices, syndrome decoding, Hamming codes & bound, GF(2) | (7,4) encoder/decoder, syndrome demo |
-    | 4B | [Finite Fields, Reed-Solomon & BCH](./4b_reed_solomon/) *(advanced)* | GF(2^m), cyclic codes, RS/BCH, Berlekamp-Massey decoding, real uses | GF arithmetic playground, RS erasure repair |
-    | 4C | [Convolutional & Turbo Codes](./4c_convolutional_turbo/) | Convolutional encoders, the trellis, Viterbi, turbo & iterative decoding | Viterbi trellis decoder, BER-vs-SNR, 1 animation |
-    | 4D | [LDPC, Polar & Modern Codes](./4d_ldpc_polar/) | Tanner/factor graphs, belief propagation, density evolution, EXIT charts; polar; fountain | BP decoder, density-evolution threshold, 1 animation |
+    | 4A | [Linear & Hamming Codes](/info-theory-course/4a_linear_codes/) | Generator/parity-check matrices, syndrome decoding, Hamming codes & bound, GF(2) | (7,4) encoder/decoder, syndrome demo |
+    | 4B | [Finite Fields, Reed-Solomon & BCH](/info-theory-course/4b_reed_solomon/) *(advanced)* | GF(2^m), cyclic codes, RS/BCH, Berlekamp-Massey decoding, real uses | GF arithmetic playground, RS erasure repair |
+    | 4C | [Convolutional & Turbo Codes](/info-theory-course/4c_convolutional_turbo/) | Convolutional encoders, the trellis, Viterbi, turbo & iterative decoding | Viterbi trellis decoder, BER-vs-SNR, 1 animation |
+    | 4D | [LDPC, Polar & Modern Codes](/info-theory-course/4d_ldpc_polar/) | Tanner/factor graphs, belief propagation, density evolution, EXIT charts; polar; fountain | BP decoder, density-evolution threshold, 1 animation |
     """)
     return
 
@@ -129,9 +129,9 @@ def _(mo):
 
     | # | Module | Topics | Interactive Elements |
     |---|--------|--------|---------------------|
-    | 5A | [Rate-Distortion Theory](./5a_rate_distortion/) | The R(D) function, distortion measures, the Gaussian source, reverse water-filling | R(D) curve explorer, 1 animation |
-    | 5B | [Information Theory & Statistics](./5b_it_statistics/) *(advanced)* | Method of types, Sanov, hypothesis testing (Stein), Fisher information & Cramér-Rao | Type-class concentration, error-exponent ROC |
-    | 5C | [Network Information Theory](./5c_network_it/) *(advanced)* | Slepian-Wolf, the multiple-access channel, broadcast | Slepian-Wolf rate-region explorer |
+    | 5A | [Rate-Distortion Theory](/info-theory-course/5a_rate_distortion/) | The R(D) function, distortion measures, the Gaussian source, reverse water-filling | R(D) curve explorer, 1 animation |
+    | 5B | [Information Theory & Statistics](/info-theory-course/5b_it_statistics/) *(advanced)* | Method of types, Sanov, hypothesis testing (Stein), Fisher information & Cramér-Rao | Type-class concentration, error-exponent ROC |
+    | 5C | [Network Information Theory](/info-theory-course/5c_network_it/) *(advanced)* | Slepian-Wolf, the multiple-access channel, broadcast | Slepian-Wolf rate-region explorer |
     """)
     return
 
@@ -145,11 +145,11 @@ def _(mo):
 
     | # | Module | Topics | Interactive Elements |
     |---|--------|--------|---------------------|
-    | 6A | [Cross-Entropy, KL & Maximum Entropy](./6a_crossentropy_maxent/) | Cross-entropy as loss, MLE = min KL, label smoothing, maxent, softmax-as-maxent | Loss-surface explorer, maxent under constraints |
-    | 6B | [MDL & Model Selection](./6b_mdl/) | Description length, two-part codes, Occam's razor, MDL vs BIC/Bayes | MDL model-order selection (poly fit) |
-    | 6C | [The Information Bottleneck](./6c_information_bottleneck/) | Relevant information, the IB Lagrangian, the information plane, the DL caveat | β-slider, information-plane trajectory, 1 animation |
-    | 6D | [Neural Estimation of Mutual Information](./6d_neural_mi/) | Variational MI bounds (DV/NWJ/InfoNCE), MINE, the log-N ceiling, pitfalls | MINE-vs-InfoNCE bake-off on known-MI Gaussian |
-    | 6E | [Rate-Distortion, VAEs & Neural Compression](./6e_vae_compression/) | ELBO as rate-distortion, β-VAE & the R-D plane, bits-back/BB-ANS, learned compression | β-slider tracing a VAE R-D curve, 1 animation |
+    | 6A | [Cross-Entropy, KL & Maximum Entropy](/info-theory-course/6a_crossentropy_maxent/) | Cross-entropy as loss, MLE = min KL, label smoothing, maxent, softmax-as-maxent | Loss-surface explorer, maxent under constraints |
+    | 6B | [MDL & Model Selection](/info-theory-course/6b_mdl/) | Description length, two-part codes, Occam's razor, MDL vs BIC/Bayes | MDL model-order selection (poly fit) |
+    | 6C | [The Information Bottleneck](/info-theory-course/6c_information_bottleneck/) | Relevant information, the IB Lagrangian, the information plane, the DL caveat | β-slider, information-plane trajectory, 1 animation |
+    | 6D | [Neural Estimation of Mutual Information](/info-theory-course/6d_neural_mi/) | Variational MI bounds (DV/NWJ/InfoNCE), MINE, the log-N ceiling, pitfalls | MINE-vs-InfoNCE bake-off on known-MI Gaussian |
+    | 6E | [Rate-Distortion, VAEs & Neural Compression](/info-theory-course/6e_vae_compression/) | ELBO as rate-distortion, β-VAE & the R-D plane, bits-back/BB-ANS, learned compression | β-slider tracing a VAE R-D curve, 1 animation |
     """)
     return
 
@@ -161,8 +161,8 @@ def _(mo):
 
     | # | Module | Description |
     |---|--------|-------------|
-    | 7A | [Algorithm & Theorem Study Guide](./7a_study_guide/) | Every code, algorithm, and theorem in the course — filterable by part, with statements, intuition, and connections |
-    | | [Quiz & Flashcards](./quiz.html) | Interactive study tool with quizzes and spaced repetition across all modules |
+    | 7A | [Algorithm & Theorem Study Guide](/info-theory-course/7a_study_guide/) | Every code, algorithm, and theorem in the course — filterable by part, with statements, intuition, and connections |
+    | | [Quiz & Flashcards](/info-theory-course/quiz.html) | Interactive study tool with quizzes and spaced repetition across all modules |
     """)
     return
 
@@ -205,28 +205,26 @@ def _(mo):
 
     ---
 
-    ## Textbooks
+    ## References
 
-    Textbook PDFs are stored locally at `C:\Users\landa\info-theory-course\textbooks\`.
-    Open from there, or run `start textbooks\<filename>.pdf` from the course directory.
-    ⭐ marks the primary anchors.
+    The course points to public references wherever possible: author-hosted PDFs, arXiv papers, OpenReview pages, publisher pages, and library metadata for paid books.
 
-    | Abbrev | Filename | Title | Authors | Free? |
-    |--------|----------|-------|---------|-------|
-    | MacKay ⭐ | `MacKay.pdf` | Information Theory, Inference, and Learning Algorithms | David MacKay | Free (author) |
-    | Stone ⭐ | `Stone.pdf` | Information Theory: A Tutorial Introduction | James Stone | Free (CC, arXiv) |
-    | CT ⭐ | `CoverThomas.pdf` | Elements of Information Theory (2e) | Cover, Thomas | Paid / library |
-    | PW ⭐ | `PolyanskiyWu.pdf` | Information Theory: From Coding to Learning | Polyanskiy, Wu | Free (draft) |
-    | Gallager | `Gallager.pdf` | Information Theory and Reliable Communication | Gallager | Paid; free notes |
-    | Ash | `Ash.pdf` | Information Theory | Ash | Paid (Dover) |
-    | CK | `CsiszarKorner.pdf` | Coding Theorems for Discrete Memoryless Systems | Csiszár, Körner | Paid / borrow |
-    | Yeung | `Yeung.pdf` | Information Theory and Network Coding | Yeung | Free (draft) |
-    | LC | `LinCostello.pdf` | Error Control Coding (2e) | Lin, Costello | Paid |
-    | Roth | `Roth.pdf` | Introduction to Coding Theory | Roth | Paid / borrow |
-    | RU | `RichardsonUrbanke.pdf` | Modern Coding Theory | Richardson, Urbanke | Free (EPFL draft) |
-    | Moser | `Moser.pdf` | A Student's Guide to Coding and Information Theory | Moser, Chen | Paid; free notes |
-    | Grünwald | `Grunwald-MDL.pdf` | A Tutorial Introduction to the MDL Principle | Grünwald | Free (arXiv) |
-    | MLpapers | `mlpapers/` | IT-for-ML paper cluster (IB, VIB, MINE, InfoNCE, β-VAE, BB-ANS) | various | Free (arXiv) |
+    | Abbrev | Link | Title | Authors | Access |
+    |--------|------|-------|---------|--------|
+    | MacKay ⭐ | [PDF](https://www.inference.org.uk/itprnn/book.pdf) | Information Theory, Inference, and Learning Algorithms | David MacKay | Free author PDF |
+    | Stone ⭐ | [arXiv PDF](https://arxiv.org/pdf/1802.05968) | Information Theory: A Tutorial Introduction | James Stone | Free CC / arXiv |
+    | CT ⭐ | [Wiley](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) | Elements of Information Theory (2e) | Cover, Thomas | Paid / library |
+    | PW ⭐ | [PDF](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf) | Information Theory: From Coding to Learning | Polyanskiy, Wu | Free draft |
+    | Gallager | [Wiley](https://www.wiley-vch.de/de/fachgebiete/ingenieurwesen/elektrotechnik-und-elektronik-10ee/kommunikationstechnik-10ee2/information-theory-and-reliable-communication-978-0-471-29048-3) | Information Theory and Reliable Communication | Gallager | Paid / library |
+    | Ash | [Open Library](https://openlibrary.org/books/OL1884498M/Information_theory) | Information Theory | Ash | Paid / borrow |
+    | CK | [Cambridge](https://www.cambridge.org/core/books/information-theory/contents/EE0A80439BEAC23B499A71942AFF7B34) | Coding Theorems for Discrete Memoryless Systems | Csiszár, Körner | Paid / library |
+    | Yeung | [PDF](https://iest2.ie.cuhk.edu.hk/~whyeung/post/draft2.pdf) | Information Theory and Network Coding | Yeung | Free draft |
+    | LC | [Open Library](https://openlibrary.org/books/OL3301344M/Error_control_coding) | Error Control Coding (2e) | Lin, Costello | Paid / borrow |
+    | Roth | [Cambridge](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) | Introduction to Coding Theory | Roth | Paid / library |
+    | RU | [PDF](https://documents.epfl.ch/groups/i/ip/ipg/www/2010-2011/Statistical_Physics_for_Communication_and_Computer_Science/mct-new.pdf) | Modern Coding Theory | Richardson, Urbanke | Free EPFL draft |
+    | Moser | [Notes](https://moser-isi.ethz.ch/scripts.html) | Coding and Information Theory notes | Moser | Free notes |
+    | Grünwald | [arXiv PDF](https://arxiv.org/pdf/math/0406077) | A Tutorial Introduction to the MDL Principle | Grünwald | Free arXiv |
+    | ML papers | [arXiv/OpenReview](https://arxiv.org/) | IB, VIB, MINE, InfoNCE, β-VAE, BB-ANS cluster | various | Free papers |
     """)
     return
 

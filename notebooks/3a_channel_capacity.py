@@ -51,8 +51,8 @@ def _(mo):
 
     Given an input distribution $p(x)$ and the channel $Q$, the joint law is $p(x, y) = p(x)\,Q_{xy}$, the output marginal is $p(y) = \sum_x p(x)\,Q_{xy}$, and we can compute $I(X;Y)$ — the information the output carries about the input. *That* number is the whole game.
 
-    > [MacKay Ch 9](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) introduces channels and capacity with exactly this matrix picture.
-    > [Cover & Thomas Ch 7](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the rigorous reference for the DMC and capacity.
+    > [MacKay Ch 9](https://www.inference.org.uk/itprnn/book.pdf) introduces channels and capacity with exactly this matrix picture.
+    > [Cover & Thomas Ch 7](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the rigorous reference for the DMC and capacity.
     """)
     return
 
@@ -115,8 +115,8 @@ def _(mo):
 
     The operational meaning — proven next module — is the **noisy-channel coding theorem**: for any rate $R < C$ there exist codes with vanishing error probability as the block length grows, and for any $R > C$ the error probability is bounded away from zero. $C$ is a *sharp threshold*, a cliff. For now, treat that as a promise and focus on *computing* $C$.
 
-    > [Cover & Thomas §7.1–7.3](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) defines capacity and proves concavity in $p(x)$.
-    > [Stone Ch 4](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) gives the gentle, picture-first version.
+    > [Cover & Thomas §7.1–7.3](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) defines capacity and proves concavity in $p(x)$.
+    > [Stone Ch 4](https://arxiv.org/pdf/1802.05968) gives the gentle, picture-first version.
     """)
     return
 
@@ -186,7 +186,7 @@ def _(mo):
     - $p = 1$: $C = 1$ again! A channel that *always* flips is perfectly reliable — just invert the output. Noise you can predict is not noise.
     - The curve is symmetric about $p = \tfrac12$, dipping to zero there and rising to 1 at both ends.
 
-    > [MacKay §9.6](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) and [Cover & Thomas Example 7.1.4](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) derive $C_{\text{BSC}} = 1 - H_2(p)$.
+    > [MacKay §9.6](https://www.inference.org.uk/itprnn/book.pdf) and [Cover & Thomas Example 7.1.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) derive $C_{\text{BSC}} = 1 - H_2(p)$.
     """)
     return
 
@@ -296,7 +296,7 @@ def _(mo):
     - $\varepsilon = 1$: $C = 0$ — every symbol vanishes, nothing gets through.
     - **The BEC beats the BSC at the same noise level.** Compare $\varepsilon = 0.1$ (gives $C = 0.9$) against a BSC with $p = 0.1$ (gives $C = 1 - H_2(0.1) \approx 0.531$). Knowing *where* the errors are is worth a lot — this is why erasure coding underlies RAID, distributed storage, and packet-loss recovery on the internet.
 
-    > [MacKay §9.5](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) and [Cover & Thomas §7.1.5](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) cover the BEC and $C = 1 - \varepsilon$.
+    > [MacKay §9.5](https://www.inference.org.uk/itprnn/book.pdf) and [Cover & Thomas §7.1.5](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) cover the BEC and $C = 1 - \varepsilon$.
     """)
     return
 
@@ -394,8 +394,8 @@ def _(mo):
 
     We need a real algorithm. We could throw projected gradient ascent at it, but there is something far more elegant and tailored to this exact problem: the **Blahut–Arimoto algorithm**, discovered independently by Richard Blahut and Suguru Arimoto in 1972. It exploits a clever reformulation of mutual information as a *double* maximization, then alternates between the two arguments — each step has a clean closed form, and the whole thing is guaranteed to converge monotonically up to $C$. That is the centerpiece of this module, and we build it next.
 
-    > [Cover & Thomas §10.8](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) presents Blahut–Arimoto (and its rate-distortion twin).
-    > [MacKay Ch 9](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) discusses computing capacity for general channels.
+    > [Cover & Thomas §10.8](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) presents Blahut–Arimoto (and its rate-distortion twin).
+    > [MacKay Ch 9](https://www.inference.org.uk/itprnn/book.pdf) discusses computing capacity for general channels.
     """)
     return
 
@@ -429,7 +429,7 @@ def _(mo):
 
     Then $\max_x d_x \ge C \ge \sum_x p(x)\, d_x = I(X;Y)$. The gap $\max_x d_x - \min$-over-the-support pins $C$ from both sides, so you know exactly how close you are — no guessing. The solver below implements all of this and prints the squeeze.
 
-    > [Cover & Thomas §10.8](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) proves the convergence; Arimoto (1972) and Blahut (1972) are the originals.
+    > [Cover & Thomas §10.8](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) proves the convergence; Arimoto (1972) and Blahut (1972) are the originals.
     """)
     return
 

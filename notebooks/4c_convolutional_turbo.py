@@ -47,8 +47,8 @@ def _(mo):
 
     **Why "convolutional"?** The output stream is the discrete convolution of the input stream with the tap pattern, all over $\mathrm{GF}(2)$. The same operation as a 1-D conv filter you know from CNNs — only the multiplications are ANDs and the additions are XORs.
 
-    > [MacKay Ch 48](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) introduces convolutional codes and the trellis.
-    > [Lin & Costello Ch 11–12](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) is the definitive treatment of encoders, structure, and Viterbi.
+    > [MacKay Ch 48](https://www.inference.org.uk/itprnn/book.pdf) introduces convolutional codes and the trellis.
+    > [Lin & Costello Ch 11–12](https://openlibrary.org/books/OL3301344M/Error_control_coding) is the definitive treatment of encoders, structure, and Viterbi.
     """)
     return
 
@@ -105,7 +105,7 @@ def _(mo):
 
     For our $(7,5)$ encoder, label states by $(s_1 s_0)$ = the last two inputs (most recent on the left). The transition table below lists, for each state and input, the next state and the two emitted bits.
 
-    > [Lin & Costello Ch 12](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) develops the trellis and state diagram in detail.
+    > [Lin & Costello Ch 12](https://openlibrary.org/books/OL3301344M/Error_control_coding) develops the trellis and state diagram in detail.
     """)
     return
 
@@ -154,7 +154,7 @@ def _(mo):
 
     The demo decodes a noisy transmission and confirms it recovers the original message.
 
-    > [MacKay Ch 48](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) and [Lin & Costello Ch 12](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) both derive Viterbi; [Richardson & Urbanke Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/RichardsonUrbanke.pdf) frames it as the max-product / min-sum algorithm on a trellis.
+    > [MacKay Ch 48](https://www.inference.org.uk/itprnn/book.pdf) and [Lin & Costello Ch 12](https://openlibrary.org/books/OL3301344M/Error_control_coding) both derive Viterbi; [Richardson & Urbanke Ch 6](https://documents.epfl.ch/groups/i/ip/ipg/www/2010-2011/Statistical_Physics_for_Communication_and_Computer_Science/mct-new.pdf) frames it as the max-product / min-sum algorithm on a trellis.
     """)
     return
 
@@ -373,7 +373,7 @@ def _(mo):
 
     The simulation below is a real Monte-Carlo run in pure numpy. It transmits thousands of bits per SNR point, decodes three ways, and plots the curves. The waterfall shape — flat at low SNR, then plunging — is the signature of a code that suddenly "kicks in" once the channel is good enough.
 
-    > [Lin & Costello Ch 12](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) covers soft-decision Viterbi and coding gain; [MacKay Ch 48](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) plots the waterfall.
+    > [Lin & Costello Ch 12](https://openlibrary.org/books/OL3301344M/Error_control_coding) covers soft-decision Viterbi and coding gain; [MacKay Ch 48](https://www.inference.org.uk/itprnn/book.pdf) plots the waterfall.
     """)
     return
 
@@ -533,7 +533,7 @@ def _(mo):
 
     The demo runs a small BCJR forward–backward and prints per-bit posteriors and LLRs.
 
-    > [Lin & Costello Ch 12,16](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) presents BCJR/MAP; [Richardson & Urbanke Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/RichardsonUrbanke.pdf) casts it as sum-product on the trellis factor graph.
+    > [Lin & Costello Ch 12,16](https://openlibrary.org/books/OL3301344M/Error_control_coding) presents BCJR/MAP; [Richardson & Urbanke Ch 6](https://documents.epfl.ch/groups/i/ip/ipg/www/2010-2011/Statistical_Physics_for_Communication_and_Computer_Science/mct-new.pdf) casts it as sum-product on the trellis factor graph.
     """)
     return
 
@@ -635,7 +635,7 @@ def _(mo):
 
     The payoff: with a long interleaver, turbo codes reach within **0.5 dB of the Shannon capacity** on the AWGN channel — the first practical codes ever to do so, and the reason they went into 3G/4G phones, deep-space links, and DVB. The demo below runs a miniature iterative loop on two soft "decoders" and watches the average LLR magnitude (the confidence) climb with each iteration.
 
-    > [Richardson & Urbanke Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/RichardsonUrbanke.pdf) is the modern reference on turbo/iterative decoding; [MacKay Ch 48](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) and [Lin & Costello Ch 16](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) cover construction and performance.
+    > [Richardson & Urbanke Ch 6](https://documents.epfl.ch/groups/i/ip/ipg/www/2010-2011/Statistical_Physics_for_Communication_and_Computer_Science/mct-new.pdf) is the modern reference on turbo/iterative decoding; [MacKay Ch 48](https://www.inference.org.uk/itprnn/book.pdf) and [Lin & Costello Ch 16](https://openlibrary.org/books/OL3301344M/Error_control_coding) cover construction and performance.
     """)
     return
 

@@ -43,7 +43,7 @@ def _(mo):
 
     The question that organizes the module: **how much information, on average, does each new symbol of the stream carry once you have seen all the ones before it?** For an i.i.d. source the answer is obviously $H(X)$ — past symbols tell you nothing about the next. For a source *with* memory, knowing the past shrinks your surprise about the future, so the per-symbol information must be *lower*. We need a definition that captures this.
 
-    > [Cover & Thomas Ch 4.1](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) sets up stochastic processes and stationarity; [Ash Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/Ash.pdf) develops the ergodic-source picture.
+    > [Cover & Thomas Ch 4.1](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) sets up stochastic processes and stationarity; [Ash Ch 6](https://openlibrary.org/books/OL1884498M/Information_theory) develops the ergodic-source picture.
     """)
     return
 
@@ -71,7 +71,7 @@ def _(mo):
 
     **Why this matters.** The entropy rate is the *true* cost of the source. It is the floor on lossless compression for a stream (2A), exactly as $H(X)$ was the floor for a single symbol. Memory is what lets compressors beat the per-symbol entropy: English is about $H \approx 4.1$ bits/letter symbol-by-symbol, but its entropy rate — accounting for all the structure across letters — is only around **1.0–1.3 bits/letter**. That enormous gap is the redundancy of language, and it is why text files shrink so dramatically.
 
-    > [Cover & Thomas Ch 4.2](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) proves the two limits coincide; [MacKay Ch 4](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) frames entropy rate as the per-symbol information content of a source.
+    > [Cover & Thomas Ch 4.2](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) proves the two limits coincide; [MacKay Ch 4](https://www.inference.org.uk/itprnn/book.pdf) frames entropy rate as the per-symbol information content of a source.
     """)
     return
 
@@ -99,7 +99,7 @@ def _(mo):
     $$H(\mathcal{X}) = 0.833 \cdot 0.469 + 0.167 \cdot 1.0 \approx 0.558 \text{ bits/symbol}.$$
     Compare that to the entropy of the marginal alone, $H_2(0.833) \approx 0.650$ bits. The chain's memory has bought us $0.650 - 0.558 \approx 0.09$ bits/symbol of predictability. The slider explorer below lets you feel this tradeoff directly.
 
-    > [Cover & Thomas Ch 4.2–4.3](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) derives the Markov entropy rate and the stationary distribution; [Ash Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/Ash.pdf) treats Markov sources in detail.
+    > [Cover & Thomas Ch 4.2–4.3](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) derives the Markov entropy rate and the stationary distribution; [Ash Ch 6](https://openlibrary.org/books/OL1884498M/Information_theory) treats Markov sources in detail.
     """)
     return
 
@@ -245,7 +245,7 @@ def _(mo):
 
     For ergodic sources with memory the AEP still holds with $H$ replaced by the **entropy rate** $H(\mathcal{X})$ — this is the Shannon–McMillan–Breiman theorem. The i.i.d. version is all we need to build the intuition, and it is what the sampler below makes you watch.
 
-    > [Cover & Thomas Ch 3](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the canonical AEP chapter; [MacKay Ch 4](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) calls this the "Shannon information content" concentrating; [Ash Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/Ash.pdf) gives the measure-theoretic statement.
+    > [Cover & Thomas Ch 3](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the canonical AEP chapter; [MacKay Ch 4](https://www.inference.org.uk/itprnn/book.pdf) calls this the "Shannon information content" concentrating; [Ash Ch 6](https://openlibrary.org/books/OL1884498M/Information_theory) gives the measure-theoretic statement.
     """)
     return
 
@@ -365,7 +365,7 @@ def _(mo):
 
     This is *exactly* why compression works: assign short codewords (about $nH$ bits, one per typical sequence) to the typical set and throw a flag bit at everything else. You will lose data only with probability $\to 0$, and you will hit the entropy floor. That argument, made rigorous, is the **source coding theorem** of Module 2A. The same typical-set machinery — applied to *jointly* typical input/output pairs — proves the channel coding theorem in 3B. Learn it once here; reuse it everywhere.
 
-    > [Cover & Thomas Ch 3.1–3.2](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) states and proves the three typical-set properties; [MacKay Ch 4.4](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) draws the "typical set inside the space of all strings" picture.
+    > [Cover & Thomas Ch 3.1–3.2](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) states and proves the three typical-set properties; [MacKay Ch 4.4](https://www.inference.org.uk/itprnn/book.pdf) draws the "typical set inside the space of all strings" picture.
     """)
     return
 

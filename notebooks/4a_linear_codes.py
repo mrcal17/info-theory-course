@@ -44,8 +44,8 @@ def _(mo):
 
     The repetition code already shows the two ideas we will generalize. First, the four impossible received words like $010$ are "close" to a legal codeword and we snap to the nearest one (**nearest-neighbour decoding**). Second, the two codewords $000$ and $111$ differ in all 3 positions — their **Hamming distance** is 3 — and that gap is exactly what lets us survive one flip. Hold onto distance; it is the hero of this module.
 
-    > [MacKay Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) opens with this exact repetition-code story and the $(7,4)$ Hamming code right after.
-    > [Moser Ch 3](file:///C:/Users/landa/info-theory-course/textbooks/Moser.pdf) is the gentlest formal treatment of block codes.
+    > [MacKay Ch 1](https://www.inference.org.uk/itprnn/book.pdf) opens with this exact repetition-code story and the $(7,4)$ Hamming code right after.
+    > [Moser Ch 3](https://moser-isi.ethz.ch/scripts.html) is the gentlest formal treatment of block codes.
     """)
     return
 
@@ -100,8 +100,8 @@ def _(mo):
 
     These two are linked by the field: $d(\mathbf{x}, \mathbf{y}) = w(\mathbf{x} - \mathbf{y}) = w(\mathbf{x} \oplus \mathbf{y})$. Distance is just the weight of the XOR. That tiny identity is why linear codes are so easy to analyze.
 
-    > [Roth Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/Roth.pdf) builds linear codes over a general field; specialize everything to $q=2$.
-    > [Lin & Costello Ch 3](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) is the standard engineering reference for binary linear block codes.
+    > [Roth Ch 2](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) builds linear codes over a general field; specialize everything to $q=2$.
+    > [Lin & Costello Ch 3](https://openlibrary.org/books/OL3301344M/Error_control_coding) is the standard engineering reference for binary linear block codes.
     """)
     return
 
@@ -156,8 +156,8 @@ def _(mo):
 
     A generator is in **systematic form** when $G = [\,I_k \mid P\,]$: the first $k$ output bits are a verbatim copy of the message and the last $n-k$ are **parity** bits computed from it. Systematic codes are convenient — you can read the data straight off the codeword — and any linear code can be put in this form by row reduction. The Hamming $(7,4)$ code we build in Section 5 uses exactly this layout: 4 data bits followed by 3 parity bits, rate $R = 4/7 \approx 0.571$.
 
-    > [MacKay Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) presents $G$ and $H$ for the $(7,4)$ code with a memorable Venn-diagram picture.
-    > [Lin & Costello Ch 3](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) develops the generator/parity-check pair formally.
+    > [MacKay Ch 1](https://www.inference.org.uk/itprnn/book.pdf) presents $G$ and $H$ for the $(7,4)$ code with a memorable Venn-diagram picture.
+    > [Lin & Costello Ch 3](https://openlibrary.org/books/OL3301344M/Error_control_coding) develops the generator/parity-check pair formally.
     """)
     return
 
@@ -219,8 +219,8 @@ def _(mo):
 
     This vector $\mathbf{s}$ is the **syndrome**. Read that line again — it is the whole idea of error correction. The syndrome depends **only on the error**, never on which codeword was sent. If $\mathbf{s} = \mathbf{0}$, no detectable error occurred. If $\mathbf{s} \neq \mathbf{0}$, the syndrome *names* the error: for a single-bit flip in position $j$, $\mathbf{e}$ has a lone $1$ in column $j$, so $H\mathbf{e}^{\mathsf T}$ equals **column $j$ of $H$**. Decoding a single error becomes: compute the syndrome, find which column of $H$ it matches, flip that bit. That is **syndrome decoding**, and it is what makes the next section magical.
 
-    > [MacKay Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) derives the syndrome and shows single-error decoding for the $(7,4)$ code.
-    > [Roth Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/Roth.pdf) treats syndrome decoding and standard-array decoding in general.
+    > [MacKay Ch 1](https://www.inference.org.uk/itprnn/book.pdf) derives the syndrome and shows single-error decoding for the $(7,4)$ code.
+    > [Roth Ch 2](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) treats syndrome decoding and standard-array decoding in general.
     """)
     return
 
@@ -469,8 +469,8 @@ def _(mo):
 
     For single-error correction ($t = 1$) this reads $2^k (1 + n) \le 2^n$. A code that meets the bound with **equality** wastes nothing — its balls tile the space exactly — and is called **perfect**. Check Hamming $(7,4)$: $t=1$, so the left side is $2^4 (1 + 7) = 16 \cdot 8 = 128 = 2^7$. Equality! The Hamming codes are perfect: every one of the $2^7$ received words sits in exactly one radius-1 ball, so the decoder is *never* stumped by a single error and never wastes a syndrome. The table below lets you see, for a target redundancy $m = n-k$, how the perfect Hamming code $(2^m-1,\,2^m-1-m)$ packs space exactly while other rates leave slack.
 
-    > [MacKay Ch 13](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) covers the sphere-packing/Hamming bound and perfect codes.
-    > [Roth Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/Roth.pdf) and [Lin & Costello Ch 3](file:///C:/Users/landa/info-theory-course/textbooks/LinCostello.pdf) give the bound and the perfect-code classification.
+    > [MacKay Ch 13](https://www.inference.org.uk/itprnn/book.pdf) covers the sphere-packing/Hamming bound and perfect codes.
+    > [Roth Ch 2](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) and [Lin & Costello Ch 3](https://openlibrary.org/books/OL3301344M/Error_control_coding) give the bound and the perfect-code classification.
     """)
     return
 

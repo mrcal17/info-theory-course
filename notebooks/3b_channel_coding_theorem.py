@@ -51,7 +51,7 @@ def _(mo):
 
     **Worked example.** A $(16, 7)$ code has $M = 16$ messages in blocks of length $n = 7$. Its rate is $R = \log_2 16 / 7 = 4/7 \approx 0.571$ bits/use. (This is exactly the shape of the Hamming (7,4) code you will meet in 4A — 4 message bits in 7 transmitted bits.)
 
-    > [MacKay Ch 9–10](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) sets up block codes and rate; [Cover & Thomas Ch 7.5](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) gives the formal $(M,n)$ definitions.
+    > [MacKay Ch 9–10](https://www.inference.org.uk/itprnn/book.pdf) sets up block codes and rate; [Cover & Thomas Ch 7.5](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) gives the formal $(M,n)$ definitions.
     """)
     return
 
@@ -112,7 +112,7 @@ def _(mo):
 
     If $R < I(X;Y)$ the exponent is negative and this $\to 0$. **That single inequality is the engine of the entire theorem.**
 
-    > [Cover & Thomas Ch 7.6–7.7](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the canonical treatment of joint typicality and joint-AEP decoding.
+    > [Cover & Thomas Ch 7.6–7.7](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the canonical treatment of joint typicality and joint-AEP decoding.
     """)
     return
 
@@ -172,7 +172,7 @@ def _(mo):
 
     The demo below *runs* the random-coding argument in miniature: it samples random codebooks over a binary symmetric channel and measures the average decoding error, watching it collapse as $n$ grows when $R < C$.
 
-    > [MacKay Ch 10](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) gives the cleanest narrative of random coding; [Cover & Thomas Ch 7.7](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) and [Gallager Ch 5](file:///C:/Users/landa/info-theory-course/textbooks/Gallager.pdf) give the full proof and the random-coding error exponent.
+    > [MacKay Ch 10](https://www.inference.org.uk/itprnn/book.pdf) gives the cleanest narrative of random coding; [Cover & Thomas Ch 7.7](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) and [Gallager Ch 5](https://www.wiley-vch.de/de/fachgebiete/ingenieurwesen/elektrotechnik-und-elektronik-10ee/kommunikationstechnik-10ee2/information-theory-and-reliable-communication-978-0-471-29048-3) give the full proof and the random-coding error exponent.
     """)
     return
 
@@ -245,7 +245,7 @@ def _(mo):
 
     Drag the explorer below to see the Fano bound trace out the floor on $P_e$ as the residual uncertainty and alphabet size change.
 
-    > [Cover & Thomas Ch 2.10 & 7.9](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) state and apply Fano; [MacKay Ch 10](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) uses it for the converse.
+    > [Cover & Thomas Ch 2.10 & 7.9](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) state and apply Fano; [MacKay Ch 10](https://www.inference.org.uk/itprnn/book.pdf) uses it for the converse.
     """)
     return
 
@@ -385,7 +385,7 @@ def _(mo):
 
     **Both halves together — Shannon's theorem.** Achievability ($R<C \Rightarrow$ error $\to 0$) and the converse ($R>C \Rightarrow$ error $\ge 1-C/R$) sandwich the behaviour into a step function. Capacity is not a soft guideline; it is a **wall**.
 
-    > [Cover & Thomas Ch 7.9](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) and [Gallager Ch 5](file:///C:/Users/landa/info-theory-course/textbooks/Gallager.pdf) prove the converse and strong converse in full.
+    > [Cover & Thomas Ch 7.9](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) and [Gallager Ch 5](https://www.wiley-vch.de/de/fachgebiete/ingenieurwesen/elektrotechnik-und-elektronik-10ee/kommunikationstechnik-10ee2/information-theory-and-reliable-communication-978-0-471-29048-3) prove the converse and strong converse in full.
     """)
     return
 

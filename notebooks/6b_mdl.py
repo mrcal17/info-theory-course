@@ -48,8 +48,8 @@ def _(mo):
 
     But there is a catch that maximum likelihood alone never sees, and it is the whole reason this module exists: a more flexible model can *always* drive $-\log_2 Q_\theta(\text{data})$ lower, right down toward zero, by bending to fit every wiggle. If shorter-is-better were the end of the story, you would always pick the most complex model and overfit catastrophically. The fix is to charge rent for complexity.
 
-    > [Grünwald, *A Tutorial Introduction to the MDL Principle*, §1](file:///C:/Users/landa/info-theory-course/textbooks/Grunwald-MDL.pdf) opens with exactly this "learning = compression" framing.
-    > [MacKay Ch 28](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) develops model comparison from the coding viewpoint.
+    > [Grünwald, *A Tutorial Introduction to the MDL Principle*, §1](https://arxiv.org/pdf/math/0406077) opens with exactly this "learning = compression" framing.
+    > [MacKay Ch 28](https://www.inference.org.uk/itprnn/book.pdf) develops model comparison from the coding viewpoint.
     """)
     return
 
@@ -109,8 +109,8 @@ def _(mo):
 
     where $k = d+1$ is the number of free parameters (the $\tfrac12\log_2 n$ per parameter is the number of bits needed to state each one to its statistically meaningful precision $\sim 1/\sqrt n$ — finer precision is wasted, coarser loses fit). This term *rises* with $d$. Their sum dips, then climbs. The slider in Section 3 lets you watch it happen.
 
-    > [Grünwald §2, "Crude two-part MDL"](file:///C:/Users/landa/info-theory-course/textbooks/Grunwald-MDL.pdf) is the canonical derivation of exactly this decomposition.
-    > [MacKay Ch 28.1](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) frames it as "Occam's razor falls out of Bayes."
+    > [Grünwald §2, "Crude two-part MDL"](https://arxiv.org/pdf/math/0406077) is the canonical derivation of exactly this decomposition.
+    > [MacKay Ch 28.1](https://www.inference.org.uk/itprnn/book.pdf) frames it as "Occam's razor falls out of Bayes."
     """)
     return
 
@@ -276,8 +276,8 @@ def _(mo):
 
     For contrast, **AIC** uses a penalty of $k$ (not $\tfrac k2\log_2 n$); it targets predictive accuracy rather than identifying the true model, and penalizes complexity *less*, so it tends to pick larger models than BIC/MDL. The demo below computes the evidence by brute-force grid integration for a tiny model and shows the BIC approximation tracking it.
 
-    > [Grünwald §1.3 & §2.4](file:///C:/Users/landa/info-theory-course/textbooks/Grunwald-MDL.pdf) lays out crude vs refined MDL and the link to Bayes and BIC.
-    > [MacKay Ch 28](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) derives the Occam factor and the evidence directly.
+    > [Grünwald §1.3 & §2.4](https://arxiv.org/pdf/math/0406077) lays out crude vs refined MDL and the link to Bayes and BIC.
+    > [MacKay Ch 28](https://www.inference.org.uk/itprnn/book.pdf) derives the Occam factor and the evidence directly.
     """)
     return
 
@@ -351,8 +351,8 @@ def _(mo):
 
     The chain to keep in your head: **Kolmogorov complexity** (ideal, uncomputable) → **refined MDL / Bayes** (ideal within a model class, often computable) → **two-part MDL / BIC** (a cheap, large-$n$ approximation you can run in a loop). Each step trades a little optimality for a lot of tractability, and your polynomial demo lives at the bottom of that ladder.
 
-    > [Grünwald §1.5 & §6](file:///C:/Users/landa/info-theory-course/textbooks/Grunwald-MDL.pdf) discusses the relationship to Kolmogorov complexity and the universal prior.
-    > [MacKay Ch 28.3](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) touches on the algorithmic-complexity view of inference.
+    > [Grünwald §1.5 & §6](https://arxiv.org/pdf/math/0406077) discusses the relationship to Kolmogorov complexity and the universal prior.
+    > [MacKay Ch 28.3](https://www.inference.org.uk/itprnn/book.pdf) touches on the algorithmic-complexity view of inference.
     """)
     return
 
@@ -417,8 +417,8 @@ def _(mo):
 
     Read it slowly: the **reconstruction loss** of a VAE is the residual description length, and the **KL term** is the rate you pay to communicate which latent you used, *after* the bits-back refund. A VAE is a learned, amortized MDL code, and bits-back is the bookkeeping that makes its rate honest. We will build exactly this — and the BB-ANS algorithm that implements it for real — in **6E**. For now, just hold the picture: posterior uncertainty is not wasted; it is *recyclable* code length.
 
-    > [MacKay Ch 28.3](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) presents bits-back coding and the description-length view of the posterior.
-    > [Grünwald §2.6](file:///C:/Users/landa/info-theory-course/textbooks/Grunwald-MDL.pdf) connects refined MDL to the same mixture-coding idea.
+    > [MacKay Ch 28.3](https://www.inference.org.uk/itprnn/book.pdf) presents bits-back coding and the description-length view of the posterior.
+    > [Grünwald §2.6](https://arxiv.org/pdf/math/0406077) connects refined MDL to the same mixture-coding idea.
     """)
     return
 

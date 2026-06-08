@@ -109,7 +109,7 @@ def _(mo):
     The trouble is the $\log \mathbb{E}_Q[e^T]$ term: a log of an expectation of an exponential. It is biased when estimated from a minibatch (because $\mathbb{E}[\log(\widehat{\text{avg}})] \ne \log \mathbb{E}[\text{avg}]$), and its gradient involves a ratio that has high variance. Different fixes to this one term give the different estimators below.
 
     > [Belghazi et al., MINE (arXiv:1801.04062)](https://arxiv.org/abs/1801.04062) uses the DV bound directly.
-    > [Polyanskiy & Wu, *From Coding to Learning*](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) derives the Donsker–Varadhan variational formula for KL.
+    > [Polyanskiy & Wu, *From Coding to Learning*](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf) derives the Donsker–Varadhan variational formula for KL.
     """)
     return
 

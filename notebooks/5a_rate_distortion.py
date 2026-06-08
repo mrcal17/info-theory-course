@@ -45,8 +45,8 @@ def _(mo):
 
     Two sanity checks frame the whole curve. At $D = 0$ (no error allowed) you are back to lossless coding, so $R(0) = H(X)$ for a discrete source — the entropy reappears as the left endpoint. And once $D$ is large enough that you may as well not transmit at all (just guess the best constant), the rate drops to $R = 0$. Everything interesting happens between those two extremes.
 
-    > [Cover & Thomas Ch 10.1](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) opens rate-distortion exactly here.
-    > [Gallager Ch 9](file:///C:/Users/landa/info-theory-course/textbooks/Gallager.pdf) gives the classical source-coding-with-fidelity-criterion treatment.
+    > [Cover & Thomas Ch 10.1](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) opens rate-distortion exactly here.
+    > [Gallager Ch 9](https://www.wiley-vch.de/de/fachgebiete/ingenieurwesen/elektrotechnik-und-elektronik-10ee/kommunikationstechnik-10ee2/information-theory-and-reliable-communication-978-0-471-29048-3) gives the classical source-coding-with-fidelity-criterion treatment.
     """)
     return
 
@@ -69,7 +69,7 @@ def _(mo):
 
     The choice of $d$ is a modeling decision: it encodes what "good enough" *means* for your problem. Perceptual codecs replace MSE with measures that track human vision or hearing; that is engineering on top of the same theory. For this module we use the two canonical measures, because they give clean closed-form answers we can verify by hand.
 
-    > [Cover & Thomas Ch 10.2](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) formalizes distortion measures and distortion-typical sequences.
+    > [Cover & Thomas Ch 10.2](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) formalizes distortion measures and distortion-typical sequences.
     """)
     return
 
@@ -95,7 +95,7 @@ def _(mo):
 
     The next two sections solve this minimization *in closed form* for the two canonical cases. After that, a slider explorer and a numerical solver let you play with the curve directly.
 
-    > [Cover & Thomas Ch 10.2–10.4](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) states and proves the rate-distortion theorem; [Polyanskiy & Wu](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) gives the modern one-shot and converse viewpoint.
+    > [Cover & Thomas Ch 10.2–10.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) states and proves the rate-distortion theorem; [Polyanskiy & Wu](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf) gives the modern one-shot and converse viewpoint.
     """)
     return
 
@@ -122,7 +122,7 @@ def _(mo):
 
     The code below verifies the formula and its endpoints.
 
-    > [Cover & Thomas Ch 10.3.1](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) derives the binary $R(D)$ in full.
+    > [Cover & Thomas Ch 10.3.1](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) derives the binary $R(D)$ in full.
     """)
     return
 
@@ -186,7 +186,7 @@ def _(mo):
 
     The demo verifies the formula, the inversion, and the 6 dB-per-bit rule.
 
-    > [Cover & Thomas Ch 10.3.2](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) derives the Gaussian $R(D)$ and the converse.
+    > [Cover & Thomas Ch 10.3.2](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) derives the Gaussian $R(D)$ and the converse.
     """)
     return
 
@@ -368,7 +368,7 @@ def _(mo):
 
     The slogan: **equalize the distortion across the components you bother to encode, and drop the components too small to matter.** It is the reverse of channel water-filling — there you poured *power* into the best channels; here you pour *distortion* into the weakest sources. The demo finds $\lambda$ by bisection for a bank of sources and shows the classic "water poured up to level $\lambda$" picture.
 
-    > [Cover & Thomas Ch 10.3.3](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) derives reverse water-filling for parallel Gaussian sources.
+    > [Cover & Thomas Ch 10.3.3](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) derives reverse water-filling for parallel Gaussian sources.
     """)
     return
 
@@ -492,7 +492,7 @@ def _(mo):
 
     Each step strictly decreases the Lagrangian, and the iteration provably converges to the true $R(D)$ point for that $\beta$. The demo runs pure-numpy Blahut–Arimoto on a 4-symbol source with Hamming distortion and prints the $(D, R)$ pairs it traces — a curve no closed form gave us, computed from the definition itself.
 
-    > [Cover & Thomas Ch 10.8](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) and [Gallager Ch 9](file:///C:/Users/landa/info-theory-course/textbooks/Gallager.pdf) present the Blahut–Arimoto iteration and its convergence.
+    > [Cover & Thomas Ch 10.8](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) and [Gallager Ch 9](https://www.wiley-vch.de/de/fachgebiete/ingenieurwesen/elektrotechnik-und-elektronik-10ee/kommunikationstechnik-10ee2/information-theory-and-reliable-communication-978-0-471-29048-3) present the Blahut–Arimoto iteration and its convergence.
     """)
     return
 

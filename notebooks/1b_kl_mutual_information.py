@@ -50,7 +50,7 @@ def _(mo):
 
     You waste about a fifth of a bit per flip for believing a fair coin is biased.
 
-    > [Cover & Thomas Ch 2.3](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) defines relative entropy; [MacKay Ch 2 & 8](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) and [Stone Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) give the intuition.
+    > [Cover & Thomas Ch 2.3](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) defines relative entropy; [MacKay Ch 2 & 8](https://www.inference.org.uk/itprnn/book.pdf) and [Stone Ch 2](https://arxiv.org/pdf/1802.05968) give the intuition.
     """)
     return
 
@@ -106,7 +106,7 @@ def _(mo):
 
     So $-D(p\|q) \le 0$, i.e. $D(p\|q) \ge 0$. Equality holds exactly when $q/p$ is constant — that is, when $p = q$. **A correct model wastes zero bits; any wrong model wastes a positive number.** That is the entire content of Gibbs' inequality, and it is why minimizing KL is a sensible thing to do.
 
-    > [Cover & Thomas Ch 2.6](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) proves Jensen and Gibbs together; [MacKay Ch 2.6](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) gives the convexity picture.
+    > [Cover & Thomas Ch 2.6](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) proves Jensen and Gibbs together; [MacKay Ch 2.6](https://www.inference.org.uk/itprnn/book.pdf) gives the convexity picture.
     """)
     return
 
@@ -164,7 +164,7 @@ def _(mo):
 
     This little identity is one of the most important in machine learning. The **cross-entropy loss** you minimize when training a classifier is $H(p, q)$, where $p$ is the (one-hot) true label distribution and $q$ is your model's softmax output. Since $H(p)$ does not depend on your model's parameters, **minimizing cross-entropy is exactly minimizing the KL divergence** $D(p\|q)$ between truth and prediction — i.e. making your model's beliefs as close as possible to reality. And because $D \ge 0$ (Gibbs), cross-entropy bottoms out at $H(p)$: the label entropy is the irreducible floor of the loss. You can never train below it.
 
-    > [MacKay Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) and [Cover & Thomas Ch 2.3](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf); we return to this in depth in Module 6A.
+    > [MacKay Ch 2](https://www.inference.org.uk/itprnn/book.pdf) and [Cover & Thomas Ch 2.3](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X); we return to this in depth in Module 6A.
     """)
     return
 
@@ -304,7 +304,7 @@ def _(mo):
 
     The first reads: *mutual information is the drop in uncertainty about $X$ once you learn $Y$.* This is exactly the **information gain** that decision trees maximize at each split. And it finally proves the claim from 1A that "information never hurts": since $I(X;Y) \ge 0$, we get $H(X\mid Y) \le H(X)$ — conditioning never increases entropy *on average*.
 
-    > [Cover & Thomas Ch 2.4](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the canonical treatment; [MacKay Ch 8](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) and [Stone Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) give the picture.
+    > [Cover & Thomas Ch 2.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the canonical treatment; [MacKay Ch 8](https://www.inference.org.uk/itprnn/book.pdf) and [Stone Ch 2](https://arxiv.org/pdf/1802.05968) give the picture.
     """)
     return
 
@@ -475,7 +475,7 @@ def _(mo):
 
     The demo below builds an explicit Markov chain $X \to Y \to Z$ ($Y$ is $X$ sent through a noisy binary channel, $Z$ is $Y$ sent through another) and verifies $I(X;Z) \le I(X;Y)$ numerically.
 
-    > [Cover & Thomas Ch 2.8](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) states and proves the DPI; [MacKay Ch 8](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) discusses it for channels.
+    > [Cover & Thomas Ch 2.8](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) states and proves the DPI; [MacKay Ch 8](https://www.inference.org.uk/itprnn/book.pdf) discusses it for channels.
     """)
     return
 

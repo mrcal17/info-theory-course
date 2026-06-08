@@ -42,8 +42,8 @@ def _(mo):
 
     Here is the tension in one example. Suppose $X \in \{a, b, c, d\}$. The lazy fixed-length code uses 2 bits each: $a\!\to\!00,\ b\!\to\!01,\ c\!\to\!10,\ d\!\to\!11$. That always costs exactly 2 bits. But if $a$ is very common and $d$ very rare, we are wasting bits on $a$ and could do better by giving $a$ a *short* codeword and $d$ a long one. That is the whole game of source coding: spend few bits on likely symbols, many bits on unlikely ones. The catch is that **variable-length codes can become ambiguous**, and avoiding that ambiguity is what the rest of this module is about.
 
-    > [MacKay Ch 5](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) introduces symbol codes and expected length with exactly this trade-off.
-    > [Cover & Thomas Ch 5.1](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) gives the formal definition of a code and its expected length.
+    > [MacKay Ch 5](https://www.inference.org.uk/itprnn/book.pdf) introduces symbol codes and expected length with exactly this trade-off.
+    > [Cover & Thomas Ch 5.1](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) gives the formal definition of a code and its expected length.
     """)
     return
 
@@ -99,8 +99,8 @@ def _(mo):
 
     **Worked counterexample.** Consider $a\!\to\!0,\ b\!\to\!01,\ c\!\to\!11$. It is nonsingular (all different) and even uniquely decodable. But it is *not* prefix: $0$ is a prefix of $01$. Decode `0011`: is the first symbol $a$ (then `011` = ...?) — you have to read ahead to resolve it. Compare the prefix code $a\!\to\!0,\ b\!\to\!10,\ c\!\to\!11$: `01011` parses instantly as $a, b, c$ with no backtracking.
 
-    > [Cover & Thomas Ch 5.1](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) lays out this exact hierarchy with a clean table of examples.
-    > [Ash Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/Ash.pdf) and [MacKay Ch 5](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) treat prefix (instantaneous) codes and the prefix-free condition.
+    > [Cover & Thomas Ch 5.1](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) lays out this exact hierarchy with a clean table of examples.
+    > [Ash Ch 2](https://openlibrary.org/books/OL1884498M/Information_theory) and [MacKay Ch 5](https://www.inference.org.uk/itprnn/book.pdf) treat prefix (instantaneous) codes and the prefix-free condition.
     """)
     return
 
@@ -158,7 +158,7 @@ def _(mo):
 
     Use the **prefix-tree builder** below: type codeword lengths and watch the tree get carved up. When a new codeword would have to live under a codeword you already placed, the builder flags the prefix violation.
 
-    > [MacKay Ch 5](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) draws the codeword-tree picture and the "claimed subtree" intuition that motivates Kraft.
+    > [MacKay Ch 5](https://www.inference.org.uk/itprnn/book.pdf) draws the codeword-tree picture and the "claimed subtree" intuition that motivates Kraft.
     """)
     return
 
@@ -297,8 +297,8 @@ def _(mo):
 
     The **Kraft-budget visualizer** below lets you set lengths and watch $\sum 2^{-\ell_i}$ fill (or overflow) the budget of 1.
 
-    > [Cover & Thomas Ch 5.2–5.5](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) proves Kraft and McMillan in full.
-    > [MacKay Ch 5](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) gives the budget intuition; [Ash Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/Ash.pdf) has the classic tree proof.
+    > [Cover & Thomas Ch 5.2–5.5](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) proves Kraft and McMillan in full.
+    > [MacKay Ch 5](https://www.inference.org.uk/itprnn/book.pdf) gives the budget intuition; [Ash Ch 2](https://openlibrary.org/books/OL1884498M/Information_theory) has the classic tree proof.
     """)
     return
 
@@ -442,8 +442,8 @@ def _(mo):
 
     This is the formal statement of the floor we promised in Module 1A. The entropy is not just the average surprise — it is, to the bit, the cost of the best possible code. Compression has a hard limit, and you are now staring at its proof.
 
-    > [Cover & Thomas Ch 5.3](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) gives this KL-divergence proof verbatim.
-    > [MacKay Ch 5](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) frames it via the "implicit probabilities" $q(x) = 2^{-\ell(x)}$.
+    > [Cover & Thomas Ch 5.3](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) gives this KL-divergence proof verbatim.
+    > [MacKay Ch 5](https://www.inference.org.uk/itprnn/book.pdf) frames it via the "implicit probabilities" $q(x) = 2^{-\ell(x)}$.
     """)
     return
 

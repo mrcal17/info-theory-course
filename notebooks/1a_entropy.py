@@ -42,8 +42,8 @@ def _(mo):
 
     Now flip the framing. Before you ask anything, the answer "it's 11" carries some quantity of information — precisely the uncertainty it resolves. The rarer or more surprising the outcome, the more information learning it gives you. That is the seed of *everything*. Our job in this module is to turn "surprise" into a number.
 
-    > [Stone Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) opens with exactly this 20-questions intuition — a perfect gentle first read.
-    > [MacKay Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) motivates bits and information from communication.
+    > [Stone Ch 1](https://arxiv.org/pdf/1802.05968) opens with exactly this 20-questions intuition — a perfect gentle first read.
+    > [MacKay Ch 1](https://www.inference.org.uk/itprnn/book.pdf) motivates bits and information from communication.
     """)
     return
 
@@ -78,7 +78,7 @@ def _(mo):
     - A guaranteed event: $p = 1$, so $h = 0$ bits.
     - Drawing the ace of spades from a shuffled deck: $p = \tfrac{1}{52}$, so $h = \log_2 52 \approx 5.70$ bits.
 
-    > [MacKay Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) and [Cover & Thomas Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) develop self-information and entropy together.
+    > [MacKay Ch 2](https://www.inference.org.uk/itprnn/book.pdf) and [Cover & Thomas Ch 2](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) develop self-information and entropy together.
     """)
     return
 
@@ -133,7 +133,7 @@ def _(mo):
 
     The code below computes entropy from a probability vector and then measures the entropy of English from letter frequencies.
 
-    > [Cover & Thomas Ch 2.1](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the canonical definition; [Stone Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) gives the gentle version.
+    > [Cover & Thomas Ch 2.1](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the canonical definition; [Stone Ch 2](https://arxiv.org/pdf/1802.05968) gives the gentle version.
     """)
     return
 
@@ -262,7 +262,7 @@ def _(mo):
 
     In words: the total uncertainty in the pair equals the uncertainty in $X$ plus whatever uncertainty remains in $Y$ once $X$ is known. It generalizes to any number of variables, and it is the discrete-information echo of the probability chain rule $p(x,y) = p(x)\,p(y\mid x)$ you already know. Conditioning can only *reduce* (or leave unchanged) entropy: $H(Y \mid X) \le H(Y)$ — **information never hurts**, on average. We will prove that inequality properly in 1B once we have mutual information.
 
-    > [Cover & Thomas Ch 2.2–2.5](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) covers joint/conditional entropy and the chain rule in full.
+    > [Cover & Thomas Ch 2.2–2.5](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) covers joint/conditional entropy and the chain rule in full.
     """)
     return
 

@@ -22,7 +22,7 @@ def _(mo):
 
     This page is not a lecture. It is a one-page orientation: what information theory *is*, the single unit everything is measured in, the three big things we will build, and the notation we will use so nothing trips you up later. The real teaching starts in **Module 1A** with entropy. Consider this the map you glance at before the hike.
 
-    I am going to assume you are comfortable with probability — random variables, expectations, conditional probability, independence. If any of that feels rusty, that is fine, but it belongs to the *machine-learning* prerequisites (see **ML Module 0D** for the probability refresher) rather than here. This course spends its energy on what you can *do* with probability once you decide to measure surprise in bits.
+    I am going to assume you are comfortable with probability — random variables, expectations, conditional probability, independence. If any of that feels rusty, that is fine, but it belongs to your probability prerequisites rather than here. This course spends its energy on what you can *do* with probability once you decide to measure surprise in bits.
     """)
     return
 
@@ -44,9 +44,9 @@ def _(mo):
 
     Information theory is the study of these limits and of the codes that approach them. Once you see it, you see it everywhere: in `gzip` and JPEG, in your phone's 5G modem, in the QR code on a boarding pass, in the cross-entropy loss your neural net minimizes, and in the deep learning theory that tries to explain *why* that net generalizes.
 
-    > [Stone Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) is the gentlest possible on-ramp — read it first if you want a story before the symbols.
-    > [MacKay Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) frames the whole field around a single channel-coding puzzle.
-    > [Polyanskiy & Wu Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) sets the modern notation we will lean on.
+    > [Stone Ch 1](https://arxiv.org/pdf/1802.05968) is the gentlest possible on-ramp — read it first if you want a story before the symbols.
+    > [MacKay Ch 1](https://www.inference.org.uk/itprnn/book.pdf) frames the whole field around a single channel-coding puzzle.
+    > [Polyanskiy & Wu Ch 1](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf) sets the modern notation we will lean on.
     """)
     return
 
@@ -68,7 +68,7 @@ def _(mo):
 
     Notice the logarithm is not a decoration — it is *forced*. We want a measure where combining two independent situations **adds** their information (ask about a coin *and* a die: $1 + 2.585$ bits), while the number of joint possibilities **multiplies** ($2 \times 6 = 12$). The only function that turns multiplication into addition is the log, so $\log(\text{possibilities})$ is the unique sensible measure. The slider below lets you feel $\log_2 N$ directly.
 
-    > [Stone Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) opens with this exact 20-questions picture.
+    > [Stone Ch 1](https://arxiv.org/pdf/1802.05968) opens with this exact 20-questions picture.
     """)
     return
 
@@ -192,7 +192,7 @@ def _(mo):
 
     **Why you should care.** Your ML code almost always works in nats — `torch.log`, `np.log`, and the cross-entropy loss are natural-log quantities, so a loss of "0.69" is *one bit* of average surprise on a binary problem (it is $\ln 2$). This course states results in **bits** because the operational meaning — *number of yes/no questions, number of binary symbols to transmit* — is cleanest there. When we connect to ML in Part 6 we will switch to nats and the only thing that changes is a factor of $\ln 2$. Keep both straight and you will never be off by a mysterious 1.4427.
 
-    > [MacKay Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) uses bits throughout; [Polyanskiy & Wu Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) defaults to nats — a useful contrast to keep both in view.
+    > [MacKay Ch 1](https://www.inference.org.uk/itprnn/book.pdf) uses bits throughout; [Polyanskiy & Wu Ch 1](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf) defaults to nats — a useful contrast to keep both in view.
     """)
     return
 
@@ -280,7 +280,7 @@ def _(mo):
 
     The cell below turns these into running code so the symbols feel concrete.
 
-    > [Polyanskiy & Wu Ch 1](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) lays out essentially this notation; [Cover & Thomas Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the citation backstop.
+    > [Polyanskiy & Wu Ch 1](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf) lays out essentially this notation; [Cover & Thomas Ch 2](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the citation backstop.
     """)
     return
 
@@ -326,7 +326,7 @@ def _(mo):
     - **Read, then play, then build.** Each module has lecture sections, *live widgets* (drag the slider, watch the math move), and runnable demo cells. The demos are not decoration — they compute and *verify* the theorems on real numbers. Change them. Break them. That is the fastest way to internalize a result.
     - **Every module ends with "Code It" exercises.** Short skeletons with `TODO`s and expected answers in the comments. Do them. Information theory is a *constructive* subject — you do not understand entropy until you have written `-sum(p * log2(p))` and watched it equal the number you predicted.
     - **The textbook links are real.** Throughout, blockquotes point to specific chapters of the four anchor texts — MacKay and Stone for intuition, Cover & Thomas for rigor, Polyanskiy & Wu for the modern statistical-learning bridge. Follow them when you want depth.
-    - **Probability is assumed, not taught.** If a probability step feels shaky, that is a signal to revisit the ML prerequisites (**ML Module 0D**) rather than a gap in this course.
+    - **Probability is assumed, not taught.** If a probability step feels shaky, that is a signal to revisit the probability prerequisites rather than a gap in this course.
     - **The path is flexible after Part 1.** Build the three measures first; after that you can dive toward compression, channels, codes, or straight to the ML applications in Part 6, depending on what you came for.
 
     That is the whole orientation. Next stop: **Module 1A — Entropy & Self-Information**, where "surprise" stops being a feeling and becomes a number with a formula. See you there.

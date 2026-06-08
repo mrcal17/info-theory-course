@@ -44,7 +44,7 @@ def _(mo):
 
     Arithmetic coding gives you the blocking benefit for *free*: it effectively codes the entire message as one giant block, with no exponential codebook, because it never materializes the codewords at all. It works directly with the cumulative probabilities.
 
-    > [MacKay Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) makes exactly this case for stream codes over symbol codes, then builds arithmetic coding from it.
+    > [MacKay Ch 6](https://www.inference.org.uk/itprnn/book.pdf) makes exactly this case for stream codes over symbol codes, then builds arithmetic coding from it.
     """)
     return
 
@@ -103,7 +103,7 @@ def _(mo):
 
     — the sum of the symbols' self-informations, i.e. exactly the Shannon ideal. No rounding per symbol; the only rounding is once, at the very end, when you name the final point.
 
-    > [MacKay Ch 6.2](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) develops the interval picture and the encoder/decoder in detail.
+    > [MacKay Ch 6.2](https://www.inference.org.uk/itprnn/book.pdf) develops the interval picture and the encoder/decoder in detail.
     """)
     return
 
@@ -311,7 +311,7 @@ def _(mo):
 
     The demo below encodes a message, picks the midpoint of the final interval as the transmitted number, decodes it back, and confirms a perfect round-trip — then reports the bits used versus the entropy bound.
 
-    > [MacKay Ch 6.2](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) gives the same encoder/decoder and discusses the finite-precision version.
+    > [MacKay Ch 6.2](https://www.inference.org.uk/itprnn/book.pdf) gives the same encoder/decoder and discusses the finite-precision version.
     """)
     return
 
@@ -391,7 +391,7 @@ def _(mo):
 
     There is a flip side worth stating plainly: when the source is close to uniform with probabilities near powers of $\tfrac12$, Huffman is already nearly optimal and far simpler, with no arithmetic-precision worries. Arithmetic coding earns its complexity precisely on skewed and **adaptive** sources — which is the topic of the next section.
 
-    > [MacKay Ch 6.3](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) compares the two and explains when each is the right tool.
+    > [MacKay Ch 6.3](https://www.inference.org.uk/itprnn/book.pdf) compares the two and explains when each is the right tool.
     """)
     return
 
@@ -474,7 +474,7 @@ def _(mo):
 
     The demo runs an adaptive coder over a repetitive string. Watch the cost-per-symbol *fall* as the model learns the source — the early symbols are expensive (the model is ignorant), the later ones are cheap.
 
-    > [MacKay Ch 6.4](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) covers adaptive models and probabilistic modelling for compression.
+    > [MacKay Ch 6.4](https://www.inference.org.uk/itprnn/book.pdf) covers adaptive models and probabilistic modelling for compression.
     """)
     return
 

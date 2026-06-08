@@ -51,8 +51,8 @@ def _(mo):
 
     Hold onto fact 2 — it is the entire engine of the algorithm.
 
-    > [MacKay Ch 5](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) develops Huffman right after Kraft and the source coding theorem.
-    > [Cover & Thomas Ch 5.6–5.8](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) gives the optimality proof in full.
+    > [MacKay Ch 5](https://www.inference.org.uk/itprnn/book.pdf) develops Huffman right after Kraft and the source coding theorem.
+    > [Cover & Thomas Ch 5.6–5.8](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) gives the optimality proof in full.
     """)
     return
 
@@ -81,7 +81,7 @@ def _(mo):
 
     Reading bits off (left $=0$, right $=1$) gives, for instance, $A\!\to\!0$, $B\!\to\!100$… one bit for the common symbol, three bits for the rare ones. The expected length lands at $L = 2.20$ bits versus entropy $H = 2.146$ bits — within $0.054$ bits of the floor. The code below builds exactly this tree and prints the table.
 
-    > [MacKay Ch 5.4](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) walks the same construction with a worked example.
+    > [MacKay Ch 5.4](https://www.inference.org.uk/itprnn/book.pdf) walks the same construction with a worked example.
     """)
     return
 
@@ -163,7 +163,7 @@ def _(mo):
 
     Chaining the induction: every greedy merge keeps us inside the set of "could-still-be-optimal" codes, and the recursion bottoms out at a provably optimal base. Hence the final code is optimal. The demo verifies this empirically against brute force on small alphabets.
 
-    > [Cover & Thomas Ch 5.8](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) gives this proof rigorously (Lemma 5.8.1 and Theorem 5.8.1).
+    > [Cover & Thomas Ch 5.8](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) gives this proof rigorously (Lemma 5.8.1 and Theorem 5.8.1).
     """)
     return
 
@@ -243,7 +243,7 @@ def _(mo):
 
     The demo computes $H$, $L$, and the overhead for a spread of distributions so you can see the band breathe.
 
-    > [Cover & Thomas Ch 5.4](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) bounds $L$ between $H$ and $H+1$; [MacKay Ch 5.6](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) discusses the integer-length penalty.
+    > [Cover & Thomas Ch 5.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) bounds $L$ between $H$ and $H+1$; [MacKay Ch 5.6](https://www.inference.org.uk/itprnn/book.pdf) discusses the integer-length penalty.
     """)
     return
 
@@ -511,7 +511,7 @@ def _(mo):
 
     The cost, of course, is an exponentially growing codebook ($2^n$ entries for a binary source) and the need to buffer $n$ symbols before emitting anything. That tension — vanishing penalty versus exploding tables — is exactly the gap that **arithmetic coding** (2C) closes by abandoning fixed per-symbol codewords entirely.
 
-    > [Cover & Thomas Ch 5.4](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) (Theorem 5.4.2) proves the $1/n$ block bound; [MacKay Ch 5.6](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) motivates moving to stream codes.
+    > [Cover & Thomas Ch 5.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) (Theorem 5.4.2) proves the $1/n$ block bound; [MacKay Ch 5.6](https://www.inference.org.uk/itprnn/book.pdf) motivates moving to stream codes.
     """)
     return
 
@@ -608,7 +608,7 @@ def _(mo):
 
     **Arithmetic coding (2C)** dissolves all three at once. Instead of one codeword per symbol it encodes the *entire message* as a single number in $[0,1)$, narrowing an interval by a factor of $p(x)$ at each symbol. The cost of a symbol becomes $\log_2 1/p(x)$ bits **exactly — fractional bits and all** — with no rounding until the very end, and the probability model can change every step. It is the natural endpoint of the road Huffman started us on. Huffman remains the right tool when speed and simplicity matter and the distribution is reasonably uniform (JPEG, DEFLATE/zip, PNG, MP3 all use it); arithmetic and range coding take over when you need the last fraction of a bit.
 
-    > [MacKay Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) opens the case for stream codes by naming exactly these Huffman limitations; [Cover & Thomas Ch 5.9–5.10](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) covers Shannon-Fano-Elias and the bridge to arithmetic coding.
+    > [MacKay Ch 6](https://www.inference.org.uk/itprnn/book.pdf) opens the case for stream codes by naming exactly these Huffman limitations; [Cover & Thomas Ch 5.9–5.10](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) covers Shannon-Fano-Elias and the bridge to arithmetic coding.
     """)
     return
 

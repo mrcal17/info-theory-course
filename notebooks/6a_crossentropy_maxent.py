@@ -50,7 +50,7 @@ def _(mo):
 
     Meanwhile $H(p) = -0.7\log_2 0.7 - 0.3\log_2 0.3 \approx 0.881$ bits, so $D(p\|q) = 1.0 - 0.881 \approx 0.119$ bits. You pay about a tenth of a bit per sample for believing a $70/30$ coin is fair.
 
-    > [Cover & Thomas Ch 2.3](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) defines relative entropy and cross-entropy; [MacKay Ch 2](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) gives the codelength intuition.
+    > [Cover & Thomas Ch 2.3](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) defines relative entropy and cross-entropy; [MacKay Ch 2](https://www.inference.org.uk/itprnn/book.pdf) gives the codelength intuition.
     """)
     return
 
@@ -117,7 +117,7 @@ def _(mo):
 
     The widget below shows the loss surface for a single binary example. Drag the predicted probability of the true class and watch the loss explode as you become confidently wrong.
 
-    > [MacKay Ch 39–41](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) treats classifiers as probabilistic models; [Cover & Thomas Ch 12](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) connects cross-entropy and maximum likelihood.
+    > [MacKay Ch 39–41](https://www.inference.org.uk/itprnn/book.pdf) treats classifiers as probabilistic models; [Cover & Thomas Ch 12](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) connects cross-entropy and maximum likelihood.
     """)
     return
 
@@ -212,7 +212,7 @@ def _(mo):
 
     The demo fits a categorical model to samples by both routes — direct MLE (the histogram) and numerically minimizing KL — and confirms they land on the same answer.
 
-    > [Cover & Thomas Ch 11.1 & Ch 12](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) on the method of types and maximum entropy; [Polyanskiy & Wu](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) frames learning as KL minimization.
+    > [Cover & Thomas Ch 11.1 & Ch 12](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) on the method of types and maximum entropy; [Polyanskiy & Wu](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf) frames learning as KL minimization.
     """)
     return
 
@@ -276,7 +276,7 @@ def _(mo):
 
     The demo shows what the optimal prediction looks like with and without smoothing, and confirms the smoothed target has strictly higher entropy.
 
-    > [Cover & Thomas Ch 12](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) on maximum entropy as "assume the least"; the same logic underlies why smoothing helps.
+    > [Cover & Thomas Ch 12](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) on maximum entropy as "assume the least"; the same logic underlies why smoothing helps.
     """)
     return
 
@@ -397,7 +397,7 @@ def _(mo):
     - **Fixed mean and variance** on $\mathbb{R}$ $\Rightarrow$ the **Gaussian** $\mathcal{N}(\mu,\sigma^2)$.
     - **Fixed mean** on $[0,\infty)$ $\Rightarrow$ the **exponential** distribution.
 
-    > [Cover & Thomas Ch 12](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the definitive treatment of maximum entropy and exponential families; [MacKay Ch 22–23](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) covers maxent and inference; [Polyanskiy & Wu](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf) develops the variational view.
+    > [Cover & Thomas Ch 12](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the definitive treatment of maximum entropy and exponential families; [MacKay Ch 22–23](https://www.inference.org.uk/itprnn/book.pdf) covers maxent and inference; [Polyanskiy & Wu](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf) develops the variational view.
     """)
     return
 
@@ -519,7 +519,7 @@ def _(mo):
 
     This closes the loop with stunning economy. The *loss* (cross-entropy, Section 2) and the *model* (softmax, this section) are two faces of one coin: minimizing cross-entropy over the maximum-entropy family is precisely fitting the Lagrange multipliers so the model's expected features match the data's. And the gradient is the famous $\nabla_{\text{logit}} = q_\theta - p$ — "predicted minus true" — which we verify numerically below against a finite-difference gradient.
 
-    > [Cover & Thomas Ch 12](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) derives the exponential family from maxent; [MacKay Ch 39–41](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) treats logistic regression as a probabilistic model.
+    > [Cover & Thomas Ch 12](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) derives the exponential family from maxent; [MacKay Ch 39–41](https://www.inference.org.uk/itprnn/book.pdf) treats logistic regression as a probabilistic model.
     """)
     return
 

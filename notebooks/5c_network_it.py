@@ -46,8 +46,8 @@ def _(mo):
 
     Two features make these regions interesting and hard. First, they are typically **convex** — you can always time-share between two operating points by using one code for a fraction $\alpha$ of the block and the other for $1-\alpha$, achieving any convex combination. Second, the achievability proofs use clever new ideas (random binning, superposition coding, successive cancellation) that go well beyond the single-user random-coding argument. We will not prove the theorems, but we will *see* the regions and verify their corner points.
 
-    > [Cover & Thomas Ch 15](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the standard textbook treatment of network information theory.
-    > [Yeung](file:///C:/Users/landa/info-theory-course/textbooks/Yeung.pdf) develops the same material with a network-coding lens.
+    > [Cover & Thomas Ch 15](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the standard textbook treatment of network information theory.
+    > [Yeung](https://iest2.ie.cuhk.edu.hk/~whyeung/post/draft2.pdf) develops the same material with a network-coding lens.
     """)
     return
 
@@ -72,8 +72,8 @@ def _(mo):
 
     Both corners have total rate $H(X) + H(Y|X) = H(X,Y) = H(Y) + H(X|Y)$ — the chain rule, reappearing as the diagonal facet. The miracle is the *non-corner* operating points: encoder 2 can go *below* $H(Y)$, all the way down to $H(Y|X)$, even though it never sees $X$. The trick is **random binning** — encoder 2 hashes its sequence into one of $2^{nR_2}$ bins, and the decoder uses the received $X$ (which is jointly typical with $Y$) to disambiguate which sequence in the bin was sent. With high probability only one bin member is jointly typical with $X$, so the decode succeeds.
 
-    > [Cover & Thomas Ch 15.4](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) proves Slepian–Wolf via random binning and joint typicality.
-    > [Csiszár & Körner Ch 13](file:///C:/Users/landa/info-theory-course/textbooks/CsiszarKorner.pdf) gives the method-of-types proof for the same region.
+    > [Cover & Thomas Ch 15.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) proves Slepian–Wolf via random binning and joint typicality.
+    > [Csiszár & Körner Ch 13](https://www.cambridge.org/core/books/information-theory/contents/EE0A80439BEAC23B499A71942AFF7B34) gives the method-of-types proof for the same region.
     """)
     return
 
@@ -332,8 +332,8 @@ def _(mo):
 
     A clean concrete case is the **binary erasure MAC** or, even simpler, the **binary adder channel**: $Y = X_1 + X_2 \in \{0,1,2\}$ with no noise. With each $X_i$ uniform Bernoulli, $I(X_1;Y|X_2) = 1$ bit (knowing $X_2$, the output reveals $X_1$ exactly), and the sum bound is $I(X_1,X_2;Y) = H(Y) = 1.5$ bits. So two users can push a *combined* 1.5 bits/use through a binary channel — more than either could alone, less than the 2 bits they would get on separate wires. The demo computes this region for a noisy adder channel.
 
-    > [Cover & Thomas Ch 15.3](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) derives the MAC capacity region and the successive-cancellation corners.
-    > [Csiszár & Körner Ch 14](file:///C:/Users/landa/info-theory-course/textbooks/CsiszarKorner.pdf) treats multi-terminal channels via the method of types.
+    > [Cover & Thomas Ch 15.3](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) derives the MAC capacity region and the successive-cancellation corners.
+    > [Csiszár & Körner Ch 14](https://www.cambridge.org/core/books/information-theory/contents/EE0A80439BEAC23B499A71942AFF7B34) treats multi-terminal channels via the method of types.
     """)
     return
 
@@ -472,8 +472,8 @@ def _(mo):
 
     The deep payoff: superposition coding *beats time-sharing*. You can serve both receivers simultaneously, at rates outside the triangle you would get by simply splitting time between them. The demo below traces the degraded-broadcast region and overlays the time-sharing line so you can see superposition coding strictly win.
 
-    > [Cover & Thomas Ch 15.6](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) covers the degraded broadcast channel and superposition coding.
-    > [Yeung](file:///C:/Users/landa/info-theory-course/textbooks/Yeung.pdf) places these regions in the broader multi-terminal landscape.
+    > [Cover & Thomas Ch 15.6](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) covers the degraded broadcast channel and superposition coding.
+    > [Yeung](https://iest2.ie.cuhk.edu.hk/~whyeung/post/draft2.pdf) places these regions in the broader multi-terminal landscape.
     """)
     return
 

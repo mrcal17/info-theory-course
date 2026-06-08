@@ -50,10 +50,10 @@ def _(mo):
     The next cell defines the catalogue and prints a summary so you can see the shape of the data. After that come the **filter widgets** — pick a Part and a type, and the table updates live. Everything is driven off this one list, exactly the way a real reference tool would be.
 
     > This module synthesizes the whole course. For the source texts behind any single entry, follow that entry's home module; the four anchors are
-    > [MacKay](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf),
-    > [Stone](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf),
-    > [Cover & Thomas](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf), and
-    > [Polyanskiy & Wu](file:///C:/Users/landa/info-theory-course/textbooks/PolyanskiyWu.pdf).
+    > [MacKay](https://www.inference.org.uk/itprnn/book.pdf),
+    > [Stone](https://arxiv.org/pdf/1802.05968),
+    > [Cover & Thomas](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X), and
+    > [Polyanskiy & Wu](https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf).
     """)
     return
 

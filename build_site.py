@@ -16,6 +16,15 @@ os.chdir(os.path.dirname(__file__))
 DOCS_DIR = "docs"
 NOTEBOOKS_DIR = "notebooks"
 
+
+def prune_copied_instruction_files():
+    removed = 0
+    for path in glob.glob(os.path.join(DOCS_DIR, "**", "CLAUDE.md"), recursive=True):
+        os.remove(path)
+        removed += 1
+    if removed:
+        print(f"Pruned {removed} copied CLAUDE.md files")
+
 # Clean docs
 if os.path.exists(DOCS_DIR):
     shutil.rmtree(DOCS_DIR)
@@ -139,6 +148,8 @@ if os.path.exists(home_idx):
 for html_file in glob.glob("*.html"):
     shutil.copy2(html_file, os.path.join(DOCS_DIR, html_file))
     print(f"Copied {html_file} to docs/")
+
+prune_copied_instruction_files()
 
 # Copy .nojekyll to root (prevents GitHub from processing with Jekyll)
 nojekyll = os.path.join(DOCS_DIR, ".nojekyll")

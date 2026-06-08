@@ -48,8 +48,8 @@ def _(mo):
 
     **Why the difference?** A discrete entropy counts the average bits to *exactly* identify an outcome. A continuous outcome has infinite precision, so identifying it exactly takes infinitely many bits. If you quantize $X$ into bins of width $\Delta$, the discrete entropy of the quantized variable is approximately $h(X) - \log_2 \Delta$ — it blows up as $\Delta \to 0$. Differential entropy is what is *left over* after you subtract that infinite $-\log_2\Delta$ baseline. It measures uncertainty **relative to a unit of measurement**, which is exactly why it can go negative and why it shifts when you rescale $X$.
 
-    > [Cover & Thomas Ch 8.1](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) defines differential entropy and works the quantization argument carefully.
-    > [Stone Ch 5](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) gives the gentle continuous-entropy picture.
+    > [Cover & Thomas Ch 8.1](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) defines differential entropy and works the quantization argument carefully.
+    > [Stone Ch 5](https://arxiv.org/pdf/1802.05968) gives the gentle continuous-entropy picture.
     """)
     return
 
@@ -120,7 +120,7 @@ def _(mo):
     - On the *transmit* side: with a power (variance) budget, the input that packs in the most information is Gaussian. So optimal codewords look like Gaussian noise.
     - On the *receive* side: Gaussian noise is the *worst* noise for a given power — it destroys the most information. Nature being adversarial in exactly this way is what makes "$\tfrac12\log_2(1+\mathrm{SNR})$" both a hard ceiling and an achievable one.
 
-    > [Cover & Thomas Ch 8.6](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) proves the maximum-entropy property; [Stone Ch 6](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) motivates it for the Gaussian channel.
+    > [Cover & Thomas Ch 8.6](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) proves the maximum-entropy property; [Stone Ch 6](https://arxiv.org/pdf/1802.05968) motivates it for the Gaussian channel.
     """)
     return
 
@@ -193,7 +193,7 @@ def _(mo):
 
     **A worked number.** At $\mathrm{SNR} = 7$ (about $8.5$ dB): $C = \tfrac12\log_2(8) = \tfrac12\cdot 3 = 1.5$ bits per use. At $\mathrm{SNR} = 1$ (signal equals noise, $0$ dB): $C = \tfrac12\log_2 2 = 0.5$ bits per use.
 
-    > [Cover & Thomas Ch 9.1](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the canonical derivation; [MacKay Ch 11](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) ties it to real modems and the Gaussian channel intuition.
+    > [Cover & Thomas Ch 9.1](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the canonical derivation; [MacKay Ch 11](https://www.inference.org.uk/itprnn/book.pdf) ties it to real modems and the Gaussian channel intuition.
     """)
     return
 
@@ -247,7 +247,7 @@ def _(mo):
 
     Drag the slider below to set SNR (in dB) and watch the capacity ride up the $\tfrac12\log_2(1+\mathrm{SNR})$ curve. This is your first required widget.
 
-    > [Stone Ch 7](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) develops Shannon–Hartley and the bandwidth/power tradeoff intuitively; [Cover & Thomas Ch 9.3](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) covers the band-limited channel.
+    > [Stone Ch 7](https://arxiv.org/pdf/1802.05968) develops Shannon–Hartley and the bandwidth/power tradeoff intuitively; [Cover & Thomas Ch 9.3](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) covers the band-limited channel.
     """)
     return
 
@@ -320,7 +320,7 @@ def _(mo):
 
     **A worked example.** Two channels, $N = (1, 3)$, budget $P = 4$. If both are active, the water level satisfies $(\mu-1) + (\mu-3) = 4 \Rightarrow \mu = 4$. Both stay non-negative, so $P_1 = 3$, $P_2 = 1$ — the quieter channel gets three times the power, and capacity is $\tfrac12\log_2(1+3/1) + \tfrac12\log_2(1+1/3) = 1.0 + 0.2075 = 1.2075$ bits/use.
 
-    > [Cover & Thomas Ch 9.4](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) derives water-filling via the KKT conditions; [MacKay Ch 11](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) and [Stone Ch 7](file:///C:/Users/landa/info-theory-course/textbooks/Stone.pdf) give the parallel-channel picture.
+    > [Cover & Thomas Ch 9.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) derives water-filling via the KKT conditions; [MacKay Ch 11](https://www.inference.org.uk/itprnn/book.pdf) and [Stone Ch 7](https://arxiv.org/pdf/1802.05968) give the parallel-channel picture.
     """)
     return
 

@@ -53,7 +53,7 @@ def _(mo):
 
     So the *best possible* relevance is $I(X;Y)$, and the only question is how many bits of $X$ you must pay to approach it. That trade-off — relevance versus rate — is the entire subject.
 
-    > [Tishby, Pereira & Bialek (1999), *The Information Bottleneck Method*](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the founding paper; the rate-distortion connection in [Cover & Thomas Ch 10](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the right backdrop.
+    > [Tishby, Pereira & Bialek (1999), *The Information Bottleneck Method*](https://arxiv.org/abs/physics/0004057) is the founding paper; the rate-distortion connection in [Cover & Thomas Ch 10](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the right backdrop.
     """)
     return
 
@@ -119,7 +119,7 @@ def _(mo):
 
     Sweeping $\beta$ from $0$ to $\infty$ traces a curve in the $\big(I(X;T),\, I(T;Y)\big)$ plane: the **information curve** (or information *plane*). It is concave and monotone, it lies under the line $I(T;Y) = I(X;T)$ (you cannot keep more relevant bits than total bits) and under the ceiling $I(T;Y) = I(X;Y)$, and **$\beta$ is exactly the slope of this curve** at each point — the marginal relevant-bits-per-bit you buy by loosening the bottleneck. This is the precise analogue of the rate-distortion curve $R(D)$ from 5A, with $\beta$ playing the role of the inverse temperature $1/T$ and $-I(T;Y)$ playing the role of distortion.
 
-    > [Tishby et al. (1999)](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) derives the functional; compare the $R(D)$ Lagrangian in [Cover & Thomas §10.3–10.4](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf).
+    > [Tishby et al. (1999)](https://arxiv.org/abs/physics/0004057) derives the functional; compare the $R(D)$ Lagrangian in [Cover & Thomas §10.3–10.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X).
     """)
     return
 
@@ -148,7 +148,7 @@ def _(mo):
 
     Like Blahut–Arimoto it is alternating minimization of a single convex-in-each-block functional, so each step cannot increase $\mathcal{L}_{\text{IB}}$. (Unlike capacity, the full IB objective is *not* jointly convex, so different inits can land in different local optima — but for small problems it is very well behaved.) The cell below implements it from scratch and verifies the limiting behavior in $\beta$.
 
-    > [Tishby et al. (1999)](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) §IV derives these; the Blahut–Arimoto parallel is in [Cover & Thomas §10.8](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf).
+    > [Tishby et al. (1999)](https://arxiv.org/abs/physics/0004057) §IV derives these; the Blahut–Arimoto parallel is in [Cover & Thomas §10.8](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X).
     """)
     return
 
@@ -373,7 +373,7 @@ def _(mo):
 
     It is a gorgeous narrative: SGD as an entropy-driven compressor, generalization as bottlenecking. The toy below mimics the qualitative shape — a fast rise followed by a leftward compression drift — so you can see what "two phases in the information plane" looks like as a trajectory.
 
-    > [Shwartz-Ziv & Tishby (2017), *Opening the Black Box of DNNs via Information*](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the trajectory paper; [Tishby & Zaslavsky (2015), *Deep Learning and the IB Principle*](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) sets it up.
+    > [Shwartz-Ziv & Tishby (2017), *Opening the Black Box of DNNs via Information*](https://arxiv.org/abs/1703.00810) is the trajectory paper; [Tishby & Zaslavsky (2015), *Deep Learning and the IB Principle*](https://arxiv.org/abs/1503.02406) sets it up.
     """)
     return
 
@@ -459,7 +459,7 @@ def _(mo):
 
     The honest summary: **the IB is a beautiful, correct optimization principle for designing representations, and a genuinely useful objective to train against** (Section 7). Whether ordinary SGD *spontaneously* implements IB compression, and whether that compression *causes* generalization, remains contested and is sensitive to architecture and to how you estimate mutual information in high dimensions. Hold both ideas at once: the IB as a *design principle* is solid; the IB as a *descriptive theory of what SGD does* is debated.
 
-    > [Saxe et al. (2018)](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) is the rebuttal; read it alongside [Shwartz-Ziv & Tishby (2017)](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf) and judge for yourself.
+    > [Saxe et al. (2018)](https://openreview.net/forum?id=ry_WPG-A-) is the rebuttal; read it alongside [Shwartz-Ziv & Tishby (2017)](https://arxiv.org/abs/1703.00810) and judge for yourself.
     """)
     return
 
@@ -537,7 +537,7 @@ def _(mo):
 
     The numpy cell below builds a tiny self-contained VIB on a 2-class toy problem: a linear stochastic Gaussian encoder, a linear softmax classifier head, reparameterized sampling, and the analytic Gaussian-to-unit-Gaussian KL — trained by manual gradient descent. Watch the prediction loss and the rate (KL) both reported, and watch test accuracy as you would in any classifier.
 
-    > [Alemi, Fischer, Dillon & Murphy (2017), *Deep Variational Information Bottleneck*](file:///C:/Users/landa/info-theory-course/textbooks/CoverThomas.pdf); the variational-bound machinery mirrors the VAE ELBO of [MacKay Ch 33](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf).
+    > [Alemi, Fischer, Dillon & Murphy (2017), *Deep Variational Information Bottleneck*](https://arxiv.org/abs/1612.00410); the variational-bound machinery mirrors the VAE ELBO of [MacKay Ch 33](https://www.inference.org.uk/itprnn/book.pdf).
     """)
     return
 

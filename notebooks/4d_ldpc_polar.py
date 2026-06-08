@@ -49,8 +49,8 @@ def _(mo):
 
     The word **low-density** in *LDPC* is the whole game: $H$ is **sparse** — each check touches only a handful of bits ($d_c$ of them), each bit only a handful of checks ($d_v$). A *regular* $(d_v, d_c)$ LDPC code has those degrees constant. Sparsity is what makes the local message updates cheap and, crucially, what makes the graph *locally tree-like*, which is the property the whole convergence theory leans on.
 
-    > [MacKay Ch 47](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) introduces LDPC codes and Tanner graphs — MacKay co-rediscovered these codes in the 1990s.
-    > [Richardson & Urbanke Ch 2-3](file:///C:/Users/landa/info-theory-course/textbooks/RichardsonUrbanke.pdf) is the definitive modern treatment of graphs, ensembles, and message passing.
+    > [MacKay Ch 47](https://www.inference.org.uk/itprnn/book.pdf) introduces LDPC codes and Tanner graphs — MacKay co-rediscovered these codes in the 1990s.
+    > [Richardson & Urbanke Ch 2-3](https://documents.epfl.ch/groups/i/ip/ipg/www/2010-2011/Statistical_Physics_for_Communication_and_Computer_Science/mct-new.pdf) is the definitive modern treatment of graphs, ensembles, and message passing.
     """)
     return
 
@@ -136,8 +136,8 @@ def _(mo):
 
     The widget below is a live peeling decoder on the $(7,4)$ Hamming Tanner graph. Toggle which bits are erased and step the decoder; watch erasures get resolved one check at a time, or watch it jam on a stopping set.
 
-    > [MacKay Ch 47.3](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) walks through erasure decoding on the BEC.
-    > [Richardson & Urbanke Ch 3.2](file:///C:/Users/landa/info-theory-course/textbooks/RichardsonUrbanke.pdf) formalises stopping sets and the peeling decoder.
+    > [MacKay Ch 47.3](https://www.inference.org.uk/itprnn/book.pdf) walks through erasure decoding on the BEC.
+    > [Richardson & Urbanke Ch 3.2](https://documents.epfl.ch/groups/i/ip/ipg/www/2010-2011/Statistical_Physics_for_Communication_and_Computer_Science/mct-new.pdf) formalises stopping sets and the peeling decoder.
     """)
     return
 
@@ -270,8 +270,8 @@ def _(mo):
 
     The threshold is the headline number for an LDPC ensemble — its practical "capacity." For a good irregular ensemble it can sit within a thousandth of the Shannon limit $\epsilon^\* \to 1 - R$ (capacity of the BEC is $1-\epsilon$, so a rate-$R$ code can hope for $\epsilon^\* \le 1-R$). The widget lets you pick $(d_v, d_c)$ and an $\epsilon$ and watch the recursion either crash to zero or jam at a fixed point.
 
-    > [Richardson & Urbanke Ch 3-4](file:///C:/Users/landa/info-theory-course/textbooks/RichardsonUrbanke.pdf) is the home of density evolution, thresholds, and EXIT charts.
-    > [MacKay Ch 47](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) gives the intuition for thresholds via the same recursion.
+    > [Richardson & Urbanke Ch 3-4](https://documents.epfl.ch/groups/i/ip/ipg/www/2010-2011/Statistical_Physics_for_Communication_and_Computer_Science/mct-new.pdf) is the home of density evolution, thresholds, and EXIT charts.
+    > [MacKay Ch 47](https://www.inference.org.uk/itprnn/book.pdf) gives the intuition for thresholds via the same recursion.
     """)
     return
 
@@ -379,7 +379,7 @@ def _(mo):
 
     On the BEC the EXIT functions are exactly the density-evolution maps in disguise (extrinsic information $= 1 -$ erasure probability), so we can draw a faithful chart from the same recursion. Watch the tunnel: open and wide below threshold, pinched shut above it. Designing a great LDPC code is literally **curve-fitting** — choosing a *mixture* of variable and check degrees so the two curves hug each other with a hair-thin tunnel, squeezing the threshold up against capacity.
 
-    > [Richardson & Urbanke Ch 4](file:///C:/Users/landa/info-theory-course/textbooks/RichardsonUrbanke.pdf) develops EXIT charts and the matching condition for capacity-achieving design.
+    > [Richardson & Urbanke Ch 4](https://documents.epfl.ch/groups/i/ip/ipg/www/2010-2011/Statistical_Physics_for_Communication_and_Computer_Science/mct-new.pdf) develops EXIT charts and the matching condition for capacity-achieving design.
     """)
     return
 
@@ -484,8 +484,8 @@ def _(mo):
 
     The widget grows the **polarization tree** to a depth you choose and shows the synthetic erasure parameters fanning out toward 0 (perfect) and 1 (useless) — the polarization happening before your eyes.
 
-    > [Arıkan's polar-codes paper](file:///C:/Users/landa/info-theory-course/textbooks/RichardsonUrbanke.pdf) (2009) is the original; the recursive $z^\pm$ map is its BEC special case.
-    > [MacKay Ch 48-50](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) covers the broader landscape of capacity-approaching codes.
+    > [Arıkan's polar-codes paper](https://arxiv.org/abs/0807.3917) (2009) is the original; the recursive $z^\pm$ map is its BEC special case.
+    > [MacKay Ch 48-50](https://www.inference.org.uk/itprnn/book.pdf) covers the broader landscape of capacity-approaching codes.
     """)
     return
 
@@ -588,8 +588,8 @@ def _(mo):
 
     The demo below runs an LT encoder/decoder over the BEC and measures the **overhead**: how many droplets beyond $k$ you actually needed.
 
-    > [MacKay Ch 50](file:///C:/Users/landa/info-theory-course/textbooks/MacKay.pdf) introduces fountain codes and the LT degree distribution — MacKay championed them early.
-    > [Richardson & Urbanke Ch 3-4](file:///C:/Users/landa/info-theory-course/textbooks/RichardsonUrbanke.pdf) covers the peeling analysis that LT decoding shares with the BEC erasure decoder.
+    > [MacKay Ch 50](https://www.inference.org.uk/itprnn/book.pdf) introduces fountain codes and the LT degree distribution — MacKay championed them early.
+    > [Richardson & Urbanke Ch 3-4](https://documents.epfl.ch/groups/i/ip/ipg/www/2010-2011/Statistical_Physics_for_Communication_and_Computer_Science/mct-new.pdf) covers the peeling analysis that LT decoding shares with the BEC erasure decoder.
     """)
     return
 
