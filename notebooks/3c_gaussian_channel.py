@@ -109,11 +109,11 @@ def _(mo):
 
     And for *any* density $f$ with variance $\sigma^2$, $h(f) \le \tfrac12\log_2(2\pi e\,\sigma^2)$, with equality **iff** $f$ is that Gaussian.
 
-    **Why it is true (the one-line idea).** Let $\phi$ be the Gaussian with variance $\sigma^2$ and let $f$ be any other density with the same variance. Relative entropy is non-negative: $D(f \,\|\, \phi) \ge 0$. Expand it:
+    **Why it is true (the one-line idea).** Let $\phi$ be the Gaussian with the **same mean and variance** as $f$. Relative entropy is non-negative: $D(f \,\|\, \phi) \ge 0$. Expand it:
 
     $$0 \le D(f\,\|\,\phi) = -h(f) - \int f(x)\,\log_2 \phi(x)\,dx.$$
 
-    Because $\log_2\phi(x)$ is a quadratic in $x$, the integral $\int f \log_2\phi$ depends on $f$ **only through its mean and variance** — which match $\phi$'s. So that integral equals $\int \phi\log_2\phi = -h(\phi)$. Substituting gives $0 \le -h(f) + h(\phi)$, i.e. $h(f) \le h(\phi)$. Done. The Gaussian wins because it is the maximum-entropy distribution under a second-moment (energy) constraint — a fact you will meet again in Module 6A.
+    Because $\log_2\phi(x)$ is a quadratic in $x$, the integral $\int f \log_2\phi$ depends on $f$ **only through its mean and variance** — which match $\phi$'s by construction. So that integral equals $\int \phi\log_2\phi = -h(\phi)$. Substituting gives $0 \le -h(f) + h(\phi)$, i.e. $h(f) \le h(\phi)$. Done. The Gaussian wins because it is the maximum-entropy distribution under a second-moment (energy) constraint — a fact you will meet again in Module 6A.
 
     **Why this is the crux.** Two consequences fall out immediately:
 
@@ -243,7 +243,7 @@ def _(mo):
 
       $$C_\infty = \lim_{W\to\infty} C = \frac{P}{N_0}\,\log_2 e = \frac{P}{N_0 \ln 2}.$$
 
-      This is the deep-space / spread-spectrum regime: you have all the bandwidth you want but almost no power, and the best you can ever do is set by $P/N_0$ alone. It is also where the famous minimum energy-per-bit, $E_b/N_0 = \ln 2 \approx -1.59$ dB, comes from.
+      This is the deep-space / spread-spectrum regime: you have all the bandwidth you want but almost no power, and the best you can ever do is set by $P/N_0$ alone. It is also where the famous minimum energy-per-bit comes from: $E_b/N_0 = \ln 2$ as a **linear ratio**, which is $10\log_{10}(\ln 2) \approx -1.59$ dB.
 
     Drag the slider below to set SNR (in dB) and watch the capacity ride up the $\tfrac12\log_2(1+\mathrm{SNR})$ curve. This is your first required widget.
 
@@ -463,7 +463,10 @@ def _(wf_n0, wf_n1, wf_n2, wf_n3, wf_n4, wf_power):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/WaterFilling.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/WaterFilling.gif", alt="Animation of water-filling power allocation across parallel Gaussian channels"),
+        mo.md("*Animation: water-filling allocates power to the best parallel Gaussian channels first.*"),
+    ])
     return
 
 
@@ -511,6 +514,17 @@ def _(mo):
     Implement `gaussian_diff_entropy(sigma2)` returning the differential entropy $h = \tfrac12\log_2(2\pi e\,\sigma^2)$ in bits. Confirm that it is $0$ when $2\pi e\,\sigma^2 = 1$ (i.e. $\sigma^2 = 1/(2\pi e)$) and that it can be negative for smaller variances.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -539,6 +553,17 @@ def _(mo):
     Write `awgn_capacity(snr_db)` that takes the SNR in **decibels**, converts to a linear ratio ($\mathrm{SNR}_{\text{lin}} = 10^{\,\mathrm{dB}/10}$), and returns the capacity $\tfrac12\log_2(1+\mathrm{SNR}_{\text{lin}})$ in bits per use. Verify $0$ dB gives $0.5$ bits and about $8.45$ dB (SNR $=7$) gives $1.5$ bits.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -565,6 +590,17 @@ def _(mo):
     ### Exercise 3: Verify the Maximum-Entropy Property
 
     Sample from a non-Gaussian density (say a Laplace), rescale it to variance $1$, and estimate its differential entropy from a histogram. Confirm it falls *below* the Gaussian ceiling $\tfrac12\log_2(2\pi e)$ for variance $1$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -601,6 +637,17 @@ def _(mo):
     ### Exercise 4: Water-Filling Allocator
 
     Implement `water_fill(noise, power)` returning the optimal power allocation $P_i = (\mu - N_i)^+$ and the water level $\mu$. A robust approach: sort the noise, then for each candidate number of active channels $m$ compute $\mu = (P + \sum_{i<m} N_i)/m$ and accept the largest $m$ for which all active channels stay non-negative. Test it on $N=(1,3)$, $P=4$ (expect allocation $(3,1)$, $\mu=4$).
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -641,6 +688,17 @@ def _(mo):
     Using your `water_fill` from Exercise 4, compare the total capacity $\sum_i \tfrac12\log_2(1+P_i/N_i)$ of the water-filling allocation against splitting the budget *equally* across channels. Confirm water-filling is at least as good (and strictly better when the noise levels differ). Use $N=(0.1, 0.3, 0.8, 1.5, 4.0)$ and $P=2$.
 
     When you are done, run this notebook from the command line with `marimo run` to interact with both widgets live.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

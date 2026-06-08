@@ -18,7 +18,7 @@ def _(mo):
     > *"It is the theory that decides what can be observed."*
     > — Albert Einstein
 
-    You have reached the end of the course, and you now carry a surprising amount of machinery: a dozen theorems, a dozen algorithms, and a handful of channel codes, all stitched together by three core measures — entropy, relative entropy, and mutual information. This module is **not** a lecture. It is the map you wished you had on day one.
+    You have reached the end of the course, and you now carry a surprising amount of machinery: two dozen theorems and principles, a dozen algorithms, and a handful of channel codes, all stitched together by three core measures — entropy, relative entropy, and mutual information. This module is **not** a lecture. It is the map you wished you had on day one.
 
     Everything you built across Parts 0 through 6 is gathered here as a single **filterable catalogue**. Each entry has a name, a one-line statement, the key formula, the intuition in a sentence, and — most importantly — its *connections* to the rest of the course. Information theory is not a list of facts; it is a tightly woven web, and the connections are where understanding lives. The source coding theorem and the channel coding theorem are mirror images. Huffman, arithmetic, and LZ are three answers to the same question. KL divergence shows up in compression, in hypothesis testing, in the ELBO, and in the loss function of every classifier you will ever train.
 
@@ -137,8 +137,8 @@ def _():
             {
                 "name": "Asymptotic equipartition property (AEP)",
                 "part": 1, "module": "1C", "kind": "theorem",
-                "statement": "Long sequences are almost surely 'typical' and nearly equiprobable.",
-                "formula": r"-\tfrac1n\log_2 p(X_1,\dots,X_n) \to H(X)",
+                "statement": "For an i.i.d. source, long sequences are typical with high probability and nearly equiprobable.",
+                "formula": r"-\tfrac1n\log_2 p(X^n) \to H(X)\ \text{in probability}",
                 "intuition": "About 2^{nH} sequences carry essentially all the probability — the rest are negligible.",
                 "connects": "The combinatorial heart of source coding (2A) and channel coding (3B).",
             },
@@ -656,7 +656,18 @@ def _(mo):
     mo.md(r"""
     ### Exercise 1: Filter the Catalogue
 
-    Write `query(catalogue, part=None, kind=None)` that returns the list of entries matching the given Part and/or type. `None` means "don't filter on that field." Test that filtering Part 2 returns the four source codes plus the source-coding theorems, and that `kind="ml"` returns the Part 6 entries.
+    Write `query(catalogue, part=None, kind=None)` that returns the list of entries matching the given Part and/or type. `None` means "don't filter on that field." In this mini-catalogue, test that filtering Part 2 returns the single Huffman entry and that `kind="ml"` returns the Part 6 entry.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -694,6 +705,17 @@ def _(mo):
     Write `count_by_part(catalogue)` returning a dict mapping each Part number to how many entries it has. This is the bar chart you would put at the top of a study dashboard.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -724,6 +746,17 @@ def _(mo):
     ### Exercise 3: Keyword Search
 
     Write `search(catalogue, term)` that returns the names of all entries whose `name` or `statement` contains `term` (case-insensitive). This is the search bar of the study tool.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -758,6 +791,17 @@ def _(mo):
     Each entry's `connects` string mentions other modules like `(1B)` or `(3A)`. Write `connection_degree(entry)` that counts how many distinct module references appear in the `connects` text. Use it to find the most-connected hub idea.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -789,6 +833,17 @@ def _(mo):
     ### Exercise 5: Build a Flashcard Deck
 
     Turn the catalogue into a study deck. Write `make_flashcards(catalogue)` that returns a list of `(front, back)` tuples where the front is the entry name and the back is `"<statement>  |  <formula>"`. Then print one random card to quiz yourself. (This is the very last code cell — note the module-level run guard after the return.)
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

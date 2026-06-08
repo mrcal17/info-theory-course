@@ -222,6 +222,12 @@ def _(mo):
 
     The asymmetry has teeth in machine learning. Minimizing $D(p\|q)$ over $q$ (the cross-entropy / maximum-likelihood direction) is **mean-seeking** / *zero-avoiding*: $q$ is punished hard wherever $p$ has mass but $q$ does not, so $q$ spreads to cover all of $p$. Minimizing $D(q\|p)$ over $q$ (the variational-inference direction, as in VAEs) is **mode-seeking** / *zero-forcing*: $q$ is punished where it has mass but $p$ does not, so $q$ collapses onto a single mode. Same two distributions, opposite behavior — purely from the order.
 
+    **But small KL still means close distributions.** Pinsker's inequality says, for logs base 2,
+
+    $$D(p\|q) \;\ge\; \frac{1}{2\ln 2}\,\|p-q\|_1^2.$$
+
+    So KL is not a metric, but if $D(p\|q)\to 0$ then the total-variation distance also goes to zero. This is the bridge 5B uses when error exponents stated in KL become statements about distributions actually becoming indistinguishable.
+
     Drag the sliders to set two categorical distributions $P$ and $Q$ over three symbols and watch $D(P\|Q)$ and $D(Q\|P)$ diverge.
     """)
     return
@@ -452,7 +458,10 @@ def _(rho):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/MutualInfoDiagram.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/MutualInfoDiagram.gif", alt="Animation of overlapping information circles illustrating mutual information"),
+        mo.md("*Animation: overlapping information circles show the shared information $I(X;Y)$.*"),
+    ])
     return
 
 
@@ -568,6 +577,17 @@ def _(mo):
     Implement `kl(p, q)` returning bits. Handle the $p(x)=0$ convention ($0\log\tfrac{0}{q}=0$) by skipping those terms. Verify it is asymmetric and that $D(p\|p)=0$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -596,6 +616,17 @@ def _(mo):
     ### Exercise 2: Cross-Entropy Equals H + KL
 
     Compute the cross-entropy $H(p,q)=-\sum_x p(x)\log_2 q(x)$ directly, and separately compute $H(p)+D(p\|q)$. Confirm they match for a few $(p,q)$ pairs.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -638,6 +669,17 @@ def _(mo):
     Given a joint distribution `joint` (rows = X, cols = Y), compute the marginals, then $I(X;Y)$ two ways — as $H(X)+H(Y)-H(X,Y)$ and as $D(p(x,y)\,\|\,p(x)p(y))$ — and confirm they agree.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -678,6 +720,17 @@ def _(mo):
     A decision tree picks the split that maximizes information gain $I(Y;\text{split}) = H(Y) - H(Y\mid \text{split})$. Given the label distribution and how a candidate feature partitions the data, compute the information gain in bits.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -706,7 +759,7 @@ def _():
         info_gain = ...
 
         # print(f"H(Y)={H_parent:.4f}, H(Y|split)={H_children:.4f}, gain={info_gain:.4f}")
-        # expect gain ~ 0.2911 bits
+        # expect gain ~ 0.4200 bits
 
     _run()
     return
@@ -718,6 +771,17 @@ def _(mo):
     ### Exercise 5: The Data-Processing Inequality
 
     Build a Markov chain $X \to Y \to Z$ where $X$ is a uniform bit, $Y = X$ through a binary symmetric channel with flip probability $e_1$, and $Z = Y$ through a second BSC with flip $e_2$. Compute $I(X;Y)$ and $I(X;Z)$ and check that $I(X;Z)\le I(X;Y)$ for several noise levels.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

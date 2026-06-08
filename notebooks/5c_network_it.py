@@ -251,7 +251,7 @@ def _(mo):
 
     Talk is cheap; let us actually *do* the impossible-sounding thing. We will compress $Y$ at a rate **below** its own entropy $H(Y)$, with an encoder that never sees $X$, and still decode it perfectly using the side information $X$ at the decoder. The mechanism is **random binning**.
 
-    Setup: $X$ and $Y$ are length-$n$ correlated binary sequences. The decoder already has $X$ (this is the "side-information" version of Slepian–Wolf, also called the **Wyner–Ziv** setting in its lossless form). The encoder for $Y$ does *not* see $X$. It assigns every possible $y$-sequence a random **syndrome** (bin label) of $m$ bits via a fixed random linear hash $H y \bmod 2$. It transmits only those $m$ bits — a rate of $m/n$ bits per symbol.
+    Setup: $X$ and $Y$ are length-$n$ correlated binary sequences. The decoder already has $X$ (the side-information version of **Slepian–Wolf**). The encoder for $Y$ does *not* see $X$. It assigns every possible $y$-sequence a random **syndrome** (bin label) of $m$ bits via a fixed random linear hash $H y \bmod 2$. It transmits only those $m$ bits — a rate of $m/n$ bits per symbol. The lossy analogue of this side-information problem is **Wyner–Ziv** coding, which 5A's rate-distortion language prepares you for.
 
     To decode, the receiver lists all $y'$ consistent with the received syndrome ($H y' = s$) and picks the one **closest in Hamming distance to $X$** (the most jointly typical with the side information). Because $X$ and $Y$ differ in only about $H(Y|X)\cdot n$ positions, as long as $m/n > H(Y|X)$ the correct $y$ is, with high probability, the unique near-$X$ member of its bin. We sweep the rate and watch the decoding error fall off a cliff exactly at the conditional entropy.
     """)
@@ -466,9 +466,9 @@ def _(mo):
 
     The idea is to *stack* messages by power and reliability. The transmitter sends a coarse, high-power "cloud center" carrying the weak receiver's message — robust enough that *everyone* can decode it — and superimposes on it a fine, low-power "satellite" cloud carrying the strong receiver's message. The strong receiver first decodes the coarse message, subtracts it, and then resolves the fine detail buried underneath. The weak receiver simply treats the fine layer as noise. For a binary-symmetric broadcast channel with crossover probabilities $p_1 < p_2$ (receiver 1 is the cleaner channel), splitting the input with a parameter $\beta \in [0, \tfrac12]$ gives the achievable region
 
-    $$R_2 \le H_2(p_2 \star \beta) - H_2(p_2), \qquad R_1 \le H_2(\beta \star p_1) - H_2(p_1),$$
+    $$R_2 \le 1 - H_2(p_2 \star \beta), \qquad R_1 \le H_2(\beta \star p_1) - H_2(p_1),$$
 
-    where $a \star b = a(1-b) + b(1-a)$ is binary convolution and $H_2$ is the binary entropy function. Sweeping $\beta$ traces the trade-off curve: at $\beta = \tfrac12$ all power goes to the weak user; at $\beta \to 0$ all power goes to the strong user.
+    where $a \star b = a(1-b) + b(1-a)$ is binary convolution and $H_2$ is the binary entropy function. Sweeping $\beta$ traces the trade-off curve: at $\beta \to 0$ all rate goes to the weak user; at $\beta = \tfrac12$ all rate goes to the strong user.
 
     The deep payoff: superposition coding *beats time-sharing*. You can serve both receivers simultaneously, at rates outside the triangle you would get by simply splitting time between them. The demo below traces the degraded-broadcast region and overlays the time-sharing line so you can see superposition coding strictly win.
 
@@ -482,6 +482,10 @@ def _(mo):
 def _():
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+        import matplotlib.pyplot as plt
 
         def _h2(q):
             q = np.asarray(q, dtype=float)
@@ -497,15 +501,16 @@ def _():
         _p2 = 0.20
         print(f"Degraded broadcast channel: BSC(p1={_p1}) [strong], BSC(p2={_p2}) [weak]\n")
 
-        _betas = np.linspace(0.0, 0.5, 9)
+        _betas = np.linspace(0.0, 0.5, 101)
         print("  beta     R1 (strong)    R2 (weak)     R1+R2")
         _R1s, _R2s = [], []
-        for _b in _betas:
-            _R2 = float(_h2(np.array([_star(_p2, _b)]))[0] - _h2(np.array([_p2]))[0])
+        for _idx, _b in enumerate(_betas):
+            _R2 = float(1 - _h2(np.array([_star(_p2, _b)]))[0])
             _R1 = float(_h2(np.array([_star(_b, _p1)]))[0] - _h2(np.array([_p1]))[0])
             _R1s.append(_R1)
             _R2s.append(_R2)
-            print(f"  {_b:.3f}    {_R1:.4f}        {_R2:.4f}       {_R1 + _R2:.4f}")
+            if _idx % 25 == 0:
+                print(f"  {_b:.3f}    {_R1:.4f}        {_R2:.4f}       {_R1 + _R2:.4f}")
 
         _R1_solo = float(1 - _h2(np.array([_p1]))[0])
         _R2_solo = float(1 - _h2(np.array([_p2]))[0])
@@ -522,8 +527,22 @@ def _():
         print(f"  while time-sharing to that same R1 gives only R2={_ts_R2[_best]:.4f}.")
         print(f"  Superposition coding beats time-sharing by {_gain[_best]:.4f} bits at the same R1.")
 
-    _run()
-    return
+        _fig, _ax = plt.subplots(figsize=(6.8, 4.4))
+        _ax.plot(_R1_arr, _R2_arr, color="steelblue", lw=2.2, label="superposition boundary")
+        _ax.plot([0, _R1_solo], [_R2_solo, 0], color="black", ls="--", lw=1.4, label="time-sharing")
+        _ax.fill_between(_R1_arr, 0, _R2_arr, color="steelblue", alpha=0.12)
+        _ax.scatter([_R1_arr[_best]], [_R2_arr[_best]], color="crimson", s=60, zorder=5)
+        _ax.set_xlabel("R1: strong receiver (bits/use)")
+        _ax.set_ylabel("R2: weak receiver (bits/use)")
+        _ax.set_title("Degraded BSC broadcast region")
+        _ax.set_xlim(0, _R1_solo * 1.03)
+        _ax.set_ylim(0, _R2_solo * 1.08)
+        _ax.grid(True, alpha=0.3)
+        _ax.legend(fontsize=8, loc="upper right")
+        plt.tight_layout()
+        return _fig
+
+    return _run()
 
 
 @app.cell
@@ -587,6 +606,17 @@ def _(mo):
     Given a joint distribution `joint` (a 2D array, rows = X, cols = Y), compute the five Slepian–Wolf quantities $H(X)$, $H(Y)$, $H(X,Y)$, $H(X\mid Y)$, $H(Y\mid X)$ in bits, and verify that the two corner points $A=(H(X),H(Y\mid X))$ and $B=(H(X\mid Y),H(Y))$ have the same total rate $H(X,Y)$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -621,7 +651,7 @@ def _():
         # cornerA_total = H_X + H_Y_given_X
         # cornerB_total = H_X_given_Y + H_Y
         # print(np.isclose(cornerA_total, H_XY), np.isclose(cornerB_total, H_XY))
-        # expected: both totals == H(X,Y) (~1.241 bits), both isclose -> True
+        # expected: both totals == H(X,Y) (~1.544 bits), both isclose -> True
 
     _run()
     return
@@ -633,6 +663,17 @@ def _(mo):
     ### Exercise 2: Bits Saved by Exploiting Correlation
 
     For the same kind of joint, compare *naive separate* coding (each source at its own marginal entropy, $H(X)+H(Y)$) against *Slepian–Wolf separate* coding (total $H(X,Y)$). Return the savings, and confirm the savings equal the **mutual information** $I(X;Y)$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -679,6 +720,17 @@ def _(mo):
     Write `make_joint(p, rho)` that returns the $2\times2$ joint for two bits with marginal $P(X{=}1)=P(Y{=}1)=p$ and correlation $\rho$. Use $\mathrm{Cov}=\rho\,p(1-p)$ and $P(1,1)=p^2+\mathrm{Cov}$. Verify the marginals come back as $p$, and that $\rho=0$ gives the independent product while $\rho\to1$ drives $H(X\mid Y)\to0$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -718,6 +770,17 @@ def _(mo):
     ### Exercise 4: Random-Binning Decoder with Side Information
 
     Compress one binary sequence `y` (correlated with side info `x` held at the decoder) below $H(Y)$ using a random linear hash. Encode `y` to a syndrome `s = (H @ y) % 2`; decode by listing all `y'` with `(H @ y') % 2 == s` and returning the one nearest in Hamming distance to `x`. Check that you recover `y` when the rate $m/n$ exceeds $H(Y\mid X)$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -763,6 +826,17 @@ def _(mo):
     For the noiseless binary adder channel $Y=X_1+X_2\in\{0,1,2\}$ with each $X_i$ uniform Bernoulli, compute the three MAC bounds $I(X_1;Y\mid X_2)$, $I(X_2;Y\mid X_1)$, and $I(X_1,X_2;Y)=H(Y)$ in bits, then report the pentagon corners. Confirm the single-user bounds are 1 bit and the sum bound is 1.5 bits.
 
     The very last line of this cell is the module-level run guard — leave it after the `return`.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

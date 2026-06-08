@@ -324,9 +324,9 @@ def _(mo):
 
     **Cyclic codes.** A linear code is *cyclic* if every cyclic shift of a codeword is again a codeword. The magic of cyclicity: identify a length-$n$ vector $(c_0,\dots,c_{n-1})$ with the polynomial $c(x) = c_0 + c_1 x + \cdots + c_{n-1} x^{n-1}$, working modulo $x^n - 1$. Then a cyclic shift is just multiplication by $x$, and the whole code is the set of multiples of a single **generator polynomial** $g(x)$ that divides $x^n - 1$. Encoding becomes one polynomial multiplication; the redundancy is $n - k = \deg g$.
 
-    **BCH codes.** Choose $g(x)$ to have a designed run of consecutive powers of $\alpha$ as roots: $\alpha, \alpha^2, \dots, \alpha^{2t}$. The **BCH bound** then guarantees minimum distance $d \ge 2t + 1$, so the code corrects $t$ errors *by construction* — you design for the error count you want. Binary BCH codes ($\mathrm{GF}(2)$ symbols, $\mathrm{GF}(2^m)$ for the roots) generalize Hamming codes to multiple-error correction and are everywhere in older standards.
+    **BCH codes.** Choose $g(x)$ to have a designed run of consecutive powers of $\alpha$ as roots: $\alpha, \alpha^2, \dots, \alpha^{2t}$. The **BCH bound** then guarantees minimum distance $d \ge 2t + 1$, so the code corrects $t$ errors *by construction* — you design for the error count you want. Binary BCH codes ($\mathrm{GF}(2)$ symbols, $\mathrm{GF}(2^m)$ for the roots) generalize Hamming codes to multiple-error correction and are everywhere in older standards. To build a true binary BCH generator, you take the least common multiple of the minimal polynomials of those roots over $\mathrm{GF}(2)$; the tiny demo below does not implement that extra minimal-polynomial step.
 
-    **The punchline connecting them.** A **Reed-Solomon code is exactly a BCH code whose symbol field and root field are the same** — RS is "BCH with $n = q - 1$." Both are cyclic; both are decoded by the same machinery (syndromes → error-locator polynomial → roots). RS is MDS and works on byte symbols; BCH is binary and slightly suboptimal in distance but very cheap in hardware. The demo below builds a narrow-sense RS generator $g(x) = \prod_{i=1}^{n-k}(x - \alpha^i)$ and confirms it divides $x^n - 1$ — the defining property of a cyclic code.
+    **The punchline connecting them.** A full-length, narrow-sense **Reed-Solomon code is the BCH construction with the symbol field and root field the same** — the common shorthand is "RS is BCH with $n = q - 1$." Shortened RS codes are derived from that full-length parent. Both families are cyclic in this view and are decoded by the same machinery (syndromes → error-locator polynomial → roots). RS is MDS and works on byte symbols; BCH is binary and slightly suboptimal in distance but very cheap in hardware. The demo below builds a narrow-sense RS generator $g(x) = \prod_{i=1}^{n-k}(x - \alpha^i)$ and confirms it divides $x^n - 1$ — the defining property of a cyclic code and the RS special case of the BCH story.
 
     > [Lin & Costello Ch 6](https://openlibrary.org/books/OL3301344M/Error_control_coding) is the standard reference for cyclic and BCH codes, including the BCH bound.
     > [Roth Ch 6](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) treats the cyclic / generator-polynomial structure of RS rigorously.
@@ -640,7 +640,7 @@ def _(mo):
 
     **4. Chien search + Forney.** Find the roots of $\Lambda$ by trying every field element (the **Chien search**) — their inverses are the error positions. Then **Forney's formula** computes each error *magnitude* from $\Lambda$ and the syndromes. XOR those magnitudes into the flagged positions and you are done.
 
-    The demo below carries out **stage 1** concretely — it shows syndromes vanishing for a clean codeword and lighting up the moment an error is injected, which is the trigger the full decoder keys on. (We implement the easy, fully-worked erasure path live in Sections 6–7; the full error-locator solve is sketched here to keep the module focused.)
+    The demo below carries out **stage 1** concretely for the cyclic, narrow-sense RS construction from Section 5 — the one whose designed roots are powers of $\alpha$. That is a different coordinate system from the earlier "evaluate at points $1,2,\dots,n$" erasure demo, but it is the standard setting for syndromes. It shows syndromes vanishing for a clean cyclic codeword and lighting up the moment an error is injected, which is the trigger the full decoder keys on. (We implement the easy, fully-worked erasure path live in Sections 6–7; the full error-locator solve is sketched here to keep the module focused.)
 
     > [Lin & Costello Ch 6–7](https://openlibrary.org/books/OL3301344M/Error_control_coding) gives the complete Berlekamp-Massey + Chien + Forney decoder.
     > [Roth Ch 6](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) presents the key equation and decoding from the algebraic side.
@@ -768,6 +768,17 @@ def _(mo):
     Implement multiplication in $\mathrm{GF}(2^m)$ via "shift-and-XOR with reduction." Multiply $a$ and $b$ bit by bit (XOR a shifted copy of $a$ whenever a bit of $b$ is set), and whenever $a$ overflows past bit $m$, XOR the reduction polynomial back in. Use $\mathrm{GF}(2^4)$ with $p(x)=x^4+x+1$ (poly bits $10011$).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -794,6 +805,17 @@ def _(mo):
     ### Exercise 2: Powers of $\alpha$ Sweep the Field
 
     Using your `gf_mul`, generate the powers $\alpha^0, \alpha^1, \dots, \alpha^{14}$ with $\alpha = 2$ in $\mathrm{GF}(2^4)$. Collect them in a list and confirm the 15 powers are exactly the 15 nonzero elements (so $\alpha$ is *primitive*).
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -830,6 +852,17 @@ def _(mo):
     ### Exercise 3: Polynomial Evaluation (Horner) and RS Encoding
 
     Implement `poly_eval(coeffs, x)` using Horner's rule over $\mathrm{GF}(2^4)$ (multiply-accumulate from the highest coefficient down, with field multiply and XOR for add). Then encode the message $[5, 2, 6]$ as an RS codeword: its evaluations at points $1, 2, \dots, 7$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -870,6 +903,17 @@ def _(mo):
     ### Exercise 4: Erasure Repair by Lagrange Interpolation
 
     Given $k$ surviving (point, value) pairs from a degree-$(k-1)$ polynomial, reconstruct its value at any query point via Lagrange interpolation **over the field** (field multiply, XOR for add/subtract, and a field inverse for the division). You are handed `gf_inv`. Recover the value the polynomial would take at an erased point.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -914,6 +958,17 @@ def _(mo):
     ### Exercise 5: Full Erasure-Channel Round Trip
 
     Tie it together. Encode a length-$k=4$ message into an $n=8$ RS codeword over $\mathrm{GF}(2^4)$, erase any 4 positions (the maximum, $n-k$), then recover the *whole* codeword by interpolating from the 4 survivors and re-evaluating at the erased points. Assert exact recovery. (Reuse `gf_mul`, `poly_eval`, `lagrange_eval` patterns from above.)
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

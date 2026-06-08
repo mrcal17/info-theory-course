@@ -143,6 +143,8 @@ def _(mo):
 
     > *Where it all pays off: the information-theoretic spine of modern ML.*
 
+    6A and 6B are the gentle entry points from KL and cross-entropy. 6C uses the rate-distortion viewpoint from 5A, 6D is the estimator capstone, and 6E combines 5A with the Gaussian-channel/continuous-entropy ideas from 3C.
+
     | # | Module | Topics | Interactive Elements |
     |---|--------|--------|---------------------|
     | 6A | [Cross-Entropy, KL & Maximum Entropy](/info-theory-course/6a_crossentropy_maxent/) | Cross-entropy as loss, MLE = min KL, label smoothing, maxent, softmax-as-maxent | Loss-surface explorer, maxent under constraints |
@@ -179,28 +181,26 @@ def _(mo):
        │
     1A (Entropy) → 1B (KL & MI) → 1C (Entropy Rate / AEP)
        │               │                 │
-       ▼               ▼                 ▼
-    2A (Source Coding Thm)         3A (Channel Capacity)
-       │                                 │
-    2B (Huffman) → 2C (Arithmetic) → 2D (LZ)   3B (Noisy-Channel Coding Thm)
-                                                 │
-                                          3C (Gaussian Channel / water-filling)
-                                                 │
-                    ┌────────────────────────────┼────────────────────┐
-                    ▼                             ▼                     ▼
-             4A (Linear/Hamming)           5A (Rate-Distortion)   (3B feeds 4*)
-                    │                             │
-          4B (RS/BCH)  4C (Conv/Turbo)      5B (IT & Statistics)
-                    │       │                     │
-                    └──→ 4D (LDPC/Polar)     5C (Network IT)
-                                                  │
-              1B + 5A ────────────────────────────┘
-                    │
-              6A (CE/KL/MaxEnt) → 6B (MDL)
-                    │                │
-              6C (Info Bottleneck) → 6D (Neural MI) → 6E (Rate-Distortion & VAEs)
-                    │
-              all modules ───────────→ 7A (Study Guide)
+       ▼               │                 ▼
+    2A (Source Coding) │          3A (Channel Capacity) → 3B (Coding Thm) → 3C (Gaussian)
+       │               │                  │                    │                 │
+    2B (Huffman) → 2C (Arithmetic) → 2D (LZ)                   │                 │
+                       │                                       │                 │
+                       ├────────────→ 4A (Linear/Hamming) → 4C (Conv/Turbo) ────┐
+                       │                         │                              │
+                       │                  4B (RS/BCH, optional)                 │
+                       │                                                        ▼
+                       └──────────────────────────────────────────────→ 4D (LDPC/Polar)
+
+    5A (Rate-Distortion) → 5B (IT & Statistics, advanced) → 5C (Network IT, advanced)
+       │                         │
+       ├──────────────→ 6C (Info Bottleneck) → 6D (Neural MI)
+       └──────┐                                      │
+              └──────────────→ 6E (Rate-Distortion & VAEs)
+
+    1B (KL & MI) → 6A (CE/KL/MaxEnt) → 6B (MDL)
+
+    all modules ─────────────────────────────────────────────→ 7A (Study Guide)
     ```
 
     ---

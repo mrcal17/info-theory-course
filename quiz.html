@@ -148,6 +148,9 @@
   .fc-rate .fc-hard { background: #7f1d1d; color: #fca5a5; }
   .fc-rate .fc-ok { background: #854d0e; color: #fde68a; }
   .fc-rate .fc-easy { background: #064e3b; color: #a7f3d0; }
+  .fc-meta { margin-top: 0.8rem; text-align: center; font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+  .study-links { text-align: center; margin-top: 0.9rem; font-size: 0.85rem; color: var(--muted); }
+  .study-links a { border-bottom: 1px solid var(--border); }
 
   /* Summary */
   .summary { text-align: center; padding: 2rem; }
@@ -205,13 +208,112 @@ const MODES = [
 ];
 const MOD_URL = {"0A": "0a_orientation", "1A": "1a_entropy", "1B": "1b_kl_mutual_information", "1C": "1c_aep", "2A": "2a_source_coding", "2B": "2b_huffman", "2C": "2c_arithmetic", "2D": "2d_lempel_ziv", "3A": "3a_channel_capacity", "3B": "3b_channel_coding_theorem", "3C": "3c_gaussian_channel", "4A": "4a_linear_codes", "4B": "4b_reed_solomon", "4C": "4c_convolutional_turbo", "4D": "4d_ldpc_polar", "5A": "5a_rate_distortion", "5B": "5b_it_statistics", "5C": "5c_network_it", "6A": "6a_crossentropy_maxent", "6B": "6b_mdl", "6C": "6c_information_bottleneck", "6D": "6d_neural_mi", "6E": "6e_vae_compression"};
 
+const WRONG_BY_CATEGORY = {
+  Algorithm: "This choice changes the algorithmic step being tested.",
+  Concept: "This confuses a nearby idea with the definition or theorem being tested.",
+  "Core idea": "This misses the core mechanism that makes the method work.",
+  "Code length": "This gives the wrong length accounting or rounds at the wrong level.",
+  Equation: "This has the wrong identity, sign, conditioning, or unit conversion.",
+  Intuition: "This conflicts with the operational story behind the result.",
+  Optimality: "This overstates or understates the theorem's guarantee.",
+  "Range coding": "This describes a different coding implementation.",
+  "Vs Huffman": "This misses the integer-length limitation that separates the methods.",
+  Weakness: "This is not the actual limitation or failure mode in the example.",
+};
+const FC_SRS_KEY = "info-theory-course-flash-srs-v1";
+
+function attr(value){
+  return String(value).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+}
+function slugify(value){
+  return String(value||"").toLowerCase()
+    .replace(/&amp;/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+}
+function texBody(value){
+  return String(value)
+    .replace(/log₂/g,"\\log_2")
+    .replace(/𝒳/g,"\\mathcal{X}")
+    .replace(/·/g,"\\,")
+    .replace(/−/g,"-")
+    .replace(/→/g,"\\to")
+    .replace(/≤/g,"\\le")
+    .replace(/≥/g,"\\ge")
+    .replace(/≈/g,"\\approx");
+}
+function fmt(value){
+  return String(value)
+    .replace(/2\^\(([^)]+)\)/g,(_,body)=>`$2^{${texBody(body)}}$`)
+    .replace(/(^|[^$])2\^\{([^}]+)\}/g,(_,prefix,body)=>`${prefix}$2^{${texBody(body)}}$`)
+    .replace(/H₂\(([^)]+)\)/g,(_,body)=>`$H_2(${texBody(body)})$`)
+    .replace(/log₂\|𝒳\|/g,"$\\log_2 |\\mathcal{X}|$")
+    .replace(/log₂/g,"$\\log_2$")
+    .replace(/D\(([^)]*?)‖([^)]*?)\)/g,(_,left,right)=>`$D(${texBody(left)}\\Vert ${texBody(right)})$`);
+}
+function defaultWrongNote(q){
+  return WRONG_BY_CATEGORY[q.c] || "This choice conflicts with the module result named in the correct answer.";
+}
+function hydrateStudyMetadata(){
+  for(const q of Q){
+    q.s ||= q.c || "Review";
+    if(!q.w){
+      q.w=Object.fromEntries(q.d.map(d=>[d, defaultWrongNote(q)]));
+    }
+  }
+  for(const q of TF){
+    q.s ||= "True / False";
+  }
+  for(const m of MATCH){
+    m.s ||= m.t || "Matching";
+  }
+  for(const c of FC){
+    c.s ||= "Flashcards";
+  }
+}
+function loadSrs(){
+  try{return JSON.parse(localStorage.getItem(FC_SRS_KEY)||"{}");}
+  catch{return {};}
+}
+function saveSrs(state){
+  localStorage.setItem(FC_SRS_KEY,JSON.stringify(state));
+}
+function cardId(card){
+  return `${card.m}:${card.front}`;
+}
+function dueInText(ms){
+  if(ms<=0)return "due now";
+  const mins=Math.ceil(ms/60000);
+  if(mins<90)return `due in ${mins} min`;
+  const hours=Math.ceil(ms/3600000);
+  if(hours<48)return `due in ${hours} hr`;
+  return `due in ${Math.ceil(ms/86400000)} days`;
+}
+function scheduleCard(card,rating){
+  const state=loadSrs();
+  const id=cardId(card);
+  const prev=state[id]||{ease:2.3,intervalDays:0,reps:0};
+  let ease=prev.ease, intervalDays=prev.intervalDays;
+  if(rating==="hard"){
+    ease=Math.max(1.3,ease-0.2);
+    intervalDays=intervalDays?Math.max(10/1440,intervalDays*0.45):10/1440;
+  }else if(rating==="ok"){
+    intervalDays=intervalDays?Math.max(1,intervalDays*ease):1;
+  }else{
+    ease=Math.min(3.0,ease+0.15);
+    intervalDays=intervalDays?Math.max(3,intervalDays*(ease+0.5)):4;
+  }
+  state[id]={ease,intervalDays,reps:prev.reps+1,due:Date.now()+intervalDays*86400000,last:Date.now(),rating};
+  saveSrs(state);
+}
+hydrateStudyMetadata();
+
 function reviewLink(mod, anchor){
   const slug=MOD_URL[mod];
   if(!slug)return "";
   const modInfo=PARTS.flatMap(p=>p.mods).find(m=>m.id===mod);
   const name=modInfo?modInfo.name:mod;
-  const hash=anchor?"#"+anchor:"";
-  return `<a class="review-link" href="./${slug}/${hash}" target="_blank">Review: ${mod} — ${name}</a>`;
+  const hash=anchor?"#"+slugify(anchor):"";
+  const label=anchor?` (${fmt(anchor)})`:"";
+  return `<a class="review-link" href="./${slug}/${hash}" target="_blank">Review: ${mod} — ${name}${label}</a>`;
 }
 
 // ===================== STATE =====================
@@ -254,6 +356,7 @@ function showHome(){
   }
   h+=`</div>`;
   h+=`<div style="text-align:center"><button class="all-btn" id="allBtn" style="max-width:400px">Play All Parts (${Q.length+TF.length} questions)</button></div>`;
+  h+=`<div class="study-links"><a href="./flashcards/">Downloadable markdown flashcard decks</a></div>`;
   h+=`</div>`;
   app.innerHTML=h;
 
@@ -312,9 +415,9 @@ function nextQuiz(){
   const qTotalAll=qTotal+qQueue.length;
   let h=`<div class="game-wrap">${header()}
     <div class="score-bar"><div class="sb-left"><span class="sc">Score: ${qScore}/${qTotal-1}</span><span class="st">Streak: ${gStreak}</span></div><div class="sb-right">${qTotal}/${qTotalAll}</div></div>
-    <div class="q-card"><div class="q-cat">${q.m} — ${q.c}</div><div class="q-text">${q.q}</div>
-    <div class="opts">${opts.map(o=>`<button class="opt" data-a="${o===q.a?1:0}">${o}</button>`).join("")}</div>
-    <div class="expl" id="expl">${q.x}</div></div><button class="nxt" id="nxt">Next</button></div>`;
+    <div class="q-card"><div class="q-cat">${q.m} — ${q.c}</div><div class="q-text">${fmt(q.q)}</div>
+    <div class="opts">${opts.map(o=>`<button class="opt" data-a="${o===q.a?1:0}" data-key="${attr(o)}">${fmt(o)}</button>`).join("")}</div>
+    <div class="expl" id="expl">${fmt(q.x)}</div></div><button class="nxt" id="nxt">Next</button></div>`;
   app.innerHTML=h;bindBack();renderMath();
   app.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
     if(b.classList.contains("lk"))return;
@@ -324,17 +427,17 @@ function nextQuiz(){
     if(b.dataset.a==="1"){
       qScore++;gScore++;gStreak++;if(gStreak>gBest)gBest=gStreak;
       expl.classList.add("right");
-      expl.innerHTML=`<div class="expl-label green">Correct</div>${q.x}<br>${rl}`;
+      expl.innerHTML=`<div class="expl-label green">Correct</div>${fmt(q.x)}<br>${rl}`;
     } else {
       b.classList.add("no");gStreak=0;
-      const pickedKey=b.textContent, pickedHtml=b.innerHTML;
-      const wrongNote=q.w&&q.w[pickedKey]?`<div class="expl-picked">${pickedHtml} — ${q.w[pickedKey]}</div>`
+      const pickedKey=b.dataset.key, pickedHtml=b.innerHTML;
+      const wrongNote=q.w&&q.w[pickedKey]?`<div class="expl-picked">${pickedHtml} — ${fmt(q.w[pickedKey])}</div>`
         :`<div class="expl-picked">You picked: ${pickedHtml}</div>`;
       expl.classList.add("wrong");
       expl.innerHTML=`<div class="expl-label red">Incorrect</div>
-        <div class="expl-correct">Correct answer: ${q.a}</div>
+        <div class="expl-correct">Correct answer: ${fmt(q.a)}</div>
         ${wrongNote}
-        <div class="expl-why">${q.x}</div>${rl}`;
+        <div class="expl-why">${fmt(q.x)}</div>${rl}`;
     }
     updateStats();$(".sc").textContent=`Score: ${qScore}/${qTotal}`;$(".st").textContent=`Streak: ${gStreak}`;
     expl.classList.add("show");renderMath();$("#nxt").classList.add("show");
@@ -351,9 +454,9 @@ function nextTF(){
   const tfTotalAll=tfTotal+tfQueue.length;
   let h=`<div class="game-wrap">${header()}
     <div class="score-bar"><div class="sb-left"><span class="sc">Score: ${tfScore}/${tfTotal-1}</span><span class="st">Streak: ${gStreak}</span></div><div class="sb-right">${tfTotal}/${tfTotalAll}</div></div>
-    <div class="q-card"><div class="q-cat">${q.m} — True or False</div><div class="q-text">${q.q}</div>
+    <div class="q-card"><div class="q-cat">${q.m} — True or False</div><div class="q-text">${fmt(q.q)}</div>
     <div class="opts"><button class="opt" data-v="true">True</button><button class="opt" data-v="false">False</button></div>
-    <div class="expl" id="expl">${q.x}</div></div><button class="nxt" id="nxt">Next</button></div>`;
+    <div class="expl" id="expl">${fmt(q.x)}</div></div><button class="nxt" id="nxt">Next</button></div>`;
   app.innerHTML=h;bindBack();renderMath();
   app.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
     if(b.classList.contains("lk"))return;
@@ -364,12 +467,12 @@ function nextTF(){
     if(picked===q.a){
       tfScore++;gScore++;gStreak++;if(gStreak>gBest)gBest=gStreak;
       expl.classList.add("right");
-      expl.innerHTML=`<div class="expl-label green">Correct — ${q.a?"True":"False"}</div>${q.x}<br>${rl}`;
+      expl.innerHTML=`<div class="expl-label green">Correct — ${q.a?"True":"False"}</div>${fmt(q.x)}<br>${rl}`;
     } else {
       b.classList.add("no");gStreak=0;
       expl.classList.add("wrong");
       expl.innerHTML=`<div class="expl-label red">Incorrect — The answer is ${q.a?"True":"False"}</div>
-        <div class="expl-why">${q.x}</div>${rl}`;
+        <div class="expl-why">${fmt(q.x)}</div>${rl}`;
     }
     updateStats();$(".sc").textContent=`Score: ${tfScore}/${tfTotal}`;$(".st").textContent=`Streak: ${gStreak}`;
     expl.classList.add("show");renderMath();$("#nxt").classList.add("show");
@@ -389,9 +492,9 @@ function nextMatch(){
   let sel=null,matched=0;
   let h=`<div class="game-wrap">${header()}
     <div class="score-bar"><div class="sb-left"><span class="sc">Matched: 0/${m.p.length}</span></div><div class="sb-right">Set ${mSets}/${mTotalAll}</div></div>
-    <div class="q-card"><div class="q-cat">${m.m} — Matching</div><div class="q-text">${m.t}</div>
-    <div class="match-grid"><div class="match-col"><h4>Terms</h4>${ls.map(l=>`<div class="mi2 left" data-v="${l}">${l}</div>`).join("")}</div>
-    <div class="match-col"><h4>Definitions</h4>${rs.map(r=>`<div class="mi2 right" data-v="${r}">${r}</div>`).join("")}</div></div></div>
+    <div class="q-card"><div class="q-cat">${m.m} — Matching</div><div class="q-text">${fmt(m.t)}</div>
+    <div class="match-grid"><div class="match-col"><h4>Terms</h4>${ls.map(l=>`<div class="mi2 left" data-v="${attr(l)}">${fmt(l)}</div>`).join("")}</div>
+    <div class="match-col"><h4>Definitions</h4>${rs.map(r=>`<div class="mi2 right" data-v="${attr(r)}">${fmt(r)}</div>`).join("")}</div></div></div>
     <button class="nxt" id="nxt">Next Set</button></div>`;
   app.innerHTML=h;bindBack();renderMath();
   app.querySelectorAll(".mi2").forEach(el=>el.addEventListener("click",()=>{
@@ -426,9 +529,9 @@ function nextSpeed(){
   let h=`<div class="game-wrap">${header()}
     <div class="score-bar"><div class="sb-left"><span class="sc">Score: ${sScore}/${sTotal-1}</span><span class="st">Streak: ${gStreak}</span></div><div class="sb-right">${sTotal}/${sTotalAll}</div></div>
     <div class="timer-bar"><div class="timer-fill" id="tf2" style="width:100%"></div></div>
-    <div class="q-card"><div class="q-cat">${q.m} — ${q.c} (SPEED)</div><div class="q-text">${q.q}</div>
-    <div class="opts">${opts.map(o=>`<button class="opt" data-a="${o===q.a?1:0}">${o}</button>`).join("")}</div>
-    <div class="expl" id="expl">${q.x}</div></div><button class="nxt" id="nxt">Next</button></div>`;
+    <div class="q-card"><div class="q-cat">${q.m} — ${q.c} (SPEED)</div><div class="q-text">${fmt(q.q)}</div>
+    <div class="opts">${opts.map(o=>`<button class="opt" data-a="${o===q.a?1:0}" data-key="${attr(o)}">${fmt(o)}</button>`).join("")}</div>
+    <div class="expl" id="expl">${fmt(q.x)}</div></div><button class="nxt" id="nxt">Next</button></div>`;
   app.innerHTML=h;bindBack();renderMath();
   const fill=$("#tf2");
   clearInterval(timer);
@@ -440,8 +543,8 @@ function nextSpeed(){
       $(".sc").textContent=`Score: ${sScore}/${sTotal}`;$(".st").textContent=`Streak: ${gStreak}`;
       const expl=$("#expl");expl.classList.add("wrong");
       expl.innerHTML=`<div class="expl-label red">Time's up!</div>
-        <div class="expl-correct">Correct answer: ${q.a}</div>
-        <div class="expl-why">${q.x}</div>${reviewLink(q.m,q.s)}`;
+        <div class="expl-correct">Correct answer: ${fmt(q.a)}</div>
+        <div class="expl-why">${fmt(q.x)}</div>${reviewLink(q.m,q.s)}`;
       expl.classList.add("show");renderMath();$("#nxt").classList.add("show");}
   },40);
   app.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
@@ -452,17 +555,17 @@ function nextSpeed(){
     if(b.dataset.a==="1"){
       sScore++;gScore++;gStreak++;if(gStreak>gBest)gBest=gStreak;
       expl.classList.add("right");
-      expl.innerHTML=`<div class="expl-label green">Correct</div>${q.x}<br>${rl}`;
+      expl.innerHTML=`<div class="expl-label green">Correct</div>${fmt(q.x)}<br>${rl}`;
     } else {
       b.classList.add("no");gStreak=0;
-      const pickedKey=b.textContent, pickedHtml=b.innerHTML;
-      const wrongNote=q.w&&q.w[pickedKey]?`<div class="expl-picked">${pickedHtml} — ${q.w[pickedKey]}</div>`
+      const pickedKey=b.dataset.key, pickedHtml=b.innerHTML;
+      const wrongNote=q.w&&q.w[pickedKey]?`<div class="expl-picked">${pickedHtml} — ${fmt(q.w[pickedKey])}</div>`
         :`<div class="expl-picked">You picked: ${pickedHtml}</div>`;
       expl.classList.add("wrong");
       expl.innerHTML=`<div class="expl-label red">Incorrect</div>
-        <div class="expl-correct">Correct answer: ${q.a}</div>
+        <div class="expl-correct">Correct answer: ${fmt(q.a)}</div>
         ${wrongNote}
-        <div class="expl-why">${q.x}</div>${rl}`;
+        <div class="expl-why">${fmt(q.x)}</div>${rl}`;
     }
     updateStats();$(".sc").textContent=`Score: ${sScore}/${sTotal}`;$(".st").textContent=`Streak: ${gStreak}`;
     expl.classList.add("show");renderMath();$("#nxt").classList.add("show");
@@ -472,26 +575,52 @@ function nextSpeed(){
 
 // ===================== FLASHCARDS =====================
 function runFlash(){
-  const cards=shuffle(getPool(FC));
+  const allCards=shuffle(getPool(FC));
+  const state=loadSrs();
+  const now=Date.now();
+  const due=allCards.filter(c=>(state[cardId(c)]?.due||0)<=now);
+  const studyingDue=due.length>0;
+  const cards=shuffle(studyingDue?due:allCards);
   let idx=0;
+  function finish(){
+    const mode=studyingDue?"due cards":"study-ahead cards";
+    app.innerHTML=`<div class="game-wrap"><div class="summary">
+      <h2>Flashcard Round Complete</h2>
+      <div class="detail">Scheduled ${cards.length} ${mode}.</div>
+      <div class="detail">Deck size: ${allCards.length} cards</div>
+      <button class="restart" id="retry">Study Again</button>
+      <button class="restart" id="goHome">Home</button>
+    </div></div>`;
+    $("#retry").addEventListener("click",runFlash);
+    $("#goHome").addEventListener("click",()=>{curPart=null;curMod=null;used.clear();showHome();});
+  }
+  function rateAndAdvance(rating){
+    scheduleCard(cards[idx],rating);
+    if(idx<cards.length-1){idx++;render();}
+    else finish();
+  }
   function render(){
     const c=cards[idx];
+    const fresh=loadSrs()[cardId(c)];
+    const nextDue=fresh?.due?dueInText(fresh.due-Date.now()):"not scheduled yet";
+    const status=studyingDue?`${cards.length} due cards in this round`:"No cards are due; studying ahead";
     let h=`<div class="game-wrap">${header()}
-      <div class="score-bar"><div class="sb-left"><span>${curMod||curPart?"Module "+( curMod||"Part "+curPart):"All"}</span></div><div class="sb-right">${cards.length} cards</div></div>
+      <div class="score-bar"><div class="sb-left"><span>${curMod||curPart?"Module "+( curMod||"Part "+curPart):"All"}</span></div><div class="sb-right">${status}</div></div>
       <div class="fc-card" id="fcCard"><div class="fc-inner">
-        <div class="fc-front"><div class="fc-label">${c.m}</div><div class="fc-q">${c.front}</div><div class="fc-hint">Click to flip</div></div>
-        <div class="fc-back"><div class="fc-a">${c.back.replace(/\n/g,"<br>")}</div></div>
+        <div class="fc-front"><div class="fc-label">${c.m}</div><div class="fc-q">${fmt(c.front)}</div><div class="fc-hint">Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">${fmt(c.back).replace(/\n/g,"<br>")}</div></div>
       </div></div>
       <div class="fc-nav"><button id="fcPrev">&larr; Prev</button><div class="fc-count">${idx+1} / ${cards.length}</div><button id="fcNext">Next &rarr;</button></div>
       <div class="fc-rate"><button class="fc-hard" id="fcH">Hard</button><button class="fc-ok" id="fcO">OK</button><button class="fc-easy" id="fcE">Easy</button></div>
+      <div class="fc-meta">Rate the card to schedule it. Current card: ${nextDue}.</div>
     </div>`;
     app.innerHTML=h;bindBack();renderMath();
     $("#fcCard").addEventListener("click",()=>$("#fcCard").classList.toggle("flipped"));
     $("#fcPrev").addEventListener("click",()=>{if(idx>0){idx--;render();}});
     $("#fcNext").addEventListener("click",()=>{if(idx<cards.length-1){idx++;render();}});
-    $("#fcH").addEventListener("click",()=>{/* could track */if(idx<cards.length-1){idx++;render();}});
-    $("#fcO").addEventListener("click",()=>{if(idx<cards.length-1){idx++;render();}});
-    $("#fcE").addEventListener("click",()=>{if(idx<cards.length-1){idx++;render();}});
+    $("#fcH").addEventListener("click",()=>rateAndAdvance("hard"));
+    $("#fcO").addEventListener("click",()=>rateAndAdvance("ok"));
+    $("#fcE").addEventListener("click",()=>rateAndAdvance("easy"));
   }
   render();
 }
@@ -504,8 +633,8 @@ function runSheet(){
     const qs=pool(Q,mid),tfs=pool(TF,mid);
     if(!qs.length&&!tfs.length)continue;
     const items=[];
-    qs.forEach(q=>items.push(`<strong>${q.c}:</strong> ${q.q} &rarr; ${q.a}`));
-    tfs.forEach(q=>items.push(`<strong>T/F:</strong> ${q.q} &rarr; <em>${q.a?"True":"False"}</em> — ${q.x}`));
+    qs.forEach(q=>items.push(`<strong>${q.c}:</strong> ${fmt(q.q)} &rarr; ${fmt(q.a)}`));
+    tfs.forEach(q=>items.push(`<strong>T/F:</strong> ${fmt(q.q)} &rarr; <em>${q.a?"True":"False"}</em> — ${fmt(q.x)}`));
     const modInfo=PARTS.flatMap(p=>p.mods).find(m=>m.id===mid);
     sections.push({id:mid,name:modInfo?.name||mid,items});
   }

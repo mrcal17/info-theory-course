@@ -74,12 +74,12 @@ def _(mo):
 
     **Worked example — five symbols.** Take $p = (0.40,\ 0.20,\ 0.15,\ 0.15,\ 0.10)$ for symbols $A,B,C,D,E$.
 
-    - Merge the two smallest, $E(0.10)$ and $D(0.15)$ → node $(DE,\ 0.25)$. Pool: $A\,0.40,\ B\,0.20,\ C\,0.15,\ DE\,0.25$.
-    - Merge the two smallest, $C(0.15)$ and $B(0.20)$ → node $(BC,\ 0.35)$. Pool: $A\,0.40,\ DE\,0.25,\ BC\,0.35$.
-    - Merge $DE(0.25)$ and $BC(0.35)$ → node $(BCDE,\ 0.60)$. Pool: $A\,0.40,\ BCDE\,0.60$.
-    - Merge $A(0.40)$ and $BCDE(0.60)$ → root $(1.0)$. Done.
+    - Merge the two smallest, $E(0.10)$ and $C(0.15)$ → node $(EC,\ 0.25)$. Pool: $A\,0.40,\ B\,0.20,\ D\,0.15,\ EC\,0.25$.
+    - Merge the two smallest, $D(0.15)$ and $B(0.20)$ → node $(DB,\ 0.35)$. Pool: $A\,0.40,\ EC\,0.25,\ DB\,0.35$.
+    - Merge $EC(0.25)$ and $DB(0.35)$ → node $(ECDB,\ 0.60)$. Pool: $A\,0.40,\ ECDB\,0.60$.
+    - Merge $A(0.40)$ and $ECDB(0.60)$ → root $(1.0)$. Done.
 
-    Reading bits off (left $=0$, right $=1$) gives, for instance, $A\!\to\!0$, $B\!\to\!100$… one bit for the common symbol, three bits for the rare ones. The expected length lands at $L = 2.20$ bits versus entropy $H = 2.146$ bits — within $0.054$ bits of the floor. The code below builds exactly this tree and prints the table.
+    Reading bits off (left $=0$, right $=1$) gives, for instance, $A\!\to\!0$, $E\!\to\!100$, $C\!\to\!101$, $D\!\to\!110$, $B\!\to\!111$ — one bit for the common symbol, three bits for the others. The equal $0.15$ tie could be broken another way and produce different codewords with the same lengths. The expected length lands at $L = 2.20$ bits versus entropy $H = 2.146$ bits — within $0.054$ bits of the floor. The code below builds exactly this tree and prints the table.
 
     > [MacKay Ch 5.4](https://www.inference.org.uk/itprnn/book.pdf) walks the same construction with a worked example.
     """)
@@ -484,7 +484,10 @@ def _(text_input):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/HuffmanTree.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/HuffmanTree.gif", alt="Animation of Huffman tree construction by repeatedly merging the least probable symbols"),
+        mo.md("*Animation: Huffman coding repeatedly merges the least probable symbols into a tree.*"),
+    ])
     return
 
 
@@ -652,6 +655,17 @@ def _(mo):
     Implement `huffman(probs)` using a min-heap. Push each symbol as a leaf, then repeatedly pop the two lightest nodes, merge them under a new parent, and push the parent back. Return the root node. Use a tie-breaking counter so the heap never tries to compare two node dicts.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -682,6 +696,17 @@ def _(mo):
     ### Exercise 2: Read Codewords Off the Tree
 
     Walk the tree from Exercise 1 and produce the `{symbol: codeword}` table. Going left appends `'0'`, going right appends `'1'`; record the accumulated string when you reach a leaf (a node whose `sym` is not `None`).
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -715,6 +740,17 @@ def _(mo):
     Given probabilities and the codeword lengths your Huffman code assigns, compute the expected length $L = \sum_i p_i \ell_i$ and the entropy $H$, then report the overhead $L - H$. Confirm it lands in $[0, 1)$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -744,6 +780,17 @@ def _(mo):
     ### Exercise 4: Huffman a String
 
     Put it together. Count character frequencies in a string, build the Huffman code on those counts, and compute the total encoded size in bits. Compare to the naive $8$ bits/char baseline.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -793,6 +840,17 @@ def _(mo):
     For the source $p = (0.9, 0.1)$, build the block distribution over all $2^n$ length-$n$ strings (probabilities multiply for an i.i.d. source), run Huffman, and compute the per-symbol rate $L_n / n$. Show it falls toward $H \approx 0.469$ as $n$ grows.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -828,7 +886,7 @@ def _():
         rate = ...
 
         # expect the rate to decrease toward 0.469 as n increases
-        # n=1: 1.0000, n=2: ~0.645, n=3: ~0.583, n=4: ~0.493 bits/symbol
+        # n=1: 1.0000, n=2: ~0.645, n=3: ~0.533, n=4: ~0.493 bits/symbol
 
     _run()
     return

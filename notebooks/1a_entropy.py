@@ -38,7 +38,7 @@ def _(mo):
 
     The answer is 4 — if you ask well. "Is it ≤ 8?" splits 16 possibilities into 8. "Is it ≤ 4 (within those)?" splits 8 into 4. Then 4 into 2, then 2 into 1. Each good question **halves the uncertainty**, and $16 = 2^4$, so 4 questions suffice.
 
-    That number 4 is not arbitrary. It is $\log_2 16$. The number of yes/no questions — *bits* — needed to pin down one of $N$ equally likely possibilities is $\log_2 N$. A bit is exactly "the amount of information in the answer to one well-posed yes/no question."
+    That number 4 is not arbitrary. It is $\log_2 16$. The number of yes/no questions — *bits* — needed to pin down one of $N$ equally likely possibilities is $\log_2 N$ when $N$ is a power of two; otherwise $\lceil\log_2 N\rceil$ questions always suffice, with some leaves unused. A bit is exactly "the amount of information in the answer to one well-posed yes/no question."
 
     Now flip the framing. Before you ask anything, the answer "it's 11" carries some quantity of information — precisely the uncertainty it resolves. The rarer or more surprising the outcome, the more information learning it gives you. That is the seed of *everything*. Our job in this module is to turn "surprise" into a number.
 
@@ -122,14 +122,14 @@ def _(mo):
 
     $$H(X) = \mathbb{E}[h(X)] = \sum_{x} p(x)\,\log_2 \frac{1}{p(x)} = -\sum_{x} p(x)\,\log_2 p(x)$$
 
-    This is the **entropy** of $X$ — the single most important quantity in the course. Read it as the *average number of bits needed to describe one outcome of $X$*, or equivalently the *average number of well-posed yes/no questions* to identify the outcome. (By convention $0 \log 0 = 0$, since impossible outcomes contribute nothing.)
+    This is the **entropy** of $X$ — the single most important quantity in the course. Read it as the *average number of bits needed to describe one outcome of $X$*. For one-shot yes/no questions, integer code lengths add the familiar $H \le L < H+1$ caveat unless the probabilities are dyadic; with long blocks the average approaches $H$. (By convention $0 \log 0 = 0$, since impossible outcomes contribute nothing.)
 
     **Worked examples.**
 
     - **Fair coin:** $H = -\tfrac12\log_2\tfrac12 - \tfrac12\log_2\tfrac12 = 1$ bit.
     - **Biased coin, $p = 0.9$:** $H = -0.9\log_2 0.9 - 0.1\log_2 0.1 \approx 0.469$ bits. *Less* than 1 — a predictable coin carries less information per flip.
     - **Fair die:** $H = \log_2 6 \approx 2.585$ bits.
-    - **English text:** with real letter frequencies, $H \approx 4.1$ bits per letter — well below the $\log_2 27 \approx 4.75$ bits you would need if all letters (plus space) were equally likely. That gap is *exactly* why text compresses.
+    - **English letters:** with real 26-letter frequencies, $H \approx 4.18$ bits per letter — below the $\log_2 26 \approx 4.70$ bits you would need if all letters were equally likely. That gap is one reason text compresses; spaces and longer-range language structure create much more redundancy.
 
     The code below computes entropy from a probability vector and then measures the entropy of English from letter frequencies.
 
@@ -235,7 +235,10 @@ def _(coin_bias):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/EntropySurprise.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/EntropySurprise.gif", alt="Animation showing rare outcomes carrying more surprise and entropy as average surprise"),
+        mo.md("*Animation: rare outcomes carry more surprise; entropy is the average surprise.*"),
+    ])
     return
 
 
@@ -437,6 +440,17 @@ def _(mo):
     Implement `entropy(p)` returning bits. Handle zero-probability entries (recall $0\log 0 = 0$). Test it on a fair coin (expect 1.0), a fair die (expect $\log_2 6 \approx 2.585$), and a certain outcome (expect 0.0).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -464,6 +478,17 @@ def _(mo):
     ### Exercise 2: Surprisal of a Rare Event
 
     You draw one card from a shuffled 52-card deck. Compute the self-information (in bits) of (a) drawing the ace of spades, and (b) drawing any spade. Which is more surprising, and by how many bits?
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -496,6 +521,17 @@ def _(mo):
     Given a string, estimate its per-character entropy from the empirical character frequencies. Try it on a repetitive string (low entropy) and on a varied one (higher entropy).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -526,6 +562,17 @@ def _(mo):
     Given the joint distribution below, compute $H(X)$, $H(X,Y)$, and $H(Y\mid X)$ directly from their definitions, then verify the chain rule $H(X,Y) = H(X) + H(Y\mid X)$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -535,7 +582,7 @@ def _():
 
         joint = np.array([
             [0.10, 0.20, 0.05],
-            [0.05, 0.30, 0.05],
+            [0.05, 0.35, 0.05],
             [0.05, 0.05, 0.10],
         ])  # rows = X, cols = Y, sums to 1
 
@@ -567,6 +614,17 @@ def _(mo):
     ### Exercise 5: Uniform Maximizes Entropy
 
     Confirm the maximum-entropy property empirically. For an alphabet of size $N=5$, sample many random probability vectors, compute each entropy, and check that none exceeds $\log_2 5$ — and that the closest ones are nearly uniform.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

@@ -154,29 +154,26 @@ Polyanskiy–Wu bridges classical IT to statistical learning. Everything else is
    │
 1A (Entropy) → 1B (KL & MI) → 1C (Entropy Rate / AEP)
    │               │                 │
-   │               │                 └──────────────┐
-   ▼               ▼                                │
-2A (Source Coding Thm)                    3A (Channel Capacity)
-   │                                            │
-2B (Huffman) → 2C (Arithmetic) → 2D (LZ)   3B (Noisy-Channel Coding Thm)
-                                                 │
-                                            3C (Gaussian Channel / water-filling)
-                                                 │
-                          ┌──────────────────────┼───────────────────┐
-                          ▼                       ▼                   ▼
-                   4A (Linear/Hamming)      5A (Rate-Distortion)   (3B feeds 4*)
-                          │                       │
-                4B (RS/BCH)  4C (Conv/Turbo)  5B (IT & Statistics)
-                          │       │               │
-                          └──→ 4D (LDPC/Polar)  5C (Network IT)
-                                                  │
-        1B + 5A ─────────────────────────────────┘
-              │
-        6A (Cross-Entropy/KL/MaxEnt) → 6B (MDL)
-              │                          │
-        6C (Information Bottleneck) → 6D (Neural MI) → 6E (Rate-Distortion & VAEs)
-              │
-        all modules ─────────────→ 7A (Study Guide)
+   ▼               │                 ▼
+2A (Source Coding) │          3A (Channel Capacity) → 3B (Coding Thm) → 3C (Gaussian)
+   │               │                  │                    │                 │
+2B (Huffman) → 2C (Arithmetic) → 2D (LZ)                   │                 │
+                  │                                       │                 │
+                  ├────────────→ 4A (Linear/Hamming) → 4C (Conv/Turbo) ────┐
+                  │                         │                              │
+                  │                  4B (RS/BCH, optional)                 │
+                  │                                                        ▼
+                  └──────────────────────────────────────────────→ 4D (LDPC/Polar)
+
+5A (Rate-Distortion) → 5B (IT & Statistics, advanced) → 5C (Network IT, advanced)
+   │                         │
+   ├──────────────→ 6C (Information Bottleneck) → 6D (Neural MI)
+   └──────┐                                      │
+          └──────────────→ 6E (Rate-Distortion & VAEs)
+
+1B (KL & MI) → 6A (Cross-Entropy/KL/MaxEnt) → 6B (MDL)
+
+all modules ─────────────────────────────────────────────→ 7A (Study Guide)
 ```
 
 ---

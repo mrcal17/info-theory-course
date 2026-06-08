@@ -186,7 +186,7 @@ def _(mo):
     - $p = 1$: $C = 1$ again! A channel that *always* flips is perfectly reliable — just invert the output. Noise you can predict is not noise.
     - The curve is symmetric about $p = \tfrac12$, dipping to zero there and rising to 1 at both ends.
 
-    > [MacKay §9.6](https://www.inference.org.uk/itprnn/book.pdf) and [Cover & Thomas Example 7.1.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) derive $C_{\text{BSC}} = 1 - H_2(p)$.
+    > [MacKay §9.6](https://www.inference.org.uk/itprnn/book.pdf) and [Cover & Thomas §7.1.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) derive $C_{\text{BSC}} = 1 - H_2(p)$.
     """)
     return
 
@@ -427,7 +427,7 @@ def _(mo):
 
     $$d_x = \sum_y Q_{xy}\,\log_2 \frac{\Phi_{x\mid y}}{p(x)}.$$
 
-    Then $\max_x d_x \ge C \ge \sum_x p(x)\, d_x = I(X;Y)$. The gap $\max_x d_x - \min$-over-the-support pins $C$ from both sides, so you know exactly how close you are — no guessing. The solver below implements all of this and prints the squeeze.
+    Then $\max_x d_x \ge C \ge \sum_x p(x)\, d_x = I(X;Y)$. The certificate gap is $\max_x d_x - \sum_x p(x)d_x$; at the optimum all supported inputs have the same $d_x=C$, so the upper and lower bounds meet. The solver below implements all of this and prints the squeeze.
 
     > [Cover & Thomas §10.8](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) proves the convergence; Arimoto (1972) and Blahut (1972) are the originals.
     """)
@@ -662,6 +662,17 @@ def _(mo):
     Given an input distribution `px` and a channel matrix `Q`, compute $I(X;Y)$ in bits. Build the joint $p(x,y) = p(x)\,Q_{xy}$, the output marginal $p(y)$, and sum $p(x,y)\log_2\frac{p(x,y)}{p(x)p(y)}$ over the nonzero entries. Test on a noiseless 2x2 channel with uniform input (expect 1.0).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -695,6 +706,17 @@ def _(mo):
     Implement `bsc_capacity(p)` returning $1 - H_2(p)$ in bits, handling $p\in\{0,1\}$ where $H_2 = 0$. Verify it is symmetric ($C(p) = C(1-p)$), equals 1 at $p=0$, and equals 0 at $p=\tfrac12$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -721,6 +743,17 @@ def _(mo):
     ### Exercise 3: BEC Capacity by Direct Mutual Information
 
     Build the BEC channel matrix for erasure probability $\varepsilon$ (rows = inputs 0,1; cols = outputs 0,1,e), then compute its capacity by maximizing $I(X;Y)$ over inputs — but here just use the uniform input, which is optimal by symmetry. Confirm you get $1 - \varepsilon$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -760,6 +793,17 @@ def _(mo):
     Implement a single Blahut–Arimoto iteration. Given the current input `px` and channel `Q`: (A) form the posterior $\Phi_{x\mid y} = p(x)Q_{xy} / p(y)$, then (B) compute $\log r_x = \sum_y Q_{xy}\log\Phi_{x\mid y}$ and return the new normalized $p(x) \propto r_x$. Run it a few times on a Z-channel and watch `px` drift away from uniform.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -795,6 +839,17 @@ def _(mo):
     ### Exercise 5: Full Capacity Solver with Convergence Bounds
 
     Wrap the step from Exercise 4 into a loop that iterates to convergence, then compute the two-sided certificate $d_x = \sum_y Q_{xy}\log_2\frac{\Phi_{x\mid y}}{p(x)}$ with $C_{\text{lower}} = \sum_x p(x) d_x$ and $C_{\text{upper}} = \max_x d_x$. When the gap is tiny, both equal $C$. Test on a BSC ($p=0.1$, expect $\approx 0.531$) and a noiseless 3x3 (expect $\log_2 3 \approx 1.585$).
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

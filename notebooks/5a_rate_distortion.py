@@ -323,8 +323,10 @@ def _(rd_distortion, rd_param, rd_source):
         _ax.scatter([min(_D, _Dmax)], [_Rop], color="red", zorder=6, s=70)
         _ax.axvline(min(_D, _Dmax), color="red", ls="--", alpha=0.35)
         _ax.axhline(_Rop, color="red", ls="--", alpha=0.35)
+        _saved = None if not np.isfinite(_Hx) else max(_Hx - _Rop, 0.0)
+        _saved_line = "lossless rate infinite" if _saved is None else f"saved = {_saved:.3f} bits/sym"
         _ax.annotate(
-            f"D = {min(_D, _Dmax):.3f}\nR = {_Rop:.3f} bits",
+            f"D = {min(_D, _Dmax):.3f}\nR = {_Rop:.3f} bits\n{_saved_line}",
             xy=(min(_D, _Dmax), _Rop),
             xytext=(0.55, 0.6), textcoords="axes fraction",
             arrowprops=dict(arrowstyle="->", color="red", alpha=0.7),
@@ -344,7 +346,10 @@ def _(rd_distortion, rd_param, rd_source):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/RateDistortionCurve.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/RateDistortionCurve.gif", alt="Animation of a rate-distortion curve trading reconstruction error for bitrate"),
+        mo.md("*Animation: the rate-distortion curve trades bitrate against reconstruction error.*"),
+    ])
     return
 
 
@@ -532,7 +537,10 @@ def _():
         _Rhi, _Dhi = blahut_arimoto_rd(_px, _dist, 60.0)
         print(f"\nLarge beta -> D -> 0, R -> H(X): R = {_Rhi:.4f} vs H(X) = {_H:.4f}")
         _Rlo, _Dlo = blahut_arimoto_rd(_px, _dist, 0.0)
-        print(f"beta = 0  -> R = {_Rlo:.4f} (zero rate), D = {_Dlo:.4f} = Dmax = 1 - max p = {1 - _px.max():.4f}")
+        _Dmax = 1 - _px.max()
+        print(f"beta = 0  -> R = {_Rlo:.4f} (zero rate), D = {_Dlo:.4f}")
+        print(f"  This beta=0 initialization uses a uniform reconstruction distribution.")
+        print(f"  The true zero-rate Hamming floor is Dmax = 1 - max p = {_Dmax:.4f}.")
 
     _run()
     return
@@ -578,6 +586,17 @@ def _(mo):
     Implement `R_bernoulli(p, D)` returning the rate in bits for a Bernoulli($p$) source under Hamming distortion. Use $R = H_2(p) - H_2(D)$ inside the valid range, and clamp to $0$ once $D \ge \min(p, 1-p)$. Verify $R(0) = H_2(p)$ and $R(D_{\max}) = 0$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -613,6 +632,17 @@ def _(mo):
     Implement the Gaussian rate-distortion function $R(D) = \tfrac12\log_2(\sigma^2/D)$ (clamped to $0$ for $D \ge \sigma^2$) and its inverse, the distortion-rate function $D(R) = \sigma^2\,2^{-2R}$. Check that they are inverses and that adding one bit divides the MSE by 4.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -646,6 +676,17 @@ def _(mo):
     Given a source distribution `px`, a test channel `p_xhat_given_x` (rows = $x$, cols = $\hat x$, each row sums to 1), and a distortion matrix `dist`, compute the expected distortion $D = \sum_{x,\hat x} p(x)\,p(\hat x\mid x)\,d(x,\hat x)$. This is the quantity the $R(D)$ constraint bounds.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -676,6 +717,17 @@ def _(mo):
     ### Exercise 4: Reverse Water-Filling
 
     Given an array of source variances and a total distortion budget `Dtot`, find the water level $\lambda$ by bisection so that $\sum_i \min(\lambda, \sigma_i^2) = D_{\text{tot}}$, then compute each source's distortion $D_i = \min(\lambda, \sigma_i^2)$ and rate $R_i = \tfrac12\log_2^{+}(\sigma_i^2/\lambda)$. Confirm the kept sources all share the same distortion $\lambda$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -718,6 +770,17 @@ def _(mo):
     Complete the Blahut–Arimoto iteration for a discrete source. Given `px`, a distortion matrix `dist`, and a slope `beta`, alternate (1) updating the test channel $w(\hat x\mid x) \propto q(\hat x)\,e^{-\beta d(x,\hat x)}$ (normalize each row) and (2) updating the output marginal $q(\hat x) = \sum_x p(x)\,w(\hat x\mid x)$. Then return $R = I(X;\hat X)$ and $D = \mathbb{E}[d]$. Sweeping `beta` should trace the curve from $R=0$ (small $\beta$) up to $R=H(X)$ (large $\beta$).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -744,7 +807,8 @@ def _():
 
         # px = np.array([0.4, 0.3, 0.2, 0.1])
         # dist = 1.0 - np.eye(4)
-        # print(blahut_arimoto_rd(px, dist, 0.0))    # ~ (0.0, 0.6)  zero rate, Dmax
+        # print(blahut_arimoto_rd(px, dist, 0.0))    # ~ (0.0, 0.75) with uniform q at beta=0
+        # true zero-rate Hamming floor is 1 - max(px) = 0.6
         # print(blahut_arimoto_rd(px, dist, 60.0))   # ~ (H(X), 0.0) lossless floor
 
     _run()

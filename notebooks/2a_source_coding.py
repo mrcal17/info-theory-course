@@ -570,7 +570,7 @@ def _(mo):
 
     ## 7. Putting It Together: Compare Codes on One Source
 
-    Let us see the whole story in one view. Pick a source, and the figure compares the entropy floor against four codes: fixed-length, the Shannon code, a hand-tuned variable code, and the ideal (fractional) length $H$ itself. Every bar respects $L \ge H$; the Shannon code always lands in $[H, H+1)$; and how close any code gets depends on how *dyadic* the distribution is.
+    Let us see the whole story in one view. Pick a source, and the figure compares the entropy floor against three real code families: fixed-length, the Shannon code, and the Huffman code. Every bar respects $L \ge H$; the Shannon code always lands in $[H, H+1)$; Huffman is the best prefix code for this symbol alphabet; and how close either gets depends on how *dyadic* the distribution is.
 
     Watch what happens as you move from a uniform source (where fixed-length is already optimal) to a highly skewed one (where variable-length codes pull far ahead of fixed-length, and the entropy floor drops well below $\log_2 N$). That widening gap between fixed-length and entropy is precisely the compressibility of the source — the room every compressor in Part 2 is built to exploit.
     """)
@@ -593,6 +593,7 @@ def _(mo):
 def _(source_choice):
     def _run():
         import numpy as np
+        import heapq
         import logging
         logging.getLogger("matplotlib").setLevel(logging.ERROR)
         logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
@@ -618,15 +619,31 @@ def _(source_choice):
         _shannon = np.ceil(-np.log2(_p)).astype(int)
         _L_shannon = float(np.sum(_p * _shannon))
 
-        _order = np.argsort(-_p)
-        _greedy_len = np.empty(_n, dtype=int)
-        _greedy_len[_order] = _shannon[_order]
-        _L_var = float(np.sum(_p * _greedy_len))
+        def _huffman_lengths(probs):
+            if len(probs) == 1:
+                return np.array([1], dtype=int)
+            _lengths = np.zeros(len(probs), dtype=int)
+            _heap = []
+            _counter = 0
+            for _i, _prob in enumerate(probs):
+                heapq.heappush(_heap, (float(_prob), _counter, [_i]))
+                _counter += 1
+            while len(_heap) > 1:
+                _p1, _, _leaves1 = heapq.heappop(_heap)
+                _p2, _, _leaves2 = heapq.heappop(_heap)
+                for _i in _leaves1 + _leaves2:
+                    _lengths[_i] += 1
+                heapq.heappush(_heap, (_p1 + _p2, _counter, _leaves1 + _leaves2))
+                _counter += 1
+            return _lengths
+
+        _huff = _huffman_lengths(_p)
+        _L_huff = float(np.sum(_p * _huff))
 
         _ceiling = np.log2(_n)
 
-        _labels = ["entropy\nH (floor)", "Shannon\ncode", "variable\ncode", "fixed\nlength"]
-        _vals = [_H, _L_shannon, _L_var, _L_fixed]
+        _labels = ["entropy\nH (floor)", "Shannon\ncode", "Huffman\ncode", "fixed\nlength"]
+        _vals = [_H, _L_shannon, _L_huff, _L_fixed]
         _colors = ["seagreen", "steelblue", "mediumpurple", "indianred"]
 
         _fig, _ax = plt.subplots(figsize=(7.5, 4.3))
@@ -690,6 +707,17 @@ def _(mo):
     Write `is_prefix(codewords)` that returns `True` iff no codeword in the list is a prefix of another. Test it on a prefix code ($0, 10, 110, 111$ → True) and on a non-prefix code ($0, 01, 11$ → False, since $0$ prefixes $01$).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -713,6 +741,17 @@ def _(mo):
     ### Exercise 2: The Kraft Sum
 
     Implement `kraft_sum(lengths)` $= \sum_i 2^{-\ell_i}$ and `prefix_possible(lengths)` returning `True` iff the sum is $\le 1$. Verify: $\{1,2,3,3\}$ sums to $1.0$ (possible), and $\{1,1,2\}$ sums to $1.25$ (impossible).
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -743,6 +782,17 @@ def _(mo):
     ### Exercise 3: Shannon Code Lengths and the Bound
 
     Build `shannon_code(p)` returning the lengths $\lceil \log_2 1/p(x)\rceil$, then compute the entropy $H$ and expected length $L$, and confirm $H \le L < H+1$. Try it on $p = (0.4, 0.3, 0.2, 0.1)$ (expect $H \approx 1.846$, $L = 2.4$).
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -782,6 +832,17 @@ def _(mo):
     Confirm the proof from Section 5 numerically. For a source $p$ and code lengths, set $q(x) = 2^{-\ell(x)}/S$ with $S = \sum 2^{-\ell}$, then verify $L - H = D(p\|q) - \log_2 S$, with both terms $\ge 0$. Use $p=(0.4,0.3,0.2,0.1)$ and lengths $(2,2,2,2)$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -817,6 +878,17 @@ def _(mo):
     ### Exercise 5: Blocking Beats the +1
 
     Show empirically that coding blocks of $n$ i.i.d. symbols drives the per-symbol Shannon length down toward $H$. For $p=(0.7,0.3)$, build the joint distribution of $n$ symbols (an outer-product / Kronecker expansion), Shannon-code it, and print $L_n/n$ for $n=1,2,3,4,6$. It should approach $H \approx 0.881$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

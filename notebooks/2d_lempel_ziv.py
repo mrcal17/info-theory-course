@@ -217,7 +217,7 @@ def _(mo):
 
     - `A` — no prior text, literal: `(0, 0, A)`
     - `B` — no match, literal: `(0, 0, B)`
-    - `ABA` — matches the `AB` two back, then one more `A` via overlap: `(2, 3, ...)`
+    - `ABABA` — matches the `AB` two back, then keeps copying by overlap to the end: `(2, 5, "")`
 
     DEFLATE (`gzip`/`PNG`/`zip`) then runs the LZ77 triples through **Huffman coding** — universal *dictionary* compression feeding model-based *symbol* compression. The two halves of Part 2 working together. The window size is the central knob: bigger windows find more distant repeats (better ratio) but cost more to search and to address.
 
@@ -381,7 +381,7 @@ def _(mo):
 
     The intuition for *why* it works: in $n$ symbols, LZ78 produces roughly $c(n) \approx n / \log_2 n$ distinct phrases, and the encoded length is about $c(n) \log_2 c(n)$ bits. Ziv and Lempel proved this quantity is bounded above by $n H + o(n)$ for any stationary ergodic source. The phrases are *asymptotically equiprobable* — each one carries about $\log_2 c(n)$ bits, the maximum it could — so no bits are wasted in the limit.
 
-    The slider below makes this visible. Pick a source entropy rate (a biased binary source, or a Markov-correlated source) and watch the compression ratio computed by an actual LZ78 coder fall toward $H$ as the sequence grows. Short inputs compress poorly — the dictionary has not learned yet. Long inputs ride the floor. *That descent toward $H$ is universality, measured.*
+    The slider below makes this visible. Pick a source entropy rate (a biased binary source, or a Markov-correlated source) and watch the compression ratio computed by an actual LZ78 coder fall toward $H$ as the sequence grows. Short inputs compress poorly — the dictionary has not learned yet. Long inputs move in the right direction, though finite-size overhead can keep the curve visibly above the asymptotic floor for quite a while. *That descent toward $H$ is universality, measured.*
 
     > [Cover & Thomas Ch 13.5](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) proves LZ78 optimality for stationary ergodic sources.
     """)
@@ -491,7 +491,7 @@ def _(mo):
 
     The previous plot shows *bits per symbol* converging. This one shows the practical figure people quote: the **compression ratio**, original size divided by compressed size (higher = better). It also contrasts LZ78 against LZW and against a per-symbol Huffman-style entropy bound, so you can see all three of Part 2's ideas on one axis.
 
-    Drag the length slider. Watch how on structured text the ratio *climbs* with length — the dictionary keeps finding longer repeats — while on near-random data it flatlines near 1 (incompressible). That climb-with-length is the signature of a universal code paying off the longer it runs.
+    Drag the length slider. Watch how on structured text the ratio *climbs* with length — the dictionary keeps finding longer repeats — while on random byte data it flatlines near 1 or below (incompressible after overhead). That climb-with-length is the signature of a universal code paying off the longer it runs.
     """)
     return
 
@@ -499,7 +499,7 @@ def _(mo):
 @app.cell
 def _(mo):
     ratio_source = mo.ui.dropdown(
-        options=["Repetitive English", "Natural English", "Random letters", "Mostly one letter"],
+        options=["Repetitive English", "Natural English", "Random bytes", "Mostly one letter"],
         value="Repetitive English",
         label="Data type",
     )
@@ -534,9 +534,8 @@ def _(ratio_len, ratio_source):
                 _parts.append(_wd)
                 _tot += len(_wd) + 1
             _s = (" ".join(_parts))[:_N]
-        elif _kind == "Random letters":
-            _chars = "abcdefghijklmnopqrstuvwxyz "
-            _s = "".join(_chars[_i] for _i in _rng.integers(0, len(_chars), size=_N))
+        elif _kind == "Random bytes":
+            _s = "".join(chr(_i) for _i in _rng.integers(0, 256, size=_N))
         else:
             _draw = _rng.random(_N)
             _s = "".join("a" if _d < 0.9 else "abcde "[_rng.integers(0, 6)] for _d in _draw)
@@ -659,7 +658,7 @@ def _():
         _samples = {
             "highly repetitive": "abcabcabc" * 200,
             "natural-ish English": ("the cat sat on the mat and the dog ran. " * 50),
-            "random letters": "".join(np.random.default_rng(2).choice(list("abcdefgh"), 1800)),
+            "random bytes": "".join(chr(_i) for _i in np.random.default_rng(2).integers(0, 256, 1800)),
         }
         print("=== LZW compression ratio by data type (1800 chars, 8-bit raw) ===")
         print(f"  {'type':22s} {'codes':>7s} {'comp bits':>10s} {'ratio':>7s}")
@@ -668,7 +667,7 @@ def _():
             _ncodes, _bits = _lzw_codes(_txt)
             _raw = len(_txt) * 8
             print(f"  {_name:22s} {_ncodes:7d} {_bits:10.0f} {_raw / _bits:6.2f}x")
-        print("\nStructure -> high ratio. Randomness -> ratio near 1. No model was ever supplied.")
+        print("\nStructure -> high ratio. Random bytes -> no real compression gain after overhead.")
 
     _run()
     return
@@ -718,6 +717,17 @@ def _(mo):
     Implement `lz78_encode(s)` returning a list of `(index, char)` tokens. Maintain a dictionary mapping seen phrases to integer indices (start with the empty phrase at index 0). For each new phrase, emit `(index_of_longest_seen_prefix, new_char)` and add the extended phrase to the dictionary.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -746,6 +756,17 @@ def _(mo):
     ### Exercise 2: LZW Encoder
 
     Implement `lzw_encode(s)`. Seed the dictionary with every distinct symbol of `s` (sorted, indices `0..k-1`). Walk the string keeping a current phrase `w`; while `w + c` is in the dictionary, extend `w`; otherwise output the code for `w`, add `w + c` to the dictionary, and reset `w = c`. Emit the final `w`.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -777,6 +798,17 @@ def _(mo):
     ### Exercise 3: LZ77 Sliding-Window Match
 
     Implement `longest_match(s, i, window)` that searches the window `s[max(0,i-window):i]` for the longest prefix of `s[i:]` and returns `(distance, length)`. Then a back-reference `(distance, length)` means "copy `length` symbols starting `distance` positions back." Allowing overlap (the source range may reach into the look-ahead) is what lets runs like `aaaa` collapse.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -812,6 +844,17 @@ def _(mo):
     Given a string, estimate the LZW compressed size in bits as `(number of codes) * log2(dictionary size)` and report the compression ratio against an 8-bit-per-char raw size. Test that a repetitive string beats a random one.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -839,7 +882,7 @@ def _():
             return raw_bits / comp_bits
 
         # print(lzw_ratio("abcabcabcabc" * 50))   # large ratio (very repetitive)
-        # print(lzw_ratio("".join(np.random.default_rng(0).choice(list("abcdefgh"), 600))))  # near 1
+        # print(lzw_ratio("".join(chr(i) for i in np.random.default_rng(0).integers(0, 256, 600))))  # near/below 1
 
     _run()
     return
@@ -851,6 +894,17 @@ def _(mo):
     ### Exercise 5: Measuring Universality
 
     Generate a long sequence from a biased binary source with $P(1) = p$, whose entropy rate is $H_2(p)$. Compute LZ78's bits-per-symbol for increasing prefix lengths and confirm it *descends toward* $H_2(p)$ — universality, with no model supplied. (This is the very last cell; the run guard lives below it.)
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

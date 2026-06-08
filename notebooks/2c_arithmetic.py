@@ -288,7 +288,10 @@ def _(arith_msg):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/ArithmeticInterval.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/ArithmeticInterval.gif", alt="Animation of arithmetic coding narrowing an interval after each symbol"),
+        mo.md("*Animation: arithmetic coding narrows one interval after each encoded symbol.*"),
+    ])
     return
 
 
@@ -381,7 +384,7 @@ def _(mo):
 
     ## 5. Just How Close to Optimal? Arithmetic vs Huffman
 
-    The payoff is a per-message overhead, not a per-symbol one. An arithmetic coder spends at most $\log_2(1/P(\text{message})) + 2$ bits on the **entire** message (the "+2" covers naming a point inside the interval and flushing the encoder). Divide by message length and the overhead per symbol vanishes as the message grows:
+    The payoff is a per-message overhead, not a per-symbol one. The clean interval-point argument says a binary fraction inside the final interval can be named with at most $\lceil \log_2(1/P(\text{message})) \rceil + 1$ bits. Practical arithmetic/range coders add a small constant for flushing state, often summarized as about "+2 bits" for the **entire** message. Divide by message length and the overhead per symbol vanishes as the message grows:
 
     $$\frac{L}{n} \le H(X) + \frac{2}{n} \xrightarrow{\ n \to \infty\ } H(X).$$
 
@@ -470,7 +473,7 @@ def _(mo):
     3. **Then** increment that symbol's count.
     4. The decoder, seeing the same history, forms the identical $p(s)$ before decoding the symbol, then makes the identical update.
 
-    No probability table is ever transmitted. The model is rebuilt on the fly from the shared past — this is the engine of universal, **adaptive** compression. A fully adaptive arithmetic coder approaches the *empirical* entropy of the actual data, learning the source as it reads it. (PPM, the strongest classical text compressors, are adaptive arithmetic coders with context models; CABAC in H.264/265 is an adaptive binary arithmetic coder.)
+    No probability table is ever transmitted. The model is rebuilt on the fly from the shared past — this is the engine of universal, **adaptive** compression. The simple Laplace-count demo below is an order-0 model, so its benchmark is the empirical single-symbol entropy. Real adaptive compressors use context models, so their benchmark is a lower context entropy such as $H(X_t\mid X_{t-1}, X_{t-2}, \dots)$. (PPM, the strongest classical text compressors, are adaptive arithmetic coders with context models; CABAC in H.264/265 is an adaptive binary arithmetic coder.)
 
     The demo runs an adaptive coder over a repetitive string. Watch the cost-per-symbol *fall* as the model learns the source — the early symbols are expensive (the model is ignorant), the later ones are cheap.
 
@@ -663,6 +666,17 @@ def _(mo):
     Given a dict of symbol probabilities, return a dict mapping each symbol to its half-open cumulative range $[F(s),\ F(s)+p(s))$. These ranges are the slices of $[0,1)$ that drive both encoder and decoder.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -690,6 +704,17 @@ def _(mo):
     ### Exercise 2: The Encoder
 
     Implement `encode(msg, probs)` that returns the final $[\text{low}, \text{high})$ interval by successive subdivision. Start at $[0, 1)$ and, for each symbol, rescale `low` and `high` into the symbol's cumulative slice. Check that the width equals the product of the symbol probabilities.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -733,6 +758,17 @@ def _(mo):
     Implement `decode(t, n, probs)`: given a transmitted number $t \in [0,1)$, the message length $n$, and the model, recover the message. At each step find which symbol's slice contains $t$, append it, then rescale $t$ into that slice: $t \leftarrow (t - F(s)) / p(s)$. Confirm it inverts your encoder via the interval midpoint.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -759,7 +795,7 @@ def _():
                         break
             return "".join(out)
 
-        # lo, hi = 0.516, 0.528          # the 'bad' interval from Ex.2
+        # lo, hi = 0.508, 0.520          # the 'bad' interval from Ex.2
         # print(decode((lo + hi) / 2, 3, probs))   # expect "bad"
 
     _run()
@@ -772,6 +808,17 @@ def _(mo):
     ### Exercise 4: Code Length vs Entropy
 
     For a given source and a random message of length $n$, compute the arithmetic code length $-\log_2 P(\text{message})$ and compare its per-symbol value to the source entropy $H$. Verify that as $n$ grows the per-symbol cost converges to $H$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -809,6 +856,17 @@ def _(mo):
     Implement an adaptive coder that needs no probability table. Start every symbol with a Laplace count of 1; before coding each symbol charge $-\log_2 p$ using the *current* counts, then increment that symbol's count. Run it on a repetitive string and confirm the average cost falls below $\log_2(\text{alphabet size})$ as the model learns.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -826,7 +884,7 @@ def _():
                 ...
             return total_bits, len(alphabet)
 
-        # bits, k = adaptive_bits("abababababababababab")
+        # bits, k = adaptive_bits("aaaaaaaaaaaaaaaaaaab")
         # print(bits / 20, "bits/symbol vs log2(k) =", np.log2(k))
         # expect average well below log2(2)=1 as the model locks onto the pattern
 

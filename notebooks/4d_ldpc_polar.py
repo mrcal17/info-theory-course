@@ -170,7 +170,7 @@ def _(bp_erasures, bp_steps):
         ])
         _m, _n = _H.shape
 
-        _true = np.array([1, 1, 0, 1, 0, 0, 1])
+        _true = np.array([1, 0, 1, 1, 0, 0, 1])
         _erased = np.zeros(_n, dtype=bool)
         for _j in bp_erasures.value:
             _erased[_j] = True
@@ -244,7 +244,10 @@ def _(bp_erasures, bp_steps):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/MessagePassing.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/MessagePassing.gif", alt="Animation of belief-propagation messages moving between variable and check nodes"),
+        mo.md("*Animation: belief-propagation messages move between variable nodes and check nodes.*"),
+    ])
     return
 
 
@@ -476,7 +479,7 @@ def _(mo):
 
     Now recurse. Apply the same $2\times 2$ transform across blocks, $\log_2 n$ times, to $n$ channels. As $n \to \infty$ the synthetic channels **polarize**: a fraction $I(W)$ of them become *perfect* (capacity $\to 1$) and the rest become *useless* (capacity $\to 0$). Almost nothing is left in between. That is the polarization theorem.
 
-    The **polar code** then writes itself: transmit your real information bits on the perfect channels (the **good** indices), and **freeze** the useless ones to known values (zeros). The fraction of good channels tends to exactly $I(W)$ — so the rate tends to capacity. Decoding is **successive cancellation**: decode $u_1$, use it to help decode $u_2$, and so on up the recursion, each step a tiny LLR combine — exactly belief propagation on the polar (butterfly) graph.
+    The **polar code** then writes itself: transmit your real information bits on the perfect channels (the **good** indices), and **freeze** the useless ones to known values (zeros). The fraction of good channels tends to exactly $I(W)$ — so the rate tends to capacity. Decoding is **successive cancellation**: decode $u_1$, use it to help decode $u_2$, and so on up the recursion, each step a tiny LLR combine. You can view the recursion as message passing on the polar (butterfly) graph, but plain SC is a particular scheduled decoder, not generic loopy BP.
 
     For the BEC the recursion on the *erasure* parameters is exact and elementary: a channel of erasure $z$ splits into
 
@@ -485,7 +488,7 @@ def _(mo):
     The widget grows the **polarization tree** to a depth you choose and shows the synthetic erasure parameters fanning out toward 0 (perfect) and 1 (useless) — the polarization happening before your eyes.
 
     > [Arıkan's polar-codes paper](https://arxiv.org/abs/0807.3917) (2009) is the original; the recursive $z^\pm$ map is its BEC special case.
-    > [MacKay Ch 48-50](https://www.inference.org.uk/itprnn/book.pdf) covers the broader landscape of capacity-approaching codes.
+    > [MacKay Ch 48-50](https://www.inference.org.uk/itprnn/book.pdf) predates polar codes but gives the broader capacity-approaching-code landscape (turbo, LDPC, fountain).
     """)
     return
 
@@ -584,7 +587,7 @@ def _(mo):
     2. pick $d$ source symbols uniformly at random,
     3. XOR them together; that XOR (plus the list of which symbols) is the droplet.
 
-    Decoding is — once again — **peeling on a graph**, exactly as in Section 3. A degree-1 droplet immediately reveals its single source symbol; substitute it everywhere, which may create new degree-1 droplets, and cascade. The whole art is in the degree distribution: too many high-degree droplets and you waste bits; too few degree-1 droplets and the cascade never starts. The Robust Soliton distribution threads this needle so that catching $k(1+\delta)$ droplets suffices with high probability, for tiny overhead $\delta$. **Raptor codes** add a pre-code to make decoding truly linear-time and drive the overhead to almost nothing — they are in the 3GPP and DVB standards.
+    Decoding is — once again — **peeling on a graph**, exactly as in Section 3. A degree-1 droplet immediately reveals its single source symbol; substitute it everywhere, which may create new degree-1 droplets, and cascade. The whole art is in the degree distribution: too many high-degree droplets and you waste bits; too few degree-1 droplets and the cascade never starts. The Robust Soliton distribution threads this needle so that catching $k(1+\delta)$ droplets suffices with high probability; for small teaching-size $k$, the overhead can still be chunky, and it shrinks only in the large-block regime with tuned parameters. **Raptor codes** add a pre-code to make decoding truly linear-time and drive the overhead to almost nothing — they are in the 3GPP and DVB standards.
 
     The demo below runs an LT encoder/decoder over the BEC and measures the **overhead**: how many droplets beyond $k$ you actually needed.
 
@@ -670,7 +673,7 @@ def _():
             _ovh = _best / _k - 1.0
             print(f"{_k:>5} {_best:>16} {_ovh:>9.2%} {'YES' if _ok else 'no':>9}")
         print("\nKey point: it never mattered WHICH droplets arrived — only how many.")
-        print("Catch slightly more than k, and the peeling cascade reconstructs everything.")
+        print("For small k the overhead is visibly chunky; large tuned LT/Raptor codes make it small.")
 
     _run()
     return
@@ -716,6 +719,17 @@ def _(mo):
     Given a parity-check matrix $H$, (a) list the bits in each check, and (b) write `is_codeword(H, x)` that returns `True` iff $H\mathbf{x} = \mathbf{0}$ over GF(2). Test it on a valid and an invalid word for the $(7,4)$ Hamming code.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -734,8 +748,8 @@ def _():
             _syndrome = ...
             return ...
 
-        # print(is_codeword(H, np.array([1,1,0,1,0,0,1])))   # expect True
-        # print(is_codeword(H, np.array([1,1,1,1,1,1,1])))   # expect False
+        # print(is_codeword(H, np.array([1,1,0,1,0,0,1])))   # expect False
+        # print(is_codeword(H, np.array([1,1,1,1,1,1,1])))   # expect True
 
     _run()
     return
@@ -747,6 +761,17 @@ def _(mo):
     ### Exercise 2: Peeling Decoder on the BEC
 
     Implement the erasure peeling rule: repeatedly find a check with exactly one erased neighbour, solve that bit as the XOR of the check's known bits, and repeat until stuck. Return the recovered word and whether decoding finished. (Use `-1` to mark an erased/unknown bit.)
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -761,7 +786,7 @@ def _():
             [1, 1, 0, 1, 0, 1, 0],
             [1, 0, 1, 1, 0, 0, 1],
         ])
-        received = np.array([1, -1, 0, 1, -1, 0, 1])  # -1 = erased
+        received = np.array([1, -1, 1, 1, -1, 0, 1])  # -1 = erased
 
         def peel(H, received):
             x = received.copy()
@@ -790,6 +815,17 @@ def _(mo):
     ### Exercise 3: Density-Evolution Threshold Finder
 
     For a regular $(d_v, d_c)$ LDPC ensemble on the BEC, implement the recursion $x_{\ell+1} = \epsilon\,[1-(1-x_\ell)^{d_c-1}]^{d_v-1}$ and `threshold(dv, dc)` that finds the largest $\epsilon$ for which $x_\ell \to 0$. Check the $(3,6)$ code: threshold should be $\approx 0.4294$, comfortably below the Shannon limit $1-R = 0.5$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -831,6 +867,17 @@ def _(mo):
     Implement one level of the polar recursion on erasure parameters: a channel with erasure $z$ splits into $z^- = 2z - z^2$ (worse) and $z^+ = z^2$ (better). Recurse $n$ times from a base $z_0$, then count how many of the $2^n$ synthetic channels are "good" ($z < 0.01$). Verify the average erasure stays $z_0$ (capacity is conserved).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -864,6 +911,17 @@ def _(mo):
     ### Exercise 5: LT Fountain Encoder/Decoder
 
     Build a tiny LT code. Encode: each droplet picks a random degree $d$, chooses $d$ of the $k$ source bits, and XORs them. Decode by peeling (degree-1 droplets reveal a bit; substitute and cascade). Measure the *overhead* — how many droplets past $k$ you needed — and confirm it never depended on *which* droplets arrived.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

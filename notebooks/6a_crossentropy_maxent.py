@@ -249,7 +249,7 @@ def _():
         print(f"  true p                = {np.round(_true_p, 4)}")
         print(f"  empirical p_hat (MLE) = {np.round(_phat, 4)}")
         print(f"  KL-minimizing q       = {np.round(_best_q, 4)}")
-        print(f"  min KL(p_hat || q)    = {_best_kl:.5f} bits  (-> 0, so q == p_hat)")
+        print(f"  min KL(p_hat || q)    = {_best_kl:.5f} bits  (random-search residual; analytic optimum is q = p_hat)")
         print("\nThe analytic MLE for a categorical IS the histogram p_hat,")
         print("and minimizing KL(p_hat || q) over all q recovers exactly that.")
 
@@ -393,7 +393,7 @@ def _(mo):
     **Famous special cases** (all maxent for their constraints):
 
     - **No constraints** (just normalization) $\Rightarrow$ the **uniform** distribution. (We proved this in 1A: uniform maximizes entropy.)
-    - **Fixed mean** on $\{0,1,2,\dots\}$ $\Rightarrow$ the **geometric** distribution.
+    - **Fixed mean** on $\{0,1,2,\dots\}$ $\Rightarrow$ the **geometric** distribution; on a finite support it is the corresponding truncated discrete exponential.
     - **Fixed mean and variance** on $\mathbb{R}$ $\Rightarrow$ the **Gaussian** $\mathcal{N}(\mu,\sigma^2)$.
     - **Fixed mean** on $[0,\infty)$ $\Rightarrow$ the **exponential** distribution.
 
@@ -495,8 +495,8 @@ def _():
         print("\nAt target=3.5 the solution is uniform (lambda=0, H=log2 6=2.585):")
         _p, _lam = maxent_given_mean(3.5, _faces)
         print(f"  p = {np.round(_p, 4)}   (uniform, as expected)")
-        print("\nNote the maxent form p(x) ∝ exp(lambda*x) is geometric in x —")
-        print("the maxent distribution on a bounded support given a mean.")
+        print("\nNote the maxent form p(x) ∝ exp(lambda*x) is a truncated discrete exponential —")
+        print("the bounded-support cousin of the geometric distribution.")
 
     _run()
     return
@@ -609,6 +609,17 @@ def _(mo):
     Implement `cross_entropy(p, q)`, `entropy(p)`, and `kl(p, q)` (all in bits, handling zeros), then verify numerically that $H(p,q) = H(p) + D(p\|q)$ for a few random pairs of distributions.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -646,6 +657,17 @@ def _(mo):
     For a one-hot true label and a predicted probability vector `q`, the cross-entropy collapses to $-\log q_y$. Implement it, and confirm it equals the full cross-entropy $-\sum_c p_c \log q_c$ when `p` is one-hot.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -675,6 +697,17 @@ def _(mo):
     ### Exercise 3: MLE Recovers the Empirical Distribution
 
     Draw `N` samples from a categorical with `K` outcomes. Form the empirical distribution `p_hat` (the histogram), then confirm that `p_hat` minimizes $D(\hat p \| q)$ over all `q` (its KL to itself is 0, and any perturbation raises it).
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -714,6 +747,17 @@ def _(mo):
     Build the smoothed target $p^{LS}(c) = (1-\varepsilon)\,\mathbb{1}[c=y] + \varepsilon/K$ and confirm its entropy increases monotonically with $\varepsilon$ (for $\varepsilon$ up to where it equals uniform).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -746,6 +790,17 @@ def _(mo):
     ### Exercise 5: Maximum-Entropy Distribution Under a Mean Constraint
 
     Find the maximum-entropy distribution over faces $\{1,\dots,6\}$ with a target mean. The form is $p(x) \propto e^{\lambda x}$; tune $\lambda$ by Newton's method so $\mathbb{E}[X]$ hits the target. Confirm that target mean $3.5$ gives the uniform distribution ($\lambda = 0$).
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

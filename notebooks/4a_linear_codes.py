@@ -54,7 +54,7 @@ def _(mo):
 def _():
     def _run():
         import numpy as np
-        from math import comb
+        from math import log2
 
         def block_error_rep3(p):
             return comb(3, 2) * p**2 * (1 - p) + comb(3, 3) * p**3
@@ -272,9 +272,9 @@ def _(mo):
 
     ## 5. The Hamming (7,4) Code and Minimum Distance
 
-    Now we assemble everything. Hamming's brilliant choice for $H$: make its **columns the binary numbers $1$ through $7$** (every nonzero 3-bit pattern, each appearing exactly once). With 3 parity bits there are $2^3 - 1 = 7$ nonzero columns available, so the block length is forced to $n = 7$ and the data length to $k = 7 - 3 = 4$. That is where "$(7,4)$" comes from — it is the largest single-error-correcting code you can build with 3 check bits.
+    Now we assemble everything. Hamming's brilliant choice for $H$: make its **columns all seven nonzero 3-bit patterns**, each appearing exactly once. With 3 parity bits there are $2^3 - 1 = 7$ nonzero columns available, so the block length is forced to $n = 7$ and the data length to $k = 7 - 3 = 4$. That is where "$(7,4)$" comes from — it is the largest single-error-correcting code you can build with 3 check bits.
 
-    Why is this $H$ so good? Recall the syndrome of a single flip in position $j$ is column $j$ of $H$. Because **every column is distinct and nonzero**, every single-bit error produces a *different, nonzero* syndrome — so the decoder can always tell which bit flipped. Even better: read the syndrome as a binary number and it gives you the error position directly (with the natural column ordering).
+    Why is this $H$ so good? Recall the syndrome of a single flip in position $j$ is column $j$ of $H$. Because **every column is distinct and nonzero**, every single-bit error produces a *different, nonzero* syndrome — so the decoder can always tell which bit flipped by matching the syndrome to the corresponding column. In the common textbook column ordering, reading the syndrome as a binary number gives the error position directly; our systematic layout uses a permuted column order so the general "match the column" rule is the one to trust.
 
     The strength of a code is its **minimum distance** $d_{\min}$ — the smallest Hamming distance between any two distinct codewords. For a *linear* code this simplifies beautifully: since $d(\mathbf{c}_1, \mathbf{c}_2) = w(\mathbf{c}_1 \oplus \mathbf{c}_2)$ and the XOR is itself a codeword, $d_{\min}$ equals the **minimum weight of any nonzero codeword**. There is an even slicker test via $H$: $d_{\min}$ is the smallest number of columns of $H$ that XOR to zero. No single column is zero and no two distinct columns are equal (so no two XOR to zero), but some three columns do — hence $d_{\min} = 3$ for the Hamming code.
 
@@ -283,7 +283,7 @@ def _(mo):
     - **detect** up to $d - 1$ errors (any error pattern of that weight lands on a non-codeword), and
     - **correct** up to $t = \left\lfloor \dfrac{d-1}{2} \right\rfloor$ errors (nearest-neighbour decoding picks the right codeword).
 
-    For Hamming, $d_{\min} = 3$ gives $t = 1$: it corrects **any single-bit error** and detects any double-bit error. That is the famous "single error correcting, double error detecting" property (in its basic form it corrects 1; the extended $(8,4)$ code adds an overall parity bit to also flag 2).
+    For Hamming, $d_{\min} = 3$ gives $t = 1$: it corrects **any single-bit error**. As a pure detector it can detect up to two errors, but a decoder configured to correct one error will generally mis-correct a double error rather than safely flagging it. The famous SEC-DED version is the **extended** $(8,4)$ Hamming code, which adds one overall parity bit.
     """)
     return
 
@@ -324,6 +324,7 @@ def _():
         print(f"\nWith d_min = {_dmin_pairwise}:")
         print(f"  detects up to d_min - 1 = {_dmin_pairwise - 1} errors")
         print(f"  corrects up to floor((d_min-1)/2) = {_t} error(s)")
+        print("  if you spend the syndrome on correction, double errors are not safely flagged")
         print(f"\nWeight enumerator (how many codewords of each weight):")
         for _w in range(8):
             _cnt = int(np.sum(_weights == _w))
@@ -343,7 +344,7 @@ def _(mo):
 
     Time to drive the whole pipeline yourself. Set the four **data bits** with the toggles below, then pick a **bit to flip** in the channel (positions 1–7, or "none" for a clean channel). The demo encodes your message with $G$, injects the flip, computes the **syndrome** $\mathbf{s} = H\mathbf{r}^{\mathsf T}$, decodes the error position, repairs it, and recovers your original 4 data bits.
 
-    Watch the syndrome: when you flip position $j$, the syndrome equals column $j$ of $H$ — and reading it as a binary number points right at the broken bit. Flip nothing and the syndrome is $000$. Try flipping any position: the decoder always lands back on your message. (Flip *two* bits and you can break it — single-error correction is exactly that, single.)
+    Watch the syndrome: when you flip position $j$, the syndrome equals column $j$ of $H$, and the decoder repairs the word by matching that syndrome to the column table. Flip nothing and the syndrome is $000$. Try flipping any position: the decoder always lands back on your message. (Flip *two* bits and you can break it — single-error correction is exactly that, single.)
     """)
     return
 
@@ -522,17 +523,17 @@ def _(redundancy):
         _ax1.set_ylim(0, 1.0)
 
         _labels = ["codewords\n2^k balls", "ball volume\n(1+n)", "occupied\n2^k(1+n)", "whole space\n2^n"]
-        _vals = [2**_k, _ball, _lhs, _rhs]
+        _log_vals = [_k, log2(_ball), _k + log2(_ball), _n]
         _colors = ["steelblue", "mediumseagreen", "orange", "lightgray"]
-        _ax2.bar(range(4), np.log2(_vals), color=_colors, alpha=0.85)
+        _ax2.bar(range(4), _log_vals, color=_colors, alpha=0.85)
         _ax2.set_xticks(range(4))
         _ax2.set_xticklabels(_labels, fontsize=8)
         _ax2.set_ylabel("log2(count)")
         _ax2.set_title(f"Sphere packing for ({_n},{_k}):  "
                        + ("PERFECT (fills space)" if _perfect else "has slack"))
         _ax2.grid(True, axis="y", alpha=0.3)
-        for _i, _v in enumerate(_vals):
-            _ax2.text(_i, np.log2(_v) + 0.3, f"{int(np.log2(_v))}", ha="center", fontsize=9)
+        for _i, _v in enumerate(_log_vals):
+            _ax2.text(_i, _v + 0.3, f"{_v:.1f}", ha="center", fontsize=9)
 
         plt.tight_layout()
         return _fig
@@ -699,7 +700,18 @@ def _(mo):
     mo.md(r"""
     ### Exercise 1: GF(2) Encoder
 
-    Implement `encode(m, G)` that maps a length-$k$ message to a length-$n$ codeword via $\mathbf{c} = \mathbf{m}G \bmod 2$. Use the systematic generator $G = [\,I_4 \mid P\,]$ for Hamming $(7,4)$. Confirm the message $1011$ produces the codeword $1011010$ and that the all-ones message has even... actually, just verify a couple of cases against the table in Section 3.
+    Implement `encode(m, G)` that maps a length-$k$ message to a length-$n$ codeword via $\mathbf{c} = \mathbf{m}G \bmod 2$. Use the systematic generator $G = [\,I_4 \mid P\,]$ for Hamming $(7,4)$. Confirm the message $1011$ produces the codeword $1011010$, then verify a couple of additional messages against the table in Section 3.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -731,6 +743,17 @@ def _(mo):
     ### Exercise 2: Syndrome Decoder
 
     Implement `syndrome(r, H)` returning $\mathbf{s} = H\mathbf{r}^{\mathsf T} \bmod 2$, then `decode_one(r, H)` that finds which column of $H$ matches the syndrome, flips that received bit, and returns the corrected 7-bit word. Test it by encoding a message, flipping one bit, and recovering it.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -771,6 +794,17 @@ def _(mo):
     Generate all $2^4 = 16$ codewords, then compute the minimum distance two ways and check they agree: (a) the minimum Hamming weight over all *nonzero* codewords, and (b) the minimum pairwise Hamming distance over all distinct pairs. Both should give $3$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -806,6 +840,17 @@ def _(mo):
     Write `ball_volume(n, t)` for $V(n,t)=\sum_{i=0}^{t}\binom{n}{i}$ and `is_perfect(n, k, t)` that returns whether $2^k V(n,t) = 2^n$. Check that Hamming $(7,4)$ with $t=1$ is perfect, the $(15,11)$ Hamming code with $t=1$ is perfect, and the single-parity $(8,7)$ code with $t=1$ is *not* (it can only detect, not correct).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -835,6 +880,17 @@ def _(mo):
     ### Exercise 5: Monte-Carlo BSC Simulation
 
     Put it all together. Over a BSC with flip probability $p$, send many random 4-bit messages through the Hamming $(7,4)$ pipeline (encode -> add noise -> syndrome-decode) and estimate the **block error rate** (fraction of messages not perfectly recovered). Compare against an uncoded baseline that fails whenever any of its 4 bits flips. For small $p$ the coded scheme should win handily.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

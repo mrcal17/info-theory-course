@@ -10,6 +10,7 @@ import glob
 import shutil
 import re
 import sys
+import html as html_lib
 
 os.chdir(os.path.dirname(__file__))
 
@@ -110,44 +111,53 @@ if os.path.exists(home_idx):
     with open(home_idx, encoding="utf-8") as f:
         html = f.read()
 
-    # Fix links: /?file=X.py -> ../X/index.html (relative from home/)
-    # But for root index.html, links should be ./X/index.html
+    # Root index.html lives one level above home/, so shared assets are ./assets/.
     root_html = html.replace('"../assets/', '"./assets/')
-    root_html = re.sub(
-        r'href="/?[?]file=(\w+)\.py"',
-        lambda m: f'href="./{m.group(1)}/index.html"',
-        root_html,
-    )
-    root_html = re.sub(
-        r'href="/\?file=(\w+)\.py"',
-        lambda m: f'href="./{m.group(1)}/index.html"',
-        root_html,
-    )
 
     with open(root_idx, "w", encoding="utf-8", newline="\n") as f:
         f.write(root_html)
-    print("\nCreated root index.html with fixed links")
-
-    # Also fix links in home/index.html for when accessed at /home/
-    with open(home_idx, encoding="utf-8") as f:
-        html = f.read()
-    html = re.sub(
-        r'href="/?[?]file=(\w+)\.py"',
-        lambda m: f'href="../{m.group(1)}/index.html"',
-        html,
-    )
-    html = re.sub(
-        r'href="/\?file=(\w+)\.py"',
-        lambda m: f'href="../{m.group(1)}/index.html"',
-        html,
-    )
-    with open(home_idx, "w", encoding="utf-8", newline="\n") as f:
-        f.write(html)
+    print("\nCreated root index.html with shared asset paths")
 
 # Copy standalone HTML pages (quiz, etc.) to docs root
 for html_file in glob.glob("*.html"):
     shutil.copy2(html_file, os.path.join(DOCS_DIR, html_file))
     print(f"Copied {html_file} to docs/")
+
+# Publish the markdown flashcard decks so the quiz's source decks are visible.
+flashcards_src = "flashcards"
+flashcards_dst = os.path.join(DOCS_DIR, "flashcards")
+if os.path.isdir(flashcards_src):
+    shutil.copytree(flashcards_src, flashcards_dst, dirs_exist_ok=True)
+    deck_files = sorted(glob.glob(os.path.join(flashcards_src, "*.md")))
+    links = "\n".join(
+        f'<li><a href="{html_lib.escape(os.path.basename(path))}">{html_lib.escape(os.path.basename(path))}</a></li>'
+        for path in deck_files
+    )
+    index_html = f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Information Theory Flashcard Decks</title>
+<style>
+body{{font-family:system-ui,sans-serif;max-width:760px;margin:2rem auto;padding:0 1rem;line-height:1.55;color:#172033}}
+a{{color:#0369a1}}
+li{{margin:.4rem 0}}
+</style>
+</head>
+<body>
+<h1>Information Theory Flashcard Decks</h1>
+<p>These markdown decks mirror the flashcard content used by the interactive quiz.</p>
+<ul>
+{links}
+</ul>
+<p><a href="../quiz.html">Back to the study tool</a></p>
+</body>
+</html>
+"""
+    with open(os.path.join(flashcards_dst, "index.html"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(index_html)
+    print(f"Copied {len(deck_files)} flashcard decks to docs/flashcards/")
 
 prune_copied_instruction_files()
 

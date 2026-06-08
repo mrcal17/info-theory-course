@@ -3,6 +3,7 @@ _build_check/
 _ref/
 __pycache__/
 *.pyc
+.venv/
 
 # marimo / manim intermediates
 .marimo.toml

@@ -18,7 +18,7 @@ def _(mo):
     > *"The goal is to extract a compact representation of the variable $X$ that is as informative as possible about another variable $Y$."*
     > — Tishby, Pereira & Bialek, 1999
 
-    You spent Part 1 learning that mutual information $I(X;Y)$ measures how much one variable tells you about another, and 6A/6B taught you to read learning itself through an information-theoretic lens. Now we ask the question that turns all of that into a *principle of representation learning*: when you build a feature, an embedding, a hidden layer — a compressed stand-in $T$ for your raw input $X$ — what exactly should it keep, and what should it throw away?
+    Prerequisite note: this module is easiest after 1B (mutual information and DPI) and 5A (rate-distortion Lagrangians). You spent Part 1 learning that mutual information $I(X;Y)$ measures how much one variable tells you about another, and 6A/6B taught you to read learning itself through an information-theoretic lens. Now we ask the question that turns all of that into a *principle of representation learning*: when you build a feature, an embedding, a hidden layer — a compressed stand-in $T$ for your raw input $X$ — what exactly should it keep, and what should it throw away?
 
     The naive answer "keep everything" is wrong, and not just for efficiency. A representation that memorizes $X$ perfectly has learned the noise along with the signal; it cannot generalize. The **Information Bottleneck** (IB) makes the right answer precise. It says: squeeze $X$ through a bottleneck $T$ that is *minimal* — small $I(X;T)$, so it forgets irrelevant detail — while staying *sufficient* — large $I(T;Y)$, so it keeps everything about the thing you actually care about, $Y$. One scalar knob, $\beta$, trades the two off, and sweeping it traces an optimal frontier called the **information curve**.
 
@@ -117,7 +117,7 @@ def _(mo):
     - $\beta \to \infty$: relevance dominates. $T$ keeps everything predictive of $Y$; it becomes a **minimal sufficient statistic** of $X$ for $Y$. You approach $I(T;Y) = I(X;Y)$.
     - **Intermediate $\beta$:** the interesting regime — partial, *purposeful* compression.
 
-    Sweeping $\beta$ from $0$ to $\infty$ traces a curve in the $\big(I(X;T),\, I(T;Y)\big)$ plane: the **information curve** (or information *plane*). It is concave and monotone, it lies under the line $I(T;Y) = I(X;T)$ (you cannot keep more relevant bits than total bits) and under the ceiling $I(T;Y) = I(X;Y)$, and **$\beta$ is exactly the slope of this curve** at each point — the marginal relevant-bits-per-bit you buy by loosening the bottleneck. This is the precise analogue of the rate-distortion curve $R(D)$ from 5A, with $\beta$ playing the role of the inverse temperature $1/T$ and $-I(T;Y)$ playing the role of distortion.
+    Sweeping $\beta$ from $0$ to $\infty$ traces a curve in the $\big(I(X;T),\, I(T;Y)\big)$ plane: the **information curve** (or information *plane*). It is concave and monotone, it lies under the line $I(T;Y) = I(X;T)$ (you cannot keep more relevant bits than total bits) and under the ceiling $I(T;Y) = I(X;Y)$. In this vertical-vs-horizontal plot, **the slope is $1/\beta$**: along an optimum, $dI(X;T)-\beta\,dI(T;Y)=0$, so $dI(T;Y)/dI(X;T)=1/\beta$. This is the precise analogue of the rate-distortion curve $R(D)$ from 5A, with $\beta$ playing the role of the inverse temperature $1/T$ and $-I(T;Y)$ playing the role of distortion.
 
     > [Tishby et al. (1999)](https://arxiv.org/abs/physics/0004057) derives the functional; compare the $R(D)$ Lagrangian in [Cover & Thomas §10.3–10.4](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X).
     """)
@@ -255,7 +255,7 @@ def _(mo):
 
     - At **small $\beta$** you sit near the origin: heavy compression, little relevance.
     - As **$\beta$ grows** the point climbs the curve toward the ceiling $I(X;Y)$ (the dashed horizontal line).
-    - The point always stays **below the diagonal** $I(T;Y) = I(X;T)$ (you cannot extract more relevant bits than total bits) and **below the ceiling**. The slope of the curve at your point *is* your current $\beta$.
+    - The point always stays **below the diagonal** $I(T;Y) = I(X;T)$ (you cannot extract more relevant bits than total bits) and **below the ceiling**. The slope of the curve at your point is $1/\beta$: large $\beta$ pushes toward the flat ceiling.
     """)
     return
 
@@ -438,7 +438,10 @@ def _(plane_epoch):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/InformationPlane.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/InformationPlane.gif", alt="Animation of representations moving through the information plane during fitting and compression"),
+        mo.md("*Animation: representations move through the information plane during fitting and compression.*"),
+    ])
     return
 
 
@@ -678,6 +681,17 @@ def _(mo):
     Implement `mutual_information(joint)` in bits, taking a 2-D array $p(x,y)$ (it need not be normalized — normalize it first). Use $I(X;Y) = \sum_{x,y} p(x,y)\log_2\frac{p(x,y)}{p(x)p(y)}$ and skip zero entries. This is the workhorse for every later exercise.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -696,7 +710,7 @@ def _():
             return _result
 
         # _j = np.array([[0.30, 0.05], [0.05, 0.10], [0.02, 0.18], [0.18, 0.12]])
-        # print(mutual_information(_j))   # expect ~0.21 bits
+        # print(mutual_information(_j))   # expect ~0.263 bits
 
     _run()
     return
@@ -708,6 +722,17 @@ def _(mo):
     ### Exercise 2: The Relevance Ceiling
 
     Confirm the data-processing bound. For the toy joint below, compute $I(X;Y)$ — the *most* any representation $T$ built from $X$ alone can ever tell you about $Y$. Then form a degraded representation by *merging inputs 0 and 1 into one symbol* (a deterministic $X\to T$ map) and verify $I(T;Y) \le I(X;Y)$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -750,6 +775,17 @@ def _(mo):
     Implement a single sweep of the self-consistent equations. Given current encoder `p_t_given_x` (shape $n_x \times n_t$), the input marginal `px`, and `py_given_x`: (A) compute $p(t)$ and $p(y\mid t)$, (B) form $\mathrm{KL}[p(y\mid x)\,\|\,p(y\mid t)]$ for every $(x,t)$, then (C) return the new softmax encoder $p(t\mid x) \propto p(t)\exp(-\beta\,\mathrm{KL})$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -788,6 +824,17 @@ def _(mo):
     ### Exercise 4: Trace the Information Curve
 
     Use your `ib_step` (or the full solver) to sweep $\beta$ over a range and collect $\big(I(X;T), I(T;Y)\big)$ at each value. You should find the points trace a concave, monotone curve from the origin (small $\beta$) up toward the ceiling $I(X;Y)$ (large $\beta$). Confirm every point obeys $I(T;Y) \le I(X;T)$ and $I(T;Y) \le I(X;Y)$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -850,6 +897,17 @@ def _(mo):
     ### Exercise 5: The Binning Artifact (Saxe's Point)
 
     Reproduce the core of Saxe et al.'s estimator critique. Take a *fixed* deterministic $\tanh$ "layer" mapping $50$ distinct inputs to scalar activations, then estimate $I(X;T)$ by binning the activations into `n_bins` cells. Show that the *same* layer reports very different $I(X;T)$ as you change `n_bins` — so an apparent "compression" can be an artifact of the estimator, not a change in the map.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

@@ -190,6 +190,7 @@ def _():
         def simulate_random_code(R, n, p_flip, n_trials, rng):
             M = int(round(2 ** (n * R)))
             M = min(max(M, 2), 1024)
+            R_eff = np.log2(M) / n
             errors = 0
             for _ in range(n_trials):
                 book = rng.integers(0, 2, size=(M, n))
@@ -200,7 +201,7 @@ def _():
                 w_hat = int(np.argmin(dists))
                 if w_hat != w:
                     errors += 1
-            return errors / n_trials
+            return errors / n_trials, R_eff
 
         _rng = np.random.default_rng(0)
         _p = 0.1
@@ -208,13 +209,13 @@ def _():
         print(f"=== Random coding over a BSC, flip prob p = {_p}  (capacity C = {_C:.3f} bits/use) ===\n")
         print("Rate R = 0.30  (well BELOW capacity): error should fall as n grows")
         for _n in [6, 10, 14, 18]:
-            _pe = simulate_random_code(0.30, _n, _p, 200, _rng)
-            print(f"   n = {_n:2d}   avg decoding error = {_pe:.3f}")
+            _pe, _Reff = simulate_random_code(0.30, _n, _p, 200, _rng)
+            print(f"   n = {_n:2d}   effective R = {_Reff:.3f}   avg decoding error = {_pe:.3f}")
 
         print("\nRate R = 0.75  (ABOVE capacity): error stays high, no rescue from large n")
         for _n in [6, 10, 14, 18]:
-            _pe = simulate_random_code(0.75, _n, _p, 200, _rng)
-            print(f"   n = {_n:2d}   avg decoding error = {_pe:.3f}")
+            _pe, _Reff = simulate_random_code(0.75, _n, _p, 200, _rng)
+            print(f"   n = {_n:2d}   effective R = {_Reff:.3f}   avg decoding error = {_pe:.3f}")
 
         print("\nThe average over random codebooks is small below C => a good code exists (achievability).")
 
@@ -318,8 +319,9 @@ def _(fano_HXY, fano_card):
         import matplotlib.pyplot as plt
 
         _card = int(fano_card.value)
-        _hxy = float(fano_HXY.value)
+        _hxy_raw = float(fano_HXY.value)
         _logK = np.log2(_card)
+        _hxy = min(_hxy_raw, _logK)
 
         def _h2(p):
             out = np.zeros_like(p)
@@ -330,7 +332,7 @@ def _(fano_HXY, fano_card):
         _pe = np.linspace(0, 1, 501)
         _tight_allow = _h2(_pe) + _pe * np.log2(max(_card - 1, 1))
 
-        _floor_loose = max(0.0, (_hxy - 1.0) / _logK)
+        _floor_loose = min(1.0, max(0.0, (_hxy - 1.0) / _logK))
 
         _root = 0.0
         _exceed = np.where(_tight_allow >= _hxy)[0]
@@ -340,7 +342,10 @@ def _(fano_HXY, fano_card):
         _fig, _ax = plt.subplots(figsize=(7.5, 4.2))
         _ax.plot(_pe, _tight_allow, lw=2, color="steelblue",
                  label=r"Fano ceiling on $H(X|Y)$: $H_2(P_e)+P_e\log_2(|X|-1)$")
-        _ax.axhline(_hxy, color="darkorange", ls="-", lw=2, label=f"your H(X|Y) = {_hxy:.2f} bits")
+        _label_hxy = f"your H(X|Y) = {_hxy:.2f} bits"
+        if _hxy_raw > _logK:
+            _label_hxy += f" (clamped from {_hxy_raw:.2f})"
+        _ax.axhline(_hxy, color="darkorange", ls="-", lw=2, label=_label_hxy)
         _ax.axvspan(0, _root, color="red", alpha=0.15)
         _ax.axvline(_root, color="red", ls="--", alpha=0.8,
                     label=f"tight Fano floor: Pe >= {_root:.3f}")
@@ -348,7 +353,7 @@ def _(fano_HXY, fano_card):
                     label=f"loose floor: Pe >= {_floor_loose:.3f}")
         _ax.set_xlabel(r"error probability $P_e$")
         _ax.set_ylabel("uncertainty (bits)")
-        _ax.set_title(f"Fano's inequality   (|X| = {_card},  ceiling at Pe=1 is log2|X| = {_logK:.2f})")
+        _ax.set_title(f"Fano's inequality   (|X| = {_card}, max feasible H(X|Y) = log2|X| = {_logK:.2f})")
         _ax.set_xlim(0, 1)
         _ax.set_ylim(0, max(_logK, _hxy) * 1.1 + 0.1)
         _ax.legend(fontsize=8, loc="lower right")
@@ -384,6 +389,8 @@ def _(mo):
     The error probability is **bounded away from zero forever**. Bigger blocks do not help; cleverer codes do not help. Above capacity, reliable communication is flatly impossible. This is the *strong* converse's gentler cousin (the strong converse pushes $P_e \to 1$), but it already establishes the cliff.
 
     **Both halves together — Shannon's theorem.** Achievability ($R<C \Rightarrow$ error $\to 0$) and the converse ($R>C \Rightarrow$ error $\ge 1-C/R$) sandwich the behaviour into a step function. Capacity is not a soft guideline; it is a **wall**.
+
+    **A useful surprise: feedback does not move this wall for a DMC.** If the transmitter sees the channel outputs noiselessly after each use, the capacity of a discrete memoryless channel is still $C$. Feedback can simplify coding, improve error exponents, and matter enormously for channels with memory or interaction, but it cannot raise the single-letter DMC capacity. That is one reason the no-feedback theorem above is already the central limit.
 
     > [Cover & Thomas Ch 7.9](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) and [Gallager Ch 5](https://www.wiley-vch.de/de/fachgebiete/ingenieurwesen/elektrotechnik-und-elektronik-10ee/kommunikationstechnik-10ee2/information-theory-and-reliable-communication-978-0-471-29048-3) prove the converse and strong converse in full.
     """)
@@ -455,6 +462,7 @@ def _(cliff_n, cliff_pflip):
         def _simulate(R, n, p_flip, n_trials, rng):
             M = int(round(2 ** (n * R)))
             M = min(max(M, 2), 1024)
+            R_eff = np.log2(M) / n
             errors = 0
             for _ in range(n_trials):
                 book = rng.integers(0, 2, size=(M, n))
@@ -466,15 +474,17 @@ def _(cliff_n, cliff_pflip):
                 w_hat = int(rng.choice(best))
                 if w_hat != w:
                     errors += 1
-            return errors / n_trials
+            return errors / n_trials, R_eff
 
         _p = float(cliff_pflip.value)
         _n = int(cliff_n.value)
         _C = _bsc_capacity(_p)
         _rng = np.random.default_rng(7)
 
-        _rates = np.linspace(0.05, 0.98, 14)
-        _pe = np.array([_simulate(_R, _n, _p, 150, _rng) for _R in _rates])
+        _rates_requested = np.linspace(0.05, 0.98, 14)
+        _sim = [_simulate(_R, _n, _p, 150, _rng) for _R in _rates_requested]
+        _pe = np.array([_s[0] for _s in _sim])
+        _rates = np.array([_s[1] for _s in _sim])
 
         _fig, _ax = plt.subplots(figsize=(7.5, 4.4))
         _ax.plot(_rates, _pe, "o-", color="crimson", lw=2, ms=5, label=f"random codes, n = {_n}")
@@ -483,9 +493,9 @@ def _(cliff_n, cliff_pflip):
         _ax.axvspan(_C, 1.0, color="red", alpha=0.08)
         _ax.text(_C / 2, 0.92, "achievable\n(error -> 0)", ha="center", fontsize=9, color="green")
         _ax.text((_C + 1) / 2, 0.92, "forbidden\n(error bounded away)", ha="center", fontsize=9, color="darkred")
-        _ax.set_xlabel("rate R (bits per channel use)")
+        _ax.set_xlabel("effective rate R = log2(M)/n (bits per channel use)")
         _ax.set_ylabel("measured decoding error")
-        _ax.set_title(f"The rate cliff: BSC(p={_p:.2f}), block length n={_n}")
+        _ax.set_title(f"The rate cliff: BSC(p={_p:.2f}), block length n={_n}  (M capped at 1024)")
         _ax.set_xlim(0, 1)
         _ax.set_ylim(-0.03, 1.03)
         _ax.legend(loc="center left", fontsize=8)
@@ -499,7 +509,10 @@ def _(cliff_n, cliff_pflip):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/ChannelCodingCliff.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/ChannelCodingCliff.gif", alt="Animation of decoding error dropping below capacity and rising above the rate cliff"),
+        mo.md("*Animation: error probability forms a rate cliff around channel capacity.*"),
+    ])
     return
 
 
@@ -543,6 +556,17 @@ def _(mo):
     Implement `rate(M, n)` returning bits per channel use, and its inverse `num_codewords(R, n)` returning $M = 2^{nR}$. Test on a Hamming-shaped $(16, 7)$ code (expect $R = 4/7 \approx 0.571$) and confirm the round-trip $M \to R \to M$ recovers $16$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -573,6 +597,17 @@ def _(mo):
     The probability that *some* wrong codeword fools a joint-typicality decoder is at most $2^{-n(I - R)}$. Implement that bound and confirm it vanishes as $n$ grows when $R < I$, and explodes when $R > I$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -598,6 +633,17 @@ def _(mo):
     ### Exercise 3: Fano's Floor on Error
 
     Implement both forms of Fano. The loose floor is $P_e \ge (H(X\mid Y) - 1)/\log_2|\mathcal X|$; the tight ceiling is $H(X\mid Y) \le H_2(P_e) + P_e\log_2(|\mathcal X|-1)$. Use the loose form to find the minimum error when $|\mathcal X| = 8$ and $H(X\mid Y) = 2$ bits (expect $1/3$).
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -629,6 +675,17 @@ def _(mo):
     ### Exercise 4: Simulate a Random Code on the BSC
 
     Write a Monte-Carlo simulation of joint-typicality-style (nearest-neighbour) decoding of a random codebook over a binary symmetric channel. Confirm that at a rate well below the BSC capacity, the average decoding error shrinks as $n$ grows.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -667,9 +724,20 @@ def _(mo):
     mo.md(r"""
     ### Exercise 5: Locate the Cliff
 
-    For a BSC with capacity $C$, sweep the rate $R$ and find the empirical "cliff" — the smallest rate at which the simulated error first exceeds $0.5$. Check that it sits near $C = 1 - H_2(p)$.
+    For a BSC with capacity $C$, sweep the rate $R$ and find where the simulated error rises sharply. With short random-code simulations the error may not cross a fixed threshold like $0.5$; a robust diagnostic is the rate whose error is closest to $0.5$, then compare it to $C = 1 - H_2(p)$.
 
     This is the final exercise; its run guard launches the whole notebook.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -703,7 +771,7 @@ def _():
 
         # p = 0.11; C = bsc_capacity(p)
         # rates = np.linspace(0.1, 0.95, 18)
-        # TODO: find the first rate whose simulated error exceeds 0.5; compare to C
+        # TODO: simulate each rate, then choose the rate whose error is closest to 0.5; compare to C
         cliff_rate = ...
 
         # print(f"empirical cliff ~ {cliff_rate:.2f}   vs   C = {bsc_capacity(0.11):.3f}")

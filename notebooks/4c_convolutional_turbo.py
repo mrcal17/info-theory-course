@@ -247,7 +247,7 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    vit_seed = mo.ui.slider(start=0, stop=30, step=1, value=3, label="message seed")
+    vit_seed = mo.ui.slider(start=0, stop=30, step=1, value=0, label="message seed")
     vit_len = mo.ui.slider(start=4, stop=10, step=1, value=6, label="message length (bits)")
     vit_errors = mo.ui.slider(start=0, stop=6, step=1, value=2, label="channel bit-errors injected")
     mo.vstack([vit_seed, vit_len, vit_errors])
@@ -350,7 +350,10 @@ def _(vit_errors, vit_len, vit_seed):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/ViterbiTrellis.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/ViterbiTrellis.gif", alt="Animation of the Viterbi algorithm selecting a surviving path through a trellis"),
+        mo.md("*Animation: Viterbi decoding keeps the best surviving path through the trellis.*"),
+    ])
     return
 
 
@@ -473,8 +476,11 @@ def _(ber_decoder, ber_nbits):
             _rx = _tx + _noise
             _pairs = _rx.reshape(-1, 2)
 
-            _unc_hat = (_rx < 0).astype(int)
-            _ber_unc.append(np.mean(_unc_hat != _coded))
+            _unc_tx = 1.0 - 2.0 * _msg
+            _unc_sigma = np.sqrt(1.0 / (2.0 * _ebn0))
+            _unc_rx = _unc_tx + _rng.normal(0, _unc_sigma, size=_unc_tx.shape)
+            _unc_hat = (_unc_rx < 0).astype(int)
+            _ber_unc.append(np.mean(_unc_hat != _msg))
 
             _ber_hard.append(np.mean(viterbi(_hard_metric, _pairs) != _msg))
             _ber_soft.append(np.mean(viterbi(_soft_metric, _pairs) != _msg))
@@ -624,7 +630,7 @@ def _(mo):
 
     ## 7. Turbo Codes & Iterative Decoding: Hitting the Limit
 
-    Here is the breakthrough. A **turbo code** takes two simple recursive convolutional encoders and feeds them the *same* message — but the second copy sees the bits in a **scrambled order**, fixed by a pseudo-random **interleaver** $\pi$. You transmit the systematic bits plus the parity from each encoder. Neither component code is strong on its own. Their *combination*, decoded the right way, is astonishingly close to optimal.
+    Here is the breakthrough. A real **turbo code** takes two simple **recursive systematic convolutional** (RSC) encoders and feeds them the *same* message — but the second copy sees the bits in a **scrambled order**, fixed by a pseudo-random **interleaver** $\pi$. You transmit the systematic bits plus the parity from each encoder. The recursive feedback is not decoration: it gives the component codes the long-range structure that made turbo codes famous. Neither component code is strong on its own. Their *combination*, decoded the right way, is astonishingly close to optimal.
 
     The right way is **iterative decoding**. Each component has its own BCJR/MAP decoder producing soft LLRs. The trick is **extrinsic information**: decoder 1 produces, for each bit, the *new* belief it learned that decoder 2 did not already supply. That extrinsic LLR is deinterleaved and handed to decoder 2 as a prior; decoder 2 does its BCJR, produces *its* extrinsic LLR, interleaves it back, and the loop repeats. Each pass, the two decoders' beliefs reinforce each other — the bit errors melt away over a handful of iterations. The name is an analogy to a turbocharger feeding its own exhaust back in.
 
@@ -633,7 +639,7 @@ def _(mo):
     - The interleaver makes the two codes' error patterns **nearly independent**, so a burst that fools one decoder looks like scattered noise to the other.
     - Passing *extrinsic* (not total) information keeps the loop from double-counting evidence — exactly the principle behind **belief propagation** on the loopy graph of 4D. Turbo decoding *is* BP on the turbo code's factor graph.
 
-    The payoff: with a long interleaver, turbo codes reach within **0.5 dB of the Shannon capacity** on the AWGN channel — the first practical codes ever to do so, and the reason they went into 3G/4G phones, deep-space links, and DVB. The demo below runs a miniature iterative loop on two soft "decoders" and watches the average LLR magnitude (the confidence) climb with each iteration.
+    The payoff: with a long interleaver and RSC components, turbo codes reach within **0.5 dB of the Shannon capacity** on the AWGN channel — the first practical codes ever to do so, and the reason they went into 3G/4G phones, deep-space links, and DVB. The demo below is deliberately smaller: it reuses the feedforward convolutional component from earlier as a pedagogical stand-in, so it illustrates extrinsic-message bookkeeping and confidence growth, not production turbo-code performance.
 
     > [Richardson & Urbanke Ch 6](https://documents.epfl.ch/groups/i/ip/ipg/www/2010-2011/Statistical_Physics_for_Communication_and_Computer_Science/mct-new.pdf) is the modern reference on turbo/iterative decoding; [MacKay Ch 48](https://www.inference.org.uk/itprnn/book.pdf) and [Lin & Costello Ch 16](https://openlibrary.org/books/OL3301344M/Error_control_coding) cover construction and performance.
     """)
@@ -719,7 +725,7 @@ def _():
         _Lpar1 = _chan_llr(_par1)
         _Lpar2 = _chan_llr(_par2)
 
-        print("=== Miniature turbo iterative decoding ===")
+        print("=== Miniature turbo-style iterative decoding (feedforward stand-in) ===")
         print(f"  message ({_Lm} bits): {_msg.tolist()}")
         _ext = np.zeros(_Lm)
         for _it in range(1, 7):
@@ -782,6 +788,17 @@ def _(mo):
     Implement the rate-$1/2$, $K=3$ encoder with generators $(7,5)$ octal. Push each input bit into a 2-bit state, XOR the right taps, and emit two output bits. The state should hold the two previous input bits. Verify that encoding `[1,0,1,1]` gives the same stream the Section 1 demo produced.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -815,6 +832,17 @@ def _(mo):
     Build the trellis. For each of the 4 states and each input bit, compute the next state and the 2-bit output label. Return a dict mapping `(state, input) -> (next_state, (v1, v2))`. This table is the backbone every decoder reads from.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -834,7 +862,7 @@ def _():
             return table
 
         # t = build_trellis()
-        # print(t[(0, 1)])    # expect (1, (1, 1))
+        # print(t[(0, 1)])    # expect (2, (1, 1))
         # print(t[(3, 0)])    # expect (1, (0, 1))
 
     _run()
@@ -847,6 +875,17 @@ def _(mo):
     ### Exercise 3: Viterbi Hard-Decision Decoder
 
     Implement the add-compare-select recursion. Keep one accumulated Hamming metric per state, remember the best predecessor and input at each step, then trace back from the best final state. Decode a stream with a couple of injected bit-flips and confirm you recover the message.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -915,6 +954,17 @@ def _(mo):
     Soft decoding wins ~2 dB by using the analog channel value. Write both branch metrics for a 2-bit label against a received pair `r`. Hard: map `r` to bits by sign, then Hamming. Soft: map the label to $\pm 1$ symbols and take squared Euclidean distance. Check that on a clean, confident received pair both agree on the winning edge.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -947,6 +997,17 @@ def _(mo):
     ### Exercise 5: A BER-vs-SNR Point
 
     Tie it together. For one SNR value, encode random bits, push them through an AWGN channel (BPSK + Gaussian noise of the right variance), decode, and measure the bit-error rate. The noise std for rate $R$ at $E_b/N_0$ (linear) is $\sigma = 1/\sqrt{2 R \, (E_b/N_0)}$. Reuse your `viterbi` from Exercise 3 by first hard-slicing the channel output.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

@@ -364,28 +364,29 @@ def _():
         import zlib
 
         def approx_complexity_bits(s):
-            raw = s.encode("utf-8")
+            raw = s if isinstance(s, bytes) else s.encode("utf-8")
             comp = zlib.compress(raw, level=9)
             return len(comp) * 8, len(raw) * 8
 
         _rng = np.random.default_rng(0)
         _structured = "01" * 500
-        _pi_like = "".join(str(d) for d in _rng.integers(0, 10, 1000))
+        _digits = "".join(str(d) for d in _rng.integers(0, 10, 1000))
         _repeated = "A" * 1000
-        _random_bits = "".join(str(b) for b in _rng.integers(0, 2, 1000))
+        _random_bytes = bytes(_rng.integers(0, 256, 4000, dtype=np.uint8))
 
         print("=== Practical proxy for K(x): a real compressor (zlib) ===")
         print(f"{'string':>22} {'raw bits':>9} {'~K(x) bits':>11} {'ratio':>7}")
         for _name, _s in [
             ("'01' x 500", _structured),
             ("'A' x 1000", _repeated),
-            ("random digits x1000", _pi_like),
-            ("random bits x1000", _random_bits),
+            ("random digits x1000", _digits),
+            ("random bytes x4000", _random_bytes),
         ]:
             _k, _raw = approx_complexity_bits(_s)
             print(f"{_name:>22} {_raw:>9} {_k:>11} {_k / _raw:>7.2f}")
         print()
-        print("Structured strings compress (small ~K); random ones do not (ratio ~1).")
+        print("Structured strings compress (small ~K). Full random bytes stay near ratio 1.")
+        print("Random digits may still compress versus raw UTF-8 because the alphabet has only 10 symbols.")
         print("A perfect compressor would reach the true K(x) — but K is uncomputable.")
 
     _run()
@@ -429,7 +430,7 @@ def _():
         import numpy as np
 
         _rng = np.random.default_rng(5)
-        _n = 50
+        _n = 10
         _data = _rng.normal(0.0, 1.0, _n)
         _xbar = float(np.mean(_data))
 
@@ -440,21 +441,28 @@ def _():
         def codelen_nats(mu):
             return 0.5 * np.sum((_data - mu) ** 2) + 0.5 * _n * np.log(2 * np.pi)
 
-        _two_part = codelen_nats(_post_mean) + 0.5 * _post_mean**2 / _prior_var
-        _two_part += 0.5 * np.log(2 * np.pi * _prior_var)
+        _map_two_part = codelen_nats(_post_mean) + 0.5 * _post_mean**2 / _prior_var
+        _map_two_part += 0.5 * np.log(2 * np.pi * _prior_var)
 
         _ll_term = float(np.mean([codelen_nats(_rng.normal(_post_mean, np.sqrt(_post_var)))
                                   for _ in range(4000)]))
+        _expected_model = 0.5 * (_post_var + _post_mean**2) / _prior_var
+        _expected_model += 0.5 * np.log(2 * np.pi * _prior_var)
+        _expected_two_part = _ll_term + _expected_model
+        _entropy_q = 0.5 * np.log(2 * np.pi * np.e * _post_var)
         _kl = 0.5 * (_post_var / _prior_var + _post_mean**2 / _prior_var
                      - 1 + np.log(_prior_var / _post_var))
         _bits_back = _ll_term + _kl
 
-        print("=== Bits-back saves the posterior's entropy (in nats) ===")
-        print(f"crude two-part length (commit to θ̂)   : {_two_part:8.2f} nats")
-        print(f"bits-back length  = E_q[NLL] + KL(q||p): {_bits_back:8.2f} nats")
-        print(f"posterior entropy refunded H[q]        : {0.5 * np.log(2 * np.pi * np.e * _post_var):8.2f} nats")
+        print("=== Bits-back accounting: compare like with like (in nats) ===")
+        print(f"MAP two-part length (commit to θ̂)       : {_map_two_part:8.2f} nats")
+        print(f"expected two-part E_q[NLL - log p(θ)]   : {_expected_two_part:8.2f} nats")
+        print(f"posterior differential entropy H[q]     : {_entropy_q:8.2f} nats")
+        print(f"bits-back length = E_q[NLL] + KL(q||p)  : {_bits_back:8.2f} nats")
         print()
-        print("Bits-back = negative ELBO: reconstruction (E_q[NLL]) + rate (KL). See 6E.")
+        print("Bits-back saves H[q] relative to the expected two-part code, not necessarily")
+        print("relative to a crude MAP code. In continuous models H[q] can even be negative;")
+        print("finite-precision bits-back discretizes the ledger into ordinary nonnegative bits.")
 
     _run()
     return
@@ -502,6 +510,17 @@ def _(mo):
     Under a Gaussian noise model with the maximum-likelihood variance $\hat\sigma^2 = \tfrac1n\sum_i r_i^2$, the residual code length is $\tfrac{n}{2}\log_2(2\pi e\,\hat\sigma^2)$ bits. Implement it, given an array of residuals. Confirm that tighter fits (smaller residuals) cost fewer bits.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -532,6 +551,17 @@ def _(mo):
     The model part of a two-part code charges $\tfrac12\log_2 n$ bits per free parameter. For a degree-$d$ polynomial there are $k = d+1$ parameters. Implement `model_bits(d, n)` and tabulate it for $d = 0\ldots 8$ with $n = 30$. Notice it grows *linearly* in $d$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -557,6 +587,17 @@ def _(mo):
     ### Exercise 3: Find the MDL-Optimal Degree
 
     Put the two parts together. Given noisy data, fit polynomials of degree $0\ldots d_{\max}$, compute the total description length for each, and return the degree that minimizes it. Use `np.vander(x, d+1, increasing=True)` and `np.linalg.lstsq` for the fit. On the data below (true model is quadratic) you should recover a small degree near 2.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -594,7 +635,18 @@ def _(mo):
     mo.md(r"""
     ### Exercise 4: MDL vs AIC vs BIC on the Same Fit
 
-    Three criteria, three penalties. For a fit with $k$ parameters, max log-likelihood $\hat\ell$ (in nats), and $n$ data points: AIC $= -2\hat\ell + 2k$; BIC $= -2\hat\ell + k\ln n$; and the two-part MDL code length (in bits) $= -\hat\ell/\ln 2 + \tfrac k2\log_2 n$. Compute all three across degrees and compare which degree each selects (AIC usually picks a larger model).
+    Three criteria, three penalties. For a fit with $k$ parameters, max log-likelihood $\hat\ell$ (in nats), and $n$ data points: AIC $= -2\hat\ell + 2k$; BIC $= -2\hat\ell + k\ln n$; and the two-part MDL code length (in bits) $= -\hat\ell/\ln 2 + \tfrac k2\log_2 n$. Compute all three across degrees and compare which degree each selects. AIC penalizes less than BIC/MDL for large $n$, so it can pick a larger model, but a small noisy sample may tie them.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -636,7 +688,18 @@ def _(mo):
     mo.md(r"""
     ### Exercise 5: Compression as a Complexity Proxy
 
-    Kolmogorov complexity is uncomputable, but a real compressor approximates it from above. Use `zlib` to estimate the description length (in bits) of several strings, and confirm that structured strings compress (small proxy-$K$) while random strings do not (ratio near 1). This is the practical face of "regularity = compressibility."
+    Kolmogorov complexity is uncomputable, but a real compressor approximates it from above. Use `zlib` to estimate the description length (in bits) of several byte strings, and confirm that structured strings compress (small proxy-$K$) while full random bytes do not (ratio near 1). This is the practical face of "regularity = compressibility."
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -648,16 +711,16 @@ def _():
         import zlib
 
         def proxy_complexity_bits(s):
-            raw = s.encode("utf-8")
+            raw = s if isinstance(s, bytes) else s.encode("utf-8")
             # TODO: compress with zlib.compress(raw, level=9), return len(compressed)*8
             return ...
 
         rng = np.random.default_rng(0)
         structured = "ABAB" * 250
-        random_str = "".join(str(b) for b in rng.integers(0, 2, 1000))
+        random_bytes = bytes(rng.integers(0, 256, 4000, dtype=np.uint8))
 
         # print("structured:", proxy_complexity_bits(structured), "bits   (small)")
-        # print("random:    ", proxy_complexity_bits(random_str), "bits   (~ raw length)")
+        # print("random:    ", proxy_complexity_bits(random_bytes), "bits   (~ raw length)")
 
     _run()
     return

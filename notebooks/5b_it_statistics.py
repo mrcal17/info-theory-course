@@ -122,6 +122,8 @@ def _(mo):
 
     The $\doteq$ symbol means "equal to first order in the exponent": $a_n \doteq b_n$ iff $\frac1n \log \frac{a_n}{b_n} \to 0$. The polynomial $(n+1)^a$ factors are exactly the terms that vanish under $\frac1n\log(\cdot)$, which is why they never appear in the final exponents.
 
+    **Sufficient statistics, in one line.** For an i.i.d. categorical sample, the type is a sufficient statistic for the source distribution: once you know the histogram, the order of the sample carries no extra information about the parameter. More generally, the Fisher-Neyman factorization theorem says $T(X)$ is sufficient when the likelihood factors through $T$; in information-theory language, sufficiency means equality in the data-processing inequality, $I(\theta; X)=I(\theta; T(X))$.
+
     > [Cover & Thomas Ch 11.1–11.2](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) proves the size bounds and the $Q^n(T(P)) \doteq 2^{-nD(P\|Q)}$ estimate.
     """)
     return
@@ -240,7 +242,7 @@ def _(mo):
 
     This is a **large-deviations** statement: rare events happen, but their probability decays exponentially at a rate set by the *cheapest* way to make them happen. $P^\star$ is the **information projection** of $Q$ onto $E$ — the most likely "explanation" for the rare event, the path of least KL resistance.
 
-    **Worked example (the unfair-average problem).** Roll a fair die ($Q$ uniform on $\{1,\dots,6\}$, so $\mathbb{E}=3.5$) $n$ times. What is the probability the sample *average* is at least $4$? The constraint set is $E = \{P : \sum_i i\,P(i) \ge 4\}$. Sanov says the exponent is $D(P^\star\|Q)$ where $P^\star$ is the maximum-entropy (closest-to-uniform) distribution with mean exactly $4$ — a tilted (exponential-family) distribution $P^\star(i) \propto e^{\lambda i}$. We solve for $\lambda$ and read off the rate below.
+    **Worked example (the unfair-average problem).** Roll a fair die ($Q$ uniform on $\{1,\dots,6\}$, so $\mathbb{E}=3.5$) $n$ times. What is the probability the sample *average* is at least $4$? The constraint set is $E = \{P : \sum_i i\,P(i) \ge 4\}$. Sanov says the exponent is $D(P^\star\|Q)$ where $P^\star$ is the I-projection of $Q$ onto that constraint. Because this $Q$ is uniform, that is also the maximum-entropy distribution with mean exactly $4$; for a non-uniform $Q$, "closest in KL to $Q$" is the right phrase, not maximum entropy. The solution is a tilted (exponential-family) distribution $P^\star(i) \propto e^{\lambda i}$. We solve for $\lambda$ and read off the rate below.
 
     The punchline for statistics: **the probability of being fooled by data decays exponentially, and the rate is a KL divergence to the boundary of the "fooling" set.** Confidence levels, $p$-values, and false-alarm rates are all secretly large-deviation exponents.
 
@@ -281,15 +283,17 @@ def _():
         print(f"I-projection P* = {np.round(_Pstar, 4)}   (mean = {_mean:.4f})")
         print(f"exponent D(P*||Q) = {_D:.4f} bits/roll\n")
 
-        _rng = np.random.default_rng(3)
-        print(f"{'n':>4} | {'Sanov 2^-nD':>14} | {'Monte Carlo':>14}")
-        print("-" * 40)
+        print(f"{'n':>4} | {'Sanov 2^-nD':>14} | {'exact finite-n':>14}")
+        print("-" * 42)
+        _one = np.full(6, 1 / 6)
         for _n in [10, 20, 40, 80]:
             _pred = 2.0 ** (-_n * _D)
-            _trials = 400_000
-            _rolls = _rng.integers(1, 7, size=(_trials, _n))
-            _emp = float(np.mean(_rolls.mean(axis=1) >= _target_mean))
-            print(f"{_n:>4} | {_pred:>14.3e} | {_emp:>14.3e}")
+            _pmf = np.array([1.0])
+            for _ in range(_n):
+                _pmf = np.convolve(_pmf, _one)
+            _sums = np.arange(_n, 6 * _n + 1)
+            _exact = float(_pmf[_sums >= _target_mean * _n].sum())
+            print(f"{_n:>4} | {_pred:>14.3e} | {_exact:>14.3e}")
         print("\nSame exponential slope; the polynomial prefactor explains the constant gap.")
 
     _run()
@@ -349,8 +353,8 @@ def _():
         _llr_per = np.log2(_P1 / _P0)
 
         print(f"{'n':>4} | {'threshold tau':>13} | {'alpha (<=eps)':>13} | "
-              f"{'beta empirical':>15} | {'2^-nD01':>12}")
-        print("-" * 70)
+              f"{'beta empirical':>15} | {'-log2(beta)/n':>14} | {'D01':>7}")
+        print("-" * 86)
         for _n in [10, 20, 40, 80]:
             _x0 = _rng.choice(3, size=(_trials, _n), p=_P0)
             _x1 = _rng.choice(3, size=(_trials, _n), p=_P1)
@@ -359,10 +363,11 @@ def _():
             _tau = float(np.quantile(_llr0, 1 - _eps))
             _alpha = float(np.mean(_llr0 > _tau))
             _beta = float(np.mean(_llr1 <= _tau))
-            _pred = 2.0 ** (-_n * _D01)
+            _emp_exp = -np.log2(_beta) / _n if _beta > 0 else np.inf
             print(f"{_n:>4} | {_tau:>13.4f} | {_alpha:>13.4f} | "
-                  f"{_beta:>15.3e} | {_pred:>12.3e}")
-        print("\nbeta shrinks ~ geometrically with slope -D(P0||P1), as Stein predicts.")
+                  f"{_beta:>15.3e} | {_emp_exp:>14.4f} | {_D01:>7.4f}")
+        print("\nThe empirical exponent moves toward D(P0||P1), but finite-n convergence is slow.")
+        print("Stein's lemma is the asymptotic slope, not a promise that 2^-nD matches small-n beta exactly.")
 
     _run()
     return
@@ -626,6 +631,17 @@ def _(mo):
     Given an integer sequence over an alphabet of size `a`, compute its type (empirical distribution) and verify the per-sequence probability identity $Q^n(x^n) = 2^{-n(H(P)+D(P\|Q))}$ against the direct product $\prod_i Q(x_i)$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -666,6 +682,17 @@ def _(mo):
     Implement `log2_type_class_size(counts)` returning $\log_2 |T(P)|$ for integer counts summing to $n$ (use `math.lgamma` for the log-multinomial coefficient). Confirm it lies between $nH(P) - a\log_2(n+1)$ and $nH(P)$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -700,6 +727,17 @@ def _(mo):
     Estimate the exponent for the event "sample mean of a fair die $\ge$ 4.5". Find the tilted distribution $P^\star(i) \propto e^{\lambda i}$ whose mean equals 4.5 (solve for $\lambda$ by bisection), then return $D(P^\star\|Q)$ in bits. Sanity-check the exponent against a Monte-Carlo estimate of the rare-event probability.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -729,7 +767,7 @@ def _():
         #     rolls = rng.integers(1, 7, (300_000, nn))
         #     emp = np.mean(rolls.mean(1) >= target)
         #     print(nn, 2.0**(-nn*D), emp)   # same exponential slope
-        # expected: D ~ 0.19 bits/roll
+        # expected: D ~ 0.257 bits/roll
 
     _run()
     return
@@ -741,6 +779,17 @@ def _(mo):
     ### Exercise 4: Stein's Lemma by Simulation
 
     For two distributions `P0`, `P1` over 3 symbols, run the Neyman–Pearson test on length-$n$ samples (threshold the empirical log-likelihood ratio at the $1-\epsilon$ quantile under $H_0$). Show the type-II error $\beta_n$ decays at rate $D(P_0\|P_1)$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -785,6 +834,17 @@ def _(mo):
     For a Gaussian family $\mathcal{N}(\mu, 1)$ with unknown mean, the KL divergence is $D(p_\mu \| p_{\mu+d}) = d^2/2$ (in nats), so the Fisher information is $I(\mu) = 1$. Verify numerically that $D / (\tfrac12 d^2) \to 1$ as $d \to 0$, and confirm the Cramér–Rao floor $1/(nI) = 1/n$ matches the variance of the sample mean.
 
     The very last line of this cell is the module-level run guard — leave it after the `return`.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

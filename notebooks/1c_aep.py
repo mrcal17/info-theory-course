@@ -151,7 +151,7 @@ def _(mo):
 
     ### Explore: the Markov entropy-rate landscape
 
-    Set the two transition probabilities $a = P(\text{stay in } 0 \to 0\text{'s complement})$ and $b$ for the two rows. The widget solves for the stationary distribution and shows the entropy rate, the per-row entropies, and the marginal entropy side by side. Push both sliders to $0.5$ and you recover a memoryless fair source ($H = 1$ bit); push them toward the corners and watch the rate plunge as the chain becomes predictable.
+    Set the two transition probabilities $a = P(0 \to 1)$ and $b = P(1 \to 0)$. The widget solves for the stationary distribution and shows the entropy rate, the per-row entropies, and the marginal entropy side by side. Push both sliders to $0.5$ and you recover a memoryless fair source ($H = 1$ bit); push them toward the corners and watch the rate plunge as the chain becomes predictable.
     """)
     return
 
@@ -318,13 +318,14 @@ def _(bias_slider, n_slider):
         _sample_entropy = -_logp_per_symbol[_draws].sum(axis=1) / _n
 
         _fig, _ax = plt.subplots(figsize=(8, 4.2))
-        _bins = np.linspace(0, 1.0, 41)
+        _xmax = max(1.0, float(_sample_entropy.max()) * 1.05)
+        _bins = np.linspace(0, _xmax, 41)
         _ax.hist(_sample_entropy, bins=_bins, color="steelblue", alpha=0.8,
                  density=True, edgecolor="white", linewidth=0.3)
         _ax.axvline(_H, color="red", lw=2.5, label=f"H = {_H:.3f} bits")
         _ax.axvline(_sample_entropy.mean(), color="black", ls="--", lw=1.5,
                     label=f"sample mean = {_sample_entropy.mean():.3f}")
-        _ax.set_xlim(0, 1.0)
+        _ax.set_xlim(0, _xmax)
         _ax.set_xlabel(r"sample entropy   $-\frac{1}{n}\log_2 p(x^n)$   (bits/symbol)")
         _ax.set_ylabel("density")
         _ax.set_title(f"n = {_n}:  std = {_sample_entropy.std():.4f}   "
@@ -340,7 +341,10 @@ def _(bias_slider, n_slider):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/TypicalSet.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/TypicalSet.gif", alt="Animation of probability mass concentrating into the typical set as block length grows"),
+        mo.md("*Animation: as block length grows, probability mass concentrates on the typical set.*"),
+    ])
     return
 
 
@@ -362,6 +366,8 @@ def _(mo):
     3. **Its size is about $2^{nH}$.** Precisely $(1-\epsilon)\,2^{n(H-\epsilon)} \le \big|A_\epsilon^{(n)}\big| \le 2^{n(H+\epsilon)}$ for large $n$.
 
     **The punchline.** There are $2^{n\log_2|\mathcal{X}|}$ sequences in total, but only $\approx 2^{nH}$ typical ones. When $H < \log_2|\mathcal{X}|$ — i.e. whenever the source is not uniform — the typical set is an **exponentially tiny sliver** of all sequences, yet it holds essentially all the probability. For the $P(\text{heads})=0.9$ coin, $H \approx 0.469$, so of the $2^{100}\approx 1.3\times10^{30}$ length-100 strings, only about $2^{46.9}\approx 1.3\times10^{14}$ are typical — a factor of $10^{16}$ smaller, carrying $\approx$ all the mass.
+
+    **Weak vs. strong typicality.** This module uses **weak** (entropy) typicality: the average surprisal is close to $H$. In finite-alphabet network and rate-distortion proofs, authors often use **strong** typicality instead: the empirical frequency of each symbol (or pair of symbols) is close to its true probability. Strong typicality gives convenient counting and Markov-lemma tools; weak typicality is broader and cleaner for the first pass. When 5A and 5C invoke typicality later, read that as the stronger empirical-frequency version unless stated otherwise.
 
     This is *exactly* why compression works: assign short codewords (about $nH$ bits, one per typical sequence) to the typical set and throw a flag bit at everything else. You will lose data only with probability $\to 0$, and you will hit the entropy floor. That argument, made rigorous, is the **source coding theorem** of Module 2A. The same typical-set machinery — applied to *jointly* typical input/output pairs — proves the channel coding theorem in 3B. Learn it once here; reuse it everywhere.
 
@@ -496,6 +502,17 @@ def _(mo):
     Write `sample_entropy(seq, p)` that takes a sequence of symbol indices `seq` and a probability vector `p`, and returns the per-symbol surprisal $-\tfrac1n\log_2 p(x^n) = -\tfrac1n\sum_i \log_2 p(x_i)$. Then draw a long sequence from a biased coin and confirm the value lands near $H$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -528,6 +545,17 @@ def _(mo):
     Confirm the AEP empirically. For a fixed biased source, draw many length-$n$ sequences for several values of $n$, compute the sample entropy of each, and report the mean and standard deviation. The mean should sit at $H$ for all $n$; the std should shrink toward 0 as $n$ grows (it falls like $1/\sqrt{n}$).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -557,6 +585,17 @@ def _(mo):
     ### Exercise 3: Building the Typical Set
 
     For $n=20$ and a biased coin, enumerate (or sample) sequences and classify each as typical (sample entropy within $\epsilon$ of $H$) or not. Estimate (a) the probability mass on the typical set and (b) its size, and compare the size to the prediction $2^{nH}$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -597,6 +636,17 @@ def _(mo):
     Given a 2x2 transition matrix `P`, compute the stationary distribution $\mu$ (left eigenvector of $P$ for eigenvalue 1, normalized) and then the entropy rate $H(\mathcal{X}) = \sum_i \mu_i H(\text{row } i)$. Verify on the chain with rows $(0.9, 0.1)$ and $(0.5, 0.5)$ (expect rate $\approx 0.558$).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -635,6 +685,17 @@ def _(mo):
     Don't trust the closed form — earn it. Simulate a long trajectory of the Markov chain from Exercise 4, then estimate its entropy rate two ways: (a) empirically as $-\tfrac1n\log_2 p(x^n)$ along the trajectory using the true transition probabilities, and (b) compare to the closed-form $\sum_i \mu_i H(\text{row } i)$. They should match.
 
     This is the very last code cell — it carries the module-level `app.run()` guard at the end of the file.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

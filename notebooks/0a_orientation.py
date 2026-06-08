@@ -38,8 +38,8 @@ def _(mo):
 
     That single move — measuring information as *resolved uncertainty* — turned a vague word into a quantity with units, theorems, and hard limits. Out of it fall results that look like physics:
 
-    - **There is a hard floor on compression.** No lossless compressor can beat the *entropy* of a source, on average. (Part 2)
-    - **There is a hard ceiling on communication.** Every noisy channel has a *capacity* — a maximum rate below which error-free communication is possible and above which it is impossible. (Part 3)
+    - **There is a hard floor on compression.** No lossless compressor can beat the *entropy* of a source asymptotically, on average, though finite blocks have overhead. (Part 2)
+    - **There is a hard ceiling on communication.** Every noisy channel has a *capacity* — a maximum rate below which vanishing-error communication is possible with long codes, and above which it is impossible. (Part 3)
     - **The two are duals.** Compression removes redundancy; error-correction adds it back on purpose. Same mathematics, run in opposite directions. (Parts 2-4)
 
     Information theory is the study of these limits and of the codes that approach them. Once you see it, you see it everywhere: in `gzip` and JPEG, in your phone's 5G modem, in the QR code on a boarding pass, in the cross-entropy loss your neural net minimizes, and in the deep learning theory that tries to explain *why* that net generalizes.
@@ -66,7 +66,7 @@ def _(mo):
 
     A **bit** is exactly that: the amount of information in the answer to one well-posed yes/no question — equivalently, the information needed to choose between two equally likely options. Sixteen possibilities take $\log_2 16 = 4$ questions; a thousand take $\log_2 1000 \approx 9.97$, so ten questions suffice. This is why "20 questions" can pin down one of over a million things: $2^{20} \approx 1.05$ million.
 
-    Notice the logarithm is not a decoration — it is *forced*. We want a measure where combining two independent situations **adds** their information (ask about a coin *and* a die: $1 + 2.585$ bits), while the number of joint possibilities **multiplies** ($2 \times 6 = 12$). The only function that turns multiplication into addition is the log, so $\log(\text{possibilities})$ is the unique sensible measure. The slider below lets you feel $\log_2 N$ directly.
+    Notice the logarithm is not a decoration — it is *forced* once we ask for the usual regularity conditions: continuity/monotonicity plus additivity for independent choices. We want a measure where combining two independent situations **adds** their information (ask about a coin *and* a die: $1 + 2.585$ bits), while the number of joint possibilities **multiplies** ($2 \times 6 = 12$). Under those conditions the logarithm is the unique sensible measure, so $\log(\text{possibilities})$ is where the theory starts. The slider below lets you feel $\log_2 N$ directly.
 
     > [Stone Ch 1](https://arxiv.org/pdf/1802.05968) opens with this exact 20-questions picture.
     """)
@@ -272,6 +272,8 @@ def _(mo):
     | $C$ | channel capacity (bits per channel use) |
     | $R$ | rate (bits per symbol); $R(D)$ rate-distortion function |
 
+    **Notation licenses.** In the classical modules I mostly write entropy as $H(X)$ and KL as $D(p\|q)$. In the ML modules you will also see $H(p)$ for the entropy of an explicit distribution and $D_{\mathrm{KL}}(p\|q)$ when $D$ is already being used for distortion. The letter $T$ can mean a bottleneck representation or a critic function depending on the module; each local use is named before it is used.
+
     Three conventions worth burning in now:
 
     1. **$0 \log 0 = 0$.** Impossible outcomes contribute nothing to entropy. This is the right limit, since $p \log p \to 0$ as $p \to 0$, and it keeps every formula well-defined.
@@ -325,9 +327,9 @@ def _(mo):
 
     - **Read, then play, then build.** Each module has lecture sections, *live widgets* (drag the slider, watch the math move), and runnable demo cells. The demos are not decoration — they compute and *verify* the theorems on real numbers. Change them. Break them. That is the fastest way to internalize a result.
     - **Every module ends with "Code It" exercises.** Short skeletons with `TODO`s and expected answers in the comments. Do them. Information theory is a *constructive* subject — you do not understand entropy until you have written `-sum(p * log2(p))` and watched it equal the number you predicted.
-    - **The textbook links are real.** Throughout, blockquotes point to specific chapters of the four anchor texts — MacKay and Stone for intuition, Cover & Thomas for rigor, Polyanskiy & Wu for the modern statistical-learning bridge. Follow them when you want depth.
+    - **References are live public pointers where possible.** Throughout, blockquotes point to author PDFs, arXiv/OpenReview pages, publisher pages, or library metadata for the anchor texts and papers. Follow them when you want depth.
     - **Probability is assumed, not taught.** If a probability step feels shaky, that is a signal to revisit the probability prerequisites rather than a gap in this course.
-    - **The path is flexible after Part 1.** Build the three measures first; after that you can dive toward compression, channels, codes, or straight to the ML applications in Part 6, depending on what you came for.
+    - **The path is flexible after Part 1, but not flat.** Build the three measures first; after that you can dive toward compression, channels, codes, or the gentler ML applications in 6A/6B. The later ML modules ramp up: 6C uses rate-distortion ideas from 5A, 6D is the Part-6 estimator capstone, and 6E leans on both 5A and the Gaussian channel in 3C.
 
     That is the whole orientation. Next stop: **Module 1A — Entropy & Self-Information**, where "surprise" stops being a feeling and becomes a number with a formula. See you there.
     """)
@@ -373,6 +375,17 @@ def _(mo):
     Write `bits_needed(N)` returning $\log_2 N$ — the information (in bits) to pin down one of $N$ equally likely possibilities. Then write `questions_needed(N)`, the number of yes/no questions that always suffice (round $\log_2 N$ *up*).
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -402,6 +415,17 @@ def _(mo):
     ### Exercise 2: Bits and Nats
 
     The base of the log is a unit. Implement `bits_to_nats(b)` and `nats_to_bits(n)`. Recall $1 \text{ nat} = 1/\ln 2$ bits and $1 \text{ bit} = \ln 2$ nats.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -435,6 +459,17 @@ def _(mo):
     Even though full self-information is a Module 1A topic, you can already write it: the surprisal of an outcome with probability $p$ is $h = -\log_2 p$ bits. Implement `surprisal(p)` and confirm a fair-coin flip carries 1 bit and a 1-in-1024 event carries 10 bits.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -460,6 +495,17 @@ def _(mo):
     ### Exercise 4: Independent Surprises Add
 
     Information from independent situations adds, while the number of joint possibilities multiplies. For $N_1$ equally-likely options and an independent $N_2$ equally-likely options, verify that $\log_2 N_1 + \log_2 N_2 = \log_2(N_1 N_2)$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -490,6 +536,17 @@ def _(mo):
     ### Exercise 5: Twenty Questions Sanity Check
 
     "20 questions" works because $2^{20}$ is over a million. For a given number of questions $q$, compute how many equally-likely things you can distinguish ($2^q$), and find the smallest $q$ that covers a target population (e.g. 8 billion people). Hint: invert with $\lceil \log_2(\text{target}) \rceil$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

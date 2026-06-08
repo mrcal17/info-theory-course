@@ -18,7 +18,7 @@ def _(mo):
     > *"The ELBO is a rate-distortion objective in disguise."*
     > — Alexander Alemi et al., *Fixing a Broken ELBO*
 
-    You have arrived at the place where almost every thread of this course braids together. From Part 1 you carry entropy, KL divergence, and mutual information. From Module 5A you carry the rate-distortion function $R(D)$ — the exact price of "good enough." From Module 6C you carry the information bottleneck and the $\beta$-knob that trades compression against relevance. From 6D you carry variational bounds on mutual information. This module takes all of it and points it at one of the most-used objects in modern machine learning: the **variational autoencoder**, and its grown-up cousin, **learned neural compression**.
+    Prerequisite note: this capstone leans on 5A's rate-distortion curve and 3C's Gaussian/differential-entropy machinery. You have arrived at the place where almost every thread of this course braids together. From Part 1 you carry entropy, KL divergence, and mutual information. From Module 5A you carry the rate-distortion function $R(D)$ — the exact price of "good enough." From Module 6C you carry the information bottleneck and the $\beta$-knob that trades compression against relevance. From 6D you carry variational bounds on mutual information. This module takes all of it and points it at one of the most-used objects in modern machine learning: the **variational autoencoder**, and its grown-up cousin, **learned neural compression**.
 
     Here is the punchline up front, because it is the whole module: the loss you minimize when you train a VAE — the negative **evidence lower bound** (ELBO) — is, term for term, a **rate-distortion objective**. The KL term *is* a rate, measured in bits (or nats); the reconstruction term *is* a distortion. Training a VAE is sliding along a rate-distortion curve, and the $\beta$ in $\beta$-VAE is exactly the knob that says *where* on that curve you want to sit. Once you see this, the famous pathologies — posterior collapse, blurry samples, "a broken ELBO" — stop being mysterious and become points on a curve you can read off.
 
@@ -66,9 +66,9 @@ def _(mo):
     Read both terms as a coding scheme.
 
     - **Rate $R$** is the KL from the encoder's posterior to the prior. In a *bits-back* code (Section 5) this is *exactly* the number of bits, beyond the prior, needed to transmit the latent $z$ for this datapoint. A confident, peaked $q_\phi(z\mid x)$ that pins $z$ far from the prior costs many bits; a posterior equal to the prior costs zero. Rate is "how much the code says about $x$."
-    - **Distortion $D$** is the expected negative log-likelihood of $x$ under the decoder given that code. For a Gaussian decoder with fixed variance, $-\log p_\theta(x\mid z) = \frac{1}{2\sigma^2}\|x - \hat{x}(z)\|^2 + \text{const}$ — it is **mean squared reconstruction error** up to scale. Distortion is "how badly the code reconstructs $x$."
+    - **Distortion $D$** is the expected negative log-likelihood of $x$ under the decoder given that code. For a Gaussian decoder with fixed variance, $-\log p_\theta(x\mid z) = \frac{1}{2\sigma^2}\|x - \hat{x}(z)\|^2 + \tfrac12\log(2\pi\sigma^2)$ — mean squared reconstruction error converted into **nats** by the decoder variance and constant. Distortion is "how badly the code reconstructs $x$," in the same unit as the rate.
 
-    So $-\mathcal{L} = R + D$. Minimizing the VAE loss minimizes rate-plus-distortion at a fixed exchange rate of one nat of rate per one nat of distortion. That single, hard-wired exchange rate is the problem the next section fixes.
+    So $-\mathcal{L} = R + D$. Minimizing the VAE loss minimizes rate-plus-distortion at a fixed exchange rate of one nat of rate per one nat of decoder NLL distortion. That single, hard-wired exchange rate is the problem the next section fixes.
 
     There is also an *aggregate* picture across the whole dataset. Averaging over data, the average rate $\mathbb{E}_x[R(x)]$ upper-bounds the mutual information $I(x; z)$ between data and code under the encoder — this is the same variational MI bound you met in 6D. So the VAE rate is, on average, *information the latent carries about the data*. Compression in the literal coding sense and compression in the information-theoretic sense are the same number here.
 
@@ -99,11 +99,15 @@ def _(mo):
 
     $$\bar{R} = \tfrac{1}{2}\big(s^2 + m^2(g^2+\sigma^2) - 1 - \log s^2\big).$$
 
-    The **distortion** is the expected squared error of the Gaussian decoder. Reconstructing with $\hat{x} = g\,z$ for $z \sim q$, the expected per-datapoint squared error decomposes into a bias term and the posterior-variance term, giving an **average distortion**
+    The decoder's squared error is still useful to display. Reconstructing with $\hat{x} = g\,z$ for $z \sim q$, the expected per-datapoint squared error decomposes into a bias term and the posterior-variance term, giving an **average MSE**
 
     $$\bar{D} = \mathbb{E}\big[(x - g\,\mathbb{E}_q[z])^2\big] + g^2 s^2 = (g^2+\sigma^2)(1 - g m)^2 + g^2 s^2,$$
 
-    in squared-error units. Two knobs $(m, s)$, two closed-form curves. That is the whole laboratory. The code cell below implements these formulas and sanity-checks the limiting cases.
+    in squared-error units. The **distortion in the ELBO**, however, is the Gaussian negative log-likelihood
+
+    $$\bar{D}_{\text{nats}} = \frac{\bar{D}_{\text{MSE}}}{2\sigma^2} + \tfrac12 \log(2\pi\sigma^2),$$
+
+    so it can be added honestly to $\bar R$ in nats. Two knobs $(m, s)$, two closed-form curves. That is the whole laboratory. The code cell below implements these formulas and sanity-checks the limiting cases.
 
     > [Higgins et al., $\beta$-VAE](https://openreview.net/forum?id=Sy2fzU9gl) introduced the $\beta$ knob we sweep next; the linear-Gaussian VAE is the standard pencil-and-paper testbed.
     """)
@@ -120,10 +124,14 @@ def _():
             mu_var = (m**2) * var_x
             return 0.5 * (s**2 + mu_var - 1.0 - np.log(s**2))
 
-        def distortion(m, s, g, sigma):
+        def mse_distortion(m, s, g, sigma):
             var_x = g**2 + sigma**2
             bias = var_x * (1.0 - g * m) ** 2
             return bias + (g**2) * (s**2)
+
+        def nll_distortion_nats(m, s, g, sigma):
+            mse = mse_distortion(m, s, g, sigma)
+            return mse / (2.0 * sigma**2) + 0.5 * np.log(2 * np.pi * sigma**2)
 
         _g, _sigma = 1.0, 0.5
 
@@ -133,15 +141,19 @@ def _():
 
         print("Limit 1: posterior = prior (m=0, s=1)  -> rate should be 0")
         _R = rate_nats(0.0, 1.0, _g, _sigma)
-        _D = distortion(0.0, 1.0, _g, _sigma)
-        print(f"  R = {_R:.4f} nats,  D = {_D:.4f}   (D = Var(x)+g^2 = best blind guess)\n")
+        _M = mse_distortion(0.0, 1.0, _g, _sigma)
+        _D = nll_distortion_nats(0.0, 1.0, _g, _sigma)
+        print(f"  R = {_R:.4f} nats,  MSE = {_M:.4f},  D_nll = {_D:.4f} nats")
+        print(f"  This is the unconditional prior-sampling decoder: MSE = Var(x)+g^2.")
+        print(f"  The best deterministic blind guess would use the mean and get MSE = Var(x) = {_g**2 + _sigma**2:.4f}.\n")
 
         print("Limit 2: confident encoder (s small, m tuned)  -> low distortion, high rate")
         _m_opt = _g / (_g**2 + _sigma**2)
         _R2 = rate_nats(_m_opt, 0.05, _g, _sigma)
-        _D2 = distortion(_m_opt, 0.05, _g, _sigma)
+        _M2 = mse_distortion(_m_opt, 0.05, _g, _sigma)
+        _D2 = nll_distortion_nats(_m_opt, 0.05, _g, _sigma)
         print(f"  m* = g/Var(x) = {_m_opt:.4f},  s = 0.05")
-        print(f"  R = {_R2:.4f} nats = {_R2/np.log(2):.4f} bits,  D = {_D2:.4f}")
+        print(f"  R = {_R2:.4f} nats = {_R2/np.log(2):.4f} bits,  MSE = {_M2:.4f},  D_nll = {_D2:.4f} nats")
         print(f"  -> spending bits buys a smaller reconstruction error, as the trade-off promises.")
 
     _run()
@@ -155,14 +167,14 @@ def _(mo):
 
     ## 4. $\beta$-VAE and the Rate-Distortion Plane
 
-    The plain ELBO fixes the rate/distortion exchange rate at exactly 1. **$\beta$-VAE** unfreezes it with a single multiplier on the rate term:
+    The plain negative ELBO fixes the rate/distortion exchange rate at exactly 1. **$\beta$-VAE** unfreezes it with a single multiplier on the rate term:
 
-    $$\mathcal{L}_\beta(x) \;=\; \underbrace{\mathbb{E}_{q}[-\log p_\theta(x\mid z)]}_{\text{distortion } D} \;+\; \beta\, \underbrace{D_{\mathrm{KL}}(q_\phi(z\mid x)\,\|\,p(z))}_{\text{rate } R}.$$
+    $$\mathcal{J}_\beta(x) \;=\; \underbrace{\mathbb{E}_{q}[-\log p_\theta(x\mid z)]}_{\text{distortion } D\ \text{(nats)}} \;+\; \beta\, \underbrace{D_{\mathrm{KL}}(q_\phi(z\mid x)\,\|\,p(z))}_{\text{rate } R\ \text{(nats)}}.$$
 
     This is *literally* the Lagrangian for the constrained problem "minimize distortion subject to a rate budget," and $\beta$ is the Lagrange multiplier — the same role $\beta$ plays in the information bottleneck of 6C and in classic rate-distortion optimization. Sweeping $\beta$ traces out the **rate-distortion frontier** of the model in the $(R, D)$ plane:
 
-    - **Large $\beta$** (rate is expensive): the optimizer drives $R \to 0$. The posterior collapses to the prior, the latent stops carrying information, and reconstructions revert to the unconditional mean. This is **posterior collapse** — high distortion, near-zero rate, the *bottom-right* of the plane.
-    - **Small $\beta$** (rate is cheap): the optimizer spends bits freely, $R$ grows and $D$ shrinks toward the decoder's intrinsic noise floor. The *top-left* of the plane.
+    - **Large $\beta$** (rate is expensive): the optimizer drives $R \to 0$. The posterior collapses to the prior, the latent stops carrying information, and the decoder falls back to its unconditional model. The conditional mean is the unconditional mean; if you actually sample from the prior, the samples add their own variance. This is **posterior collapse** — high distortion, near-zero rate, the upper-left of the $(R,D)$ plane.
+    - **Small $\beta$** (rate is cheap): the optimizer spends bits freely, $R$ grows and $D$ shrinks toward the decoder's intrinsic noise floor. The lower-right of the plane.
     - **$\beta = 1$**: ordinary VAE — one specific point on that frontier, not a special one.
 
     The crucial insight from *Fixing a Broken ELBO*: **many different models achieve the same ELBO value** $-\mathcal{L} = R + D$ but live at wildly different points on the R-D plane. A model with $(R,D) = (0, 10)$ and one with $(R,D) = (10, 0)$ have the same ELBO of $10$, yet one ignores the data entirely and the other memorizes it. The ELBO *alone cannot tell them apart* — that is the "broken" part. You must report $R$ and $D$ separately, i.e. say *where on the curve you are*. The slider below lets you do exactly that for our toy: pick $\beta$, see the optimal $(m, s)$, and watch the point slide along the frontier.
@@ -195,8 +207,11 @@ def _(beta_slider):
         def _rate(m, s):
             return 0.5 * (s**2 + (m**2) * _var_x - 1.0 - np.log(s**2))
 
-        def _dist(m, s):
+        def _mse(m, s):
             return _var_x * (1.0 - _g * m) ** 2 + (_g**2) * (s**2)
+
+        def _dist(m, s):
+            return _mse(m, s) / (2.0 * _sigma**2) + 0.5 * np.log(2 * np.pi * _sigma**2)
 
         def _solve_beta(beta):
             _ms = np.linspace(-0.2, 1.6, 600)
@@ -215,28 +230,30 @@ def _(beta_slider):
 
         _ln2 = np.log(2)
         _betas = np.concatenate([np.linspace(0.02, 1, 40), np.linspace(1.05, 30, 80)])
-        _Rs, _Ds = [], []
+        _Rs, _Ds, _Ms = [], [], []
         for _b in _betas:
             _m, _s, _r, _d = _solve_beta(_b)
             _Rs.append(_r / _ln2)
             _Ds.append(_d)
-        _Rs, _Ds = np.array(_Rs), np.array(_Ds)
+            _Ms.append(_mse(_m, _s))
+        _Rs, _Ds, _Ms = np.array(_Rs), np.array(_Ds), np.array(_Ms)
 
         _beta_cur = 2.0 ** beta_slider.value
         _mc, _sc, _rc, _dc = _solve_beta(_beta_cur)
         _rc_bits = _rc / _ln2
+        _mc_mse = _mse(_mc, _sc)
 
         _fig, (_ax1, _ax2) = plt.subplots(1, 2, figsize=(11, 4.4))
 
         _ax1.plot(_Rs, _Ds, lw=2, color="steelblue", label="R-D frontier (sweep beta)")
         _ax1.scatter([_rc_bits], [_dc], color="red", zorder=5, s=70)
-        _ax1.annotate(f"beta={_beta_cur:.2f}\nR={_rc_bits:.2f} bits\nD={_dc:.3f}",
+        _ax1.annotate(f"beta={_beta_cur:.2f}\nR={_rc_bits:.2f} bits\nD={_dc:.3f} nats\nMSE={_mc_mse:.3f}",
                       xy=(_rc_bits, _dc), xytext=(0.45, 0.6),
                       textcoords="axes fraction",
                       arrowprops=dict(arrowstyle="->", color="red", alpha=0.6))
         _ax1.axhline(_sigma**2 * 0 + _g**2 * 0, color="none")
         _ax1.set_xlabel("Rate  R  (bits / datapoint)")
-        _ax1.set_ylabel("Distortion  D  (MSE)")
+        _ax1.set_ylabel("Distortion  D  (decoder NLL, nats)")
         _ax1.set_title("VAE rate-distortion plane")
         _ax1.grid(True, alpha=0.3)
         _ax1.legend(loc="upper right", fontsize=8)
@@ -262,7 +279,10 @@ def _(beta_slider):
 
 @app.cell
 def _(mo):
-    mo.image(src="../animations/rendered/BetaVAEPlane.gif")
+    mo.vstack([
+        mo.image(src="../animations/rendered/BetaVAEPlane.gif", alt="Animation of beta-VAE operating points moving along a rate-distortion plane"),
+        mo.md("*Animation: beta-VAE operating points move along a rate-distortion plane.*"),
+    ])
     return
 
 
@@ -278,8 +298,11 @@ def _():
         def _rate(m, s):
             return 0.5 * (s**2 + (m**2) * _var_x - 1.0 - np.log(s**2))
 
-        def _dist(m, s):
+        def _mse(m, s):
             return _var_x * (1.0 - _g * m) ** 2 + (_g**2) * (s**2)
+
+        def _dist(m, s):
+            return _mse(m, s) / (2.0 * _sigma**2) + 0.5 * np.log(2 * np.pi * _sigma**2)
 
         def _solve_beta(beta):
             _ms = np.linspace(-0.2, 1.6, 800)
@@ -294,19 +317,19 @@ def _():
             return _best
 
         print("=== Sweeping beta along the VAE rate-distortion frontier ===")
-        print(f"{'beta':>7} | {'m*':>7} | {'s*':>6} | {'R(bits)':>8} | {'D(MSE)':>8} | {'ELBO=-R-D':>10}")
-        print("-" * 62)
+        print(f"{'beta':>7} | {'m*':>7} | {'s*':>6} | {'R(bits)':>8} | {'MSE':>8} | {'D_nll':>8} | {'ELBO':>10}")
+        print("-" * 75)
         for _b in [0.05, 0.2, 0.5, 1.0, 2.0, 5.0, 20.0]:
             _m, _s, _r, _d = _solve_beta(_b)
             _Rb = _r / _ln2
+            _mse_val = _mse(_m, _s)
             _elbo = -(_r + _d)
-            print(f"{_b:7.2f} | {_m:7.3f} | {_s:6.3f} | {_Rb:8.3f} | {_d:8.4f} | {_elbo:10.4f}")
+            print(f"{_b:7.2f} | {_m:7.3f} | {_s:6.3f} | {_Rb:8.3f} | {_mse_val:8.4f} | {_d:8.4f} | {_elbo:10.4f}")
 
         print("\nObservations:")
-        print("  - As beta grows, rate R -> 0 (posterior collapse) and distortion D rises.")
-        print("  - As beta shrinks, rate grows and distortion falls toward the decoder noise floor.")
-        print(f"  - Decoder-limited distortion floor ~ g^2*s^2 with tiny s -> approaches 0 here,")
-        print(f"    while irreducible data noise shows up as the bias term vanishing at m*=g/Var(x).")
+        print("  - As beta grows, rate R -> 0 (posterior collapse) and decoder NLL distortion rises.")
+        print("  - As beta shrinks, rate grows and MSE falls.")
+        print("  - beta=1 is now the ordinary VAE objective because R and D are both in nats.")
 
     _run()
     return
@@ -559,6 +582,17 @@ def _(mo):
     Implement the rate term: the KL divergence in **nats** from a diagonal Gaussian posterior $\mathcal{N}(\mu, s^2)$ to the standard normal prior $\mathcal{N}(0,1)$, using the closed form $\tfrac12(s^2 + \mu^2 - 1 - \log s^2)$. Verify that the posterior-equals-prior case ($\mu=0, s=1$) gives exactly $0$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -584,7 +618,18 @@ def _(mo):
     mo.md(r"""
     ### Exercise 2: The ELBO as Rate + Distortion
 
-    For the linear-Gaussian VAE (latent $z\sim\mathcal N(0,1)$, decoder $x=gz+\varepsilon$, $\varepsilon\sim\mathcal N(0,\sigma^2)$, encoder $q=\mathcal N(mx, s^2)$), compute the **average rate** $\bar R = \tfrac12(s^2 + m^2(g^2+\sigma^2) - 1 - \log s^2)$ and **average distortion** $\bar D = (g^2+\sigma^2)(1-gm)^2 + g^2 s^2$. Return the negative ELBO $\bar R + \bar D$ (in nats).
+    For the linear-Gaussian VAE (latent $z\sim\mathcal N(0,1)$, decoder $x=gz+\varepsilon$, $\varepsilon\sim\mathcal N(0,\sigma^2)$, encoder $q=\mathcal N(mx, s^2)$), compute the **average rate** $\bar R = \tfrac12(s^2 + m^2(g^2+\sigma^2) - 1 - \log s^2)$ and the decoder negative-log-likelihood distortion $\bar D_{\rm nll} = \bar D_{\rm MSE}/(2\sigma^2)+\tfrac12\log(2\pi\sigma^2)$, where $\bar D_{\rm MSE} = (g^2+\sigma^2)(1-gm)^2 + g^2 s^2$. Return the negative ELBO $\bar R + \bar D_{\rm nll}$ (in nats).
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -598,12 +643,13 @@ def _():
             var_x = g**2 + sigma**2
             # TODO: average rate (nats)
             R = ...
-            # TODO: average distortion (MSE)
+            # TODO: average MSE, then convert to decoder NLL distortion (nats)
+            mse = ...
             D = ...
             return R + D
 
-        # print(neg_elbo(0.0, 1.0, 1.0, 0.5))   # collapse: R=0, D=Var(x)+g^2 = 2.25
-        # print(neg_elbo(0.8, 0.4, 1.0, 0.5))   # some interior point, smaller D
+        # print(neg_elbo(0.0, 1.0, 1.0, 0.5))   # collapse: R=0, MSE=Var(x)+g^2=2.25, D_nll in nats
+        # print(neg_elbo(0.8, 0.4, 1.0, 0.5))   # some interior point, smaller D_nll
 
     _run()
     return
@@ -614,7 +660,18 @@ def _(mo):
     mo.md(r"""
     ### Exercise 3: Sweep $\beta$ to Trace the R-D Frontier
 
-    For a grid of encoder parameters $(m, s)$, minimize the $\beta$-VAE objective $D + \beta R$ for each $\beta$, and record the optimal $(R, D)$. Confirm that increasing $\beta$ drives the optimal rate toward $0$ (posterior collapse) and the distortion up.
+    For a grid of encoder parameters $(m, s)$, minimize the $\beta$-VAE objective $D_{\rm nll} + \beta R$ for each $\beta$, and record the optimal $(R, D_{\rm nll})$. Confirm that increasing $\beta$ drives the optimal rate toward $0$ (posterior collapse) and the distortion up.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -631,7 +688,8 @@ def _():
             return 0.5 * (s**2 + m**2 * var_x - 1.0 - np.log(s**2))
 
         def dist(m, s):
-            return var_x * (1.0 - g * m) ** 2 + g**2 * s**2
+            mse = var_x * (1.0 - g * m) ** 2 + g**2 * s**2
+            return mse / (2.0 * sigma**2) + 0.5 * np.log(2 * np.pi * sigma**2)
 
         ms = np.linspace(-0.2, 1.6, 400)
         ss = np.linspace(0.02, 1.5, 400)
@@ -645,7 +703,7 @@ def _():
 
         # for b in [0.1, 1.0, 10.0]:
         #     R, D = best_for_beta(b)
-        #     print(f"beta={b:5.1f}  R={R/np.log(2):.3f} bits  D={D:.3f}")
+        #     print(f"beta={b:5.1f}  R={R/np.log(2):.3f} bits  D_nll={D:.3f} nats")
         # expect: rate falls and distortion rises as beta grows
 
     _run()
@@ -658,6 +716,17 @@ def _(mo):
     ### Exercise 4: Verify Bits-Back Numerically
 
     Sample data and latents from the toy model, then compute the three-term bits-back ledger per sample: step 2 $(-\log p(x\mid z))$ plus step 3 $(-\log p(z))$ minus the bits returned $(-\log q(z\mid x))$. Confirm its mean equals the negative ELBO $\bar R + \bar D$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -698,6 +767,17 @@ def _(mo):
     Build a 1-knob transform coder: scale a Gaussian latent by $\sqrt{\lambda}$, add uniform quantization noise on $[-\tfrac12,\tfrac12]$, charge $\tfrac12\log_2(2\pi e\,\mathrm{Var})$ bits per coefficient as the rate, decode by rescaling, and measure MSE distortion. Sweep $\lambda$ and confirm rate rises while distortion falls.
 
     After your `return`, the file ends with the module-level run guard.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 

@@ -129,7 +129,7 @@ def _(mo):
 
     MINE in practice replaces the gradient of the log-mean-exp term with an exponential-moving-average correction to reduce bias; we will use a moving average for the normalizer.
 
-    **(b) NWJ (Nguyen–Wainwright–Jordan, a.k.a. $f$-GAN / MINE-$f$).** Replace the troublesome $\log$ with a tangent line, giving an *unbiased* but slightly looser bound:
+    **(b) NWJ (Nguyen–Wainwright–Jordan, a.k.a. $f$-GAN / MINE-$f$).** Replace the troublesome $\log$ with a tangent line, giving an *unbiased* minibatch estimate for a fixed critic:
 
     $$I_{\mathrm{NWJ}} = \mathbb{E}_{p}[T] - e^{-1}\,\mathbb{E}_{q}\!\big[e^{T}\big].$$
 
@@ -141,7 +141,7 @@ def _(mo):
 
     This is just the softmax cross-entropy of "pick the true partner out of $N$ candidates." It is **stable and well-behaved** — which is why SimCLR, CPC, and friends use it — but it can *never report more than $\log N$ bits*, no matter how dependent $X$ and $Y$ are. That is the McAllester–Stratos wall made concrete.
 
-    The hierarchy, when each critic is optimal, is $I_{\mathrm{NWJ}} \le I_{\mathrm{DV}} \le I$, and InfoNCE is biased low by roughly $\log N - I$ when $I > \log N$.
+    DV and NWJ are both tight when each is evaluated at its own optimal critic; the NWJ optimum is shifted upward by $+1$ relative to the log-density ratio. InfoNCE is different: it is capped at $\log N$, so when the true MI exceeds that ceiling its under-estimation is at least $I - \log N$.
 
     > [van den Oord et al., "Representation Learning with Contrastive Predictive Coding" (arXiv:1807.03748)](https://arxiv.org/abs/1807.03748) introduces InfoNCE.
     > [Poole et al., "On Variational Bounds of Mutual Information" (arXiv:1905.06922)](https://arxiv.org/abs/1905.06922) unifies DV, NWJ, and InfoNCE in one framework and analyzes their bias/variance.
@@ -175,7 +175,9 @@ def _():
         _T_prod = _optimal_critic(_x, _y_shuf)
 
         _dv = (_T_joint.mean() - np.log(np.mean(np.exp(_T_prod)))) / np.log(2)
-        _nwj = (_T_joint.mean() - np.exp(-1) * np.mean(np.exp(_T_prod))) / np.log(2)
+        _T_nwj_joint = _T_joint + 1.0
+        _T_nwj_prod = _T_prod + 1.0
+        _nwj = (_T_nwj_joint.mean() - np.exp(-1) * np.mean(np.exp(_T_nwj_prod))) / np.log(2)
 
         _Tmat = _optimal_critic(_x[:, None], _y[None, :])
         _logits = _Tmat - np.max(_Tmat, axis=1, keepdims=True)
@@ -310,18 +312,18 @@ def _(mo):
 
     As $\rho \to 1$ the variables become perfectly dependent and the true MI blows up to $\infty$. This is the perfect stress test, because **InfoNCE physically cannot report more than $\log_2 N$ bits**, so as you crank $\rho$ toward 1 you will watch it flatten out against its ceiling while the truth runs away.
 
-    Drag the correlation slider. Both estimators train a small critic and report their estimate; the dashed line is the closed-form truth and the dotted line is the InfoNCE ceiling $\log_2 N$. Watch three regimes:
+    Drag the correlation slider. To isolate the statistical limits from optimization failure, the demo evaluates the **optimal Gaussian log-density-ratio critic** directly; no neural network is trained on slider movement. The dashed line is the closed-form truth and the dotted line is the InfoNCE ceiling $\log_2 N$. Watch three regimes:
 
     - **Low $\rho$** (true MI small): both estimators sit close to the truth.
-    - **Moderate $\rho$**: MINE tracks the truth; InfoNCE starts to lag as it approaches its ceiling.
-    - **High $\rho$** (true MI $> \log_2 N$): InfoNCE pins to the dotted ceiling and *cannot* follow the truth — the bias is exactly the McAllester–Stratos wall, not a bug. MINE keeps climbing but gets noisier and tends to *under*-report at very high $\rho$ because the log-density ratio becomes extreme.
+    - **Moderate $\rho$**: the DV/MINE estimate tracks the truth; InfoNCE starts to lag as it approaches its ceiling.
+    - **High $\rho$** (true MI $> \log_2 N$): InfoNCE pins to the dotted ceiling and *cannot* follow the truth — the bias is exactly the McAllester–Stratos wall, not a bug. The DV/MINE objective is not capped, but its variance grows because the log-density ratio becomes extreme.
     """)
     return
 
 
 @app.cell
 def _(mo):
-    rho_slider = mo.ui.slider(start=0.0, stop=0.97, step=0.01, value=0.6,
+    rho_slider = mo.ui.slider(start=0.0, stop=0.999, step=0.001, value=0.6,
                               label="correlation rho")
     rho_slider
     return (rho_slider,)
@@ -338,90 +340,53 @@ def _(rho_slider):
 
         _rng = np.random.default_rng(7)
         _rho = float(rho_slider.value)
-        _rho = min(_rho, 0.97)
+        _rho = min(_rho, 0.999)
 
         def _true_mi(r):
             return -0.5 * np.log(1 - r**2) / np.log(2)
 
-        _N = 512
+        def _opt_critic(xx, yy, r):
+            _q = (xx**2 + yy**2) * (r**2) - 2 * r * xx * yy
+            return -0.5 * np.log(1 - r**2) - _q / (2 * (1 - r**2))
+
+        _N = 16
         _cov = np.array([[1.0, _rho], [_rho, 1.0]])
         _L = np.linalg.cholesky(_cov)
-        _data = _rng.standard_normal((4000, 2)) @ _L.T
+        _data = _rng.standard_normal((_N, 2)) @ _L.T
+        _x, _y = _data[:, 0], _data[:, 1]
 
-        _H = 64
-        _W1 = _rng.standard_normal((_H, 2)) * 0.3
-        _b1 = np.zeros(_H)
-        _W2 = _rng.standard_normal((1, _H)) * 0.3
-        _b2 = np.zeros(1)
+        _tj = _opt_critic(_x, _y, _rho)
+        _tp = _opt_critic(_x, _rng.permutation(_y), _rho)
+        _tp_max = np.max(_tp)
+        _log_mean_exp = _tp_max + np.log(np.mean(np.exp(_tp - _tp_max)))
+        _mine_est = (_tj.mean() - _log_mean_exp) / np.log(2)
 
-        def _fwd(u):
-            _h = np.tanh(u @ _W1.T + _b1)
-            return (_h @ _W2.T + _b2).ravel(), _h
-
-        _lr = 0.004
-        _ema = None
-        _mine_hist = []
-        _nce_hist = []
-
-        for _step in range(1200):
-            _idx = _rng.integers(0, _data.shape[0], _N)
-            _xj = _data[_idx]
-            _ridx = _rng.permutation(_idx)
-            _xp = np.column_stack([_xj[:, 0], _data[_ridx, 1]])
-
-            _tj, _hj = _fwd(_xj)
-            _tp, _hp = _fwd(_xp)
-
-            _mean_exp = np.mean(np.exp(_tp))
-            _ema = _mean_exp if _ema is None else 0.99 * _ema + 0.01 * _mean_exp
-            _mine_hist.append((_tj.mean() - np.log(_mean_exp)) / np.log(2))
-
-            _xb = _xj[:, 0]
-            _yb = _xj[:, 1]
-            _Tmat = np.zeros((_N, _N))
-            for _r in range(_N):
-                _pairs = np.column_stack([np.full(_N, _xb[_r]), _yb])
-                _Tmat[_r], _ = _fwd(_pairs)
-            _row_max = _Tmat.max(axis=1, keepdims=True)
-            _lse = np.log(np.exp(_Tmat - _row_max).sum(axis=1)) + _row_max.ravel()
-            _nce_nats = np.mean(np.diag(_Tmat) - _lse) + np.log(_N)
-            _nce_hist.append(_nce_nats / np.log(2))
-
-            _dtj = np.ones(_N) / _N
-            _w = np.exp(_tp) / (_N * _ema)
-            _dtp = -_w
-            _dW2 = (_dtj[:, None] * _hj).sum(0, keepdims=True) + (_dtp[:, None] * _hp).sum(0, keepdims=True)
-            _db2 = np.array([_dtj.sum() + _dtp.sum()])
-            _dprej = (_dtj[:, None] * _W2) * (1 - _hj**2)
-            _dprep = (_dtp[:, None] * _W2) * (1 - _hp**2)
-            _dW1 = _dprej.T @ _xj + _dprep.T @ _xp
-            _db1 = _dprej.sum(0) + _dprep.sum(0)
-
-            _W1 += _lr * _dW1
-            _b1 += _lr * _db1
-            _W2 += _lr * _dW2
-            _b2 += _lr * _db2
+        _Tmat = _opt_critic(_x[:, None], _y[None, :], _rho)
+        _row_max = _Tmat.max(axis=1, keepdims=True)
+        _lse = np.log(np.exp(_Tmat - _row_max).sum(axis=1)) + _row_max.ravel()
+        _nce_est = (np.mean(np.diag(_Tmat) - _lse) + np.log(_N)) / np.log(2)
 
         _truth = _true_mi(_rho)
         _ceiling = np.log2(_N)
-        _mine_est = float(np.mean(_mine_hist[-150:]))
-        _nce_est = float(np.mean(_nce_hist[-150:]))
 
         _fig, (_ax1, _ax2) = plt.subplots(1, 2, figsize=(11, 4.2))
 
-        _steps = np.arange(len(_mine_hist))
-        _ax1.plot(_steps, _mine_hist, color="darkorange", alpha=0.7, lw=1, label="MINE")
-        _ax1.plot(_steps, _nce_hist, color="steelblue", alpha=0.7, lw=1, label="InfoNCE")
-        _ax1.axhline(_truth, color="black", ls="--", lw=1.5, label=f"true MI = {_truth:.3f}")
+        _rhos = np.linspace(0.0, 0.999, 300)
+        _truths = _true_mi(_rhos)
+        _ax1.plot(_rhos, _truths, color="black", lw=2, label="true MI")
+        _ax1.plot(_rhos, np.minimum(_truths, _ceiling), color="steelblue", lw=2, ls="--",
+                  label="ceiling-limited contrastive target")
         _ax1.axhline(_ceiling, color="crimson", ls=":", lw=1.5, label=f"log2 N = {_ceiling:.2f}")
-        _ax1.set_xlabel("training step")
-        _ax1.set_ylabel("estimated MI (bits)")
-        _ax1.set_title("Estimator trajectories")
+        _ax1.scatter([_rho], [_truth], color="black", s=45, zorder=5)
+        _ax1.scatter([_rho], [min(_truth, _ceiling)], color="steelblue", s=45, zorder=5)
+        _ax1.set_xlabel("correlation rho")
+        _ax1.set_ylabel("MI (bits)")
+        _ax1.set_title("Truth vs the InfoNCE ceiling")
         _ax1.legend(fontsize=8, loc="upper left")
         _ax1.grid(True, alpha=0.3)
-        _ax1.set_ylim(-0.3, max(_ceiling, _truth) * 1.25 + 0.5)
+        _ax1.set_ylim(-0.1, max(_ceiling, _truth) * 1.2 + 0.3)
 
-        _labels = ["true MI", "MINE", "InfoNCE"]
+        _labels = ["true MI", "DV/MINE\n(opt critic)", "InfoNCE\n(opt critic)"]
         _vals = [_truth, _mine_est, _nce_est]
         _colors = ["black", "darkorange", "steelblue"]
         _bars = _ax2.bar(_labels, _vals, color=_colors, alpha=0.8)
@@ -429,7 +394,7 @@ def _(rho_slider):
         _ax2.text(2.4, _ceiling, f"log2 N={_ceiling:.2f}", color="crimson",
                   va="bottom", ha="right", fontsize=8)
         _ax2.set_ylabel("MI (bits)")
-        _ax2.set_title(f"Final estimates  (rho={_rho:.2f}, N={_N})")
+        _ax2.set_title(f"Current estimates  (rho={_rho:.3f}, N={_N})")
         _ax2.grid(True, axis="y", alpha=0.3)
         for _b, _v in zip(_bars, _vals):
             _ax2.text(_b.get_x() + _b.get_width() / 2, _v, f"{_v:.2f}",
@@ -438,8 +403,7 @@ def _(rho_slider):
         plt.tight_layout()
         return _fig
 
-    _run()
-    return
+    return _run()
 
 
 @app.cell
@@ -488,7 +452,7 @@ def _():
         print("=== Sweep with optimal critic (N=256, 40 trials each) ===")
         print(f"{'rho':>5} {'true MI':>9} {'MINE mean':>10} {'MINE std':>9} "
               f"{'NCE mean':>9} {'log2 N':>7}")
-        for _rho in [0.3, 0.6, 0.85, 0.95, 0.99]:
+        for _rho in [0.3, 0.6, 0.85, 0.95, 0.99, 0.999999]:
             _cov = np.array([[1.0, _rho], [_rho, 1.0]])
             _L = np.linalg.cholesky(_cov)
             _mine_vals = []
@@ -499,14 +463,16 @@ def _():
                 _tj = _opt_critic(_x, _y, _rho)
                 _ys = _rng.permutation(_y)
                 _tp = _opt_critic(_x, _ys, _rho)
-                _mine_vals.append((_tj.mean() - np.log(np.mean(np.exp(_tp)))) / np.log(2))
+                _tp_max = np.max(_tp)
+                _log_mean_exp = _tp_max + np.log(np.mean(np.exp(_tp - _tp_max)))
+                _mine_vals.append((_tj.mean() - _log_mean_exp) / np.log(2))
                 _M = _opt_critic(_x[:, None], _y[None, :], _rho)
                 _rm = _M.max(axis=1, keepdims=True)
                 _lse = np.log(np.exp(_M - _rm).sum(axis=1)) + _rm.ravel()
                 _nce_vals.append((np.mean(np.diag(_M) - _lse) + np.log(_N)) / np.log(2))
-            print(f"{_rho:>5.2f} {_true_mi(_rho):>9.3f} {np.mean(_mine_vals):>10.3f} "
+            print(f"{_rho:>5.6f} {_true_mi(_rho):>9.3f} {np.mean(_mine_vals):>10.3f} "
                   f"{np.std(_mine_vals):>9.3f} {np.mean(_nce_vals):>9.3f} {np.log2(_N):>7.3f}")
-        print("\nMINE std grows with rho (true MI); InfoNCE mean saturates near log2 N=8.")
+        print("\nMINE std grows with rho (true MI); InfoNCE cannot exceed log2 N=8.")
 
     _run()
     return
@@ -581,6 +547,17 @@ def _(mo):
     Implement `gauss_mi(rho)` returning the mutual information in **bits** of a 2-D standard correlated Gaussian with correlation $\rho$, using $I = -\tfrac12 \log_2(1-\rho^2)$. Check that $\rho=0$ gives 0 bits and that the value blows up as $\rho \to 1$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -609,6 +586,17 @@ def _(mo):
     Given joint samples and a critic function $T(x,y)$, estimate the DV lower bound
     $I_{\mathrm{DV}} = \overline{T_{\text{joint}}} - \log\,\overline{e^{T_{\text{prod}}}}$ in bits.
     Get product-of-marginals samples by **shuffling** $y$. Use the supplied near-optimal critic and confirm the bound lands close to the true MI.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -651,6 +639,17 @@ def _(mo):
 
     Build the $N\times N$ critic matrix $T_{ij} = T(x_i, y_j)$ (diagonal = positives, off-diagonal = negatives). Compute the InfoNCE bound
     $I_{\mathrm{NCE}} = \overline{\,T_{ii} - \mathrm{logsumexp}_j\,T_{ij}\,} + \log N$, in bits. Verify it never exceeds $\log_2 N$.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
@@ -697,6 +696,17 @@ def _(mo):
     For a fixed batch of joint outputs `t_joint` and product outputs `t_prod` (treat them as the free variables), derive the gradient of $\mathcal{L}$ with respect to each output. The joint term contributes $1/B$ to each $T_{\text{joint},i}$; the product term contributes the **negative softmax weight** $-e^{T_{\text{prod},j}} / \sum_k e^{T_{\text{prod},k}}$ to each $T_{\text{prod},j}$.
     """)
     return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
+    """)
+    return
 
 
 @app.cell
@@ -729,6 +739,17 @@ def _(mo):
     ### Exercise 5: Bias of the Plug-In Histogram Estimator
 
     Demonstrate the small-sample positive bias of the naive plug-in MI estimator. For $\rho = 0.5$ (true MI $= -\tfrac12\log_2(1-0.25) \approx 0.2075$ bits), draw samples, bin them into a 2-D histogram, and compute the plug-in MI. Compare $N = 200$ to $N = 20000$ and confirm the small-$N$ estimate is biased **high**.
+    """)
+    return
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    <details>
+    <summary><strong>Show solution / self-check</strong></summary>
+
+    Try the next code cell first. Then compare your filled-in cell with the commented `print(...)` checks and expected values in that cell. If the exercise is qualitative or simulation-based, the solution should run without errors and satisfy the invariant named in the prompt.
+
+    </details>
     """)
     return
 
