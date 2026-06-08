@@ -1,0 +1,23 @@
+# validation / build scratch
+_build_check/
+_ref/
+__pycache__/
+*.pyc
+
+# marimo / manim intermediates
+.marimo.toml
+animations/rendered/_media/
+__marimo__/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# NOTE: docs/ is intentionally tracked — GitHub Pages serves the built site from it.
+# textbooks/*.pdf are large and licensed; keep them local (README.md in textbooks/ is tracked).
+textbooks/*.pdf
+textbooks/mlpapers/
+
+# build logs
+*.log
+_wasmtest/

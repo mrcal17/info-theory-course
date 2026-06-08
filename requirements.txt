@@ -1,0 +1,11 @@
+marimo
+manim
+numpy
+matplotlib
+scipy
+scikit-learn
+plotly
+pandas
+seaborn
+torch
+torchvision
