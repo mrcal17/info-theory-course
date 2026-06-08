@@ -312,6 +312,9 @@ def _(mo):
 def _(fano_HXY, fano_card):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _card = int(fano_card.value)
@@ -351,7 +354,7 @@ def _(fano_HXY, fano_card):
         _ax.legend(fontsize=8, loc="lower right")
         _ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -439,6 +442,9 @@ def _(mo):
 def _(cliff_n, cliff_pflip):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _bsc_capacity(p):
@@ -485,7 +491,7 @@ def _(cliff_n, cliff_pflip):
         _ax.legend(loc="center left", fontsize=8)
         _ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

@@ -278,6 +278,9 @@ def _(mo):
 def _(ib_beta, ib_n_t):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _mi(joint, base=2):
@@ -348,7 +351,7 @@ def _(ib_beta, ib_n_t):
         _ax.legend(loc="lower right", fontsize=8)
         _ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -386,6 +389,9 @@ def _(mo):
 def _(plane_epoch):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _n_layers = 4
@@ -424,7 +430,7 @@ def _(plane_epoch):
         _ax.legend(loc="lower right", fontsize=8)
         _ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

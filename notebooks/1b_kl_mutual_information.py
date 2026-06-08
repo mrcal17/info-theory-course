@@ -241,6 +241,9 @@ def _(mo):
 def _(p0, p1, q0, q1):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _normalize_two(a, b):
@@ -276,7 +279,7 @@ def _(p0, p1, q0, q1):
                       ha="center", va="bottom")
         _axR.grid(True, axis="y", alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -386,6 +389,9 @@ def _(mo):
 def _(rho):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _r = rho.value
@@ -438,7 +444,7 @@ def _(rho):
             _axV.text(_left + _mid / 2, 0, f"{_mid:.2f}", ha="center", va="center", color="white")
         _axV.text(_left + _mid + _right / 2, 0, f"{_right:.2f}", ha="center", va="center", color="white")
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

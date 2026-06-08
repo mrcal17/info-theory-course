@@ -184,6 +184,9 @@ def _(mo):
 def _(beta_slider):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _g, _sigma = 1.0, 0.5
@@ -251,7 +254,7 @@ def _(beta_slider):
         _ax2.grid(True, alpha=0.3, which="both")
 
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -467,6 +470,9 @@ def _(mo):
 def _(quant_slider):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _rng = np.random.default_rng(1)
@@ -507,7 +513,7 @@ def _(quant_slider):
         _ax.grid(True, alpha=0.3)
         _ax.legend(loc="upper right", fontsize=8)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

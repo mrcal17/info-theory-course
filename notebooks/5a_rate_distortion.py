@@ -277,6 +277,9 @@ def _(mo):
 def _(rd_distortion, rd_param, rd_source):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def h2(x):
@@ -333,7 +336,7 @@ def _(rd_distortion, rd_param, rd_source):
         _ax.set_ylim(bottom=-0.02)
         _ax.legend(loc="upper right")
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -384,6 +387,9 @@ def _(mo):
 def _(rwf_budget):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _variances = np.array([4.0, 3.0, 2.2, 1.5, 1.0, 0.6, 0.3, 0.15])
@@ -424,7 +430,7 @@ def _(rwf_budget):
         _ax.legend(loc="upper right", fontsize=8)
         _ax.grid(True, axis="y", alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

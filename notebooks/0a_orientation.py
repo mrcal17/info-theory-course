@@ -108,6 +108,9 @@ def _(mo, n_choices):
 def _(n_choices):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _N = int(n_choices.value)

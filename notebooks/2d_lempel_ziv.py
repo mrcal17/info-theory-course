@@ -404,6 +404,9 @@ def _(mo):
 def _(max_len, source_kind):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _h2(p):
@@ -509,6 +512,9 @@ def _(mo):
 def _(ratio_len, ratio_source):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _rng = np.random.default_rng(1)

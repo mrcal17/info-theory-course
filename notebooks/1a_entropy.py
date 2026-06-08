@@ -198,6 +198,9 @@ def _(mo):
 def _(coin_bias):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _h2(p):
@@ -224,7 +227,7 @@ def _(coin_bias):
         _ax.grid(True, alpha=0.3)
         _ax.set_ylim(-0.02, 1.05)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -335,6 +338,9 @@ def _(mo):
 def _(dist_choice):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _n = 8
@@ -363,7 +369,7 @@ def _(dist_choice):
                       f"({100 * _H / _ceiling:.0f}% of max)")
         _ax.grid(True, axis="y", alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

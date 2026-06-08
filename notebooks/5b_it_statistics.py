@@ -187,6 +187,9 @@ def _(mo):
 def _(type_n):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _rng = np.random.default_rng(7)
@@ -218,7 +221,7 @@ def _(type_n):
         _ax.legend()
         _ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -397,6 +400,9 @@ def _(mo):
 def _(roc_n, roc_sep):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _s = roc_sep.value
@@ -442,7 +448,7 @@ def _(roc_n, roc_sep):
         _ax2.grid(True, alpha=0.3, which="both")
 
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

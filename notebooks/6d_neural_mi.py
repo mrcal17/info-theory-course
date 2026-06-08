@@ -331,6 +331,9 @@ def _(mo):
 def _(rho_slider):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _rng = np.random.default_rng(7)
@@ -433,7 +436,7 @@ def _(rho_slider):
                       ha="center", va="bottom", fontsize=9)
 
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

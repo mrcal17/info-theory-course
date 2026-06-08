@@ -263,6 +263,9 @@ def _(mo):
 def _(snr_db):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _snr_db = snr_db.value
@@ -290,7 +293,7 @@ def _(snr_db):
         _ax.grid(True, alpha=0.3)
         _ax.legend(loc="lower right")
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -402,6 +405,9 @@ def _(mo):
 def _(wf_n0, wf_n1, wf_n2, wf_n3, wf_n4, wf_power):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _noise = np.array([wf_n0.value, wf_n1.value, wf_n2.value, wf_n3.value, wf_n4.value])
@@ -449,7 +455,7 @@ def _(wf_n0, wf_n1, wf_n2, wf_n3, wf_n4, wf_power):
         _ax.legend(loc="upper left", fontsize=9)
         _ax.grid(True, axis="y", alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

@@ -158,6 +158,9 @@ def _(mo):
 def _(bp_erasures, bp_steps):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _H = np.array([
@@ -233,7 +236,7 @@ def _(bp_erasures, bp_steps):
         _ax.axis("off")
         _ax.set_ylim(-0.6, 1.9)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -286,6 +289,9 @@ def _(mo):
 def _(de_dc, de_dv, de_eps):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _dv, _dc = de_dv.value, de_dc.value
@@ -354,7 +360,7 @@ def _(de_dc, de_dv, de_eps):
         print(f"  Shannon limit  1 - R = {_shannon:.4f}   (BEC capacity bound)")
         print(f"  gap to capacity ≈ {_shannon - _thresh:.4f}")
         print(f"  at ε = {_eps:.3f}: {'BELOW threshold (works)' if _eps < _thresh else 'ABOVE threshold (fails)'}")
-        _fig
+        return _fig
 
     _run()
     return
@@ -391,6 +397,9 @@ def _(mo):
 def _(exit_dc, exit_dv, exit_eps):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _dv, _dc, _eps = exit_dv.value, exit_dc.value, exit_eps.value
@@ -444,7 +453,7 @@ def _(exit_dc, exit_dv, exit_eps):
         print("Read the chart: if the blue curve stays ABOVE the orange one")
         print("everywhere, a tunnel is open and BP marches to perfect decoding.")
         print(f"  ({_dv},{_dc}) on BEC(ε={_eps:.3f}): {'OPEN — succeeds' if _converged else 'CLOSED — fails'}")
-        _fig
+        return _fig
 
     _run()
     return
@@ -493,6 +502,9 @@ def _(mo):
 def _(pol_depth, pol_z):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _depth = pol_depth.value
@@ -551,7 +563,7 @@ def _(pol_depth, pol_z):
         print(f"  still in the middle:    {_mid:3d}   ({100*_mid/_N:.0f}%)  <- shrinks as depth grows")
         print(f"  average capacity (1-z): {_avg_cap:.4f}   ==  1 - z0 = {1-_z0:.4f}  (conserved!)")
         print(f"  -> a polar code puts info on the {_good} good channels, freezes the rest")
-        _fig
+        return _fig
 
     _run()
     return

@@ -258,6 +258,9 @@ def _(mo):
 def _(vit_errors, vit_len, vit_seed):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         K, g1, g2 = 3, 0b111, 0b101
@@ -339,7 +342,7 @@ def _(vit_errors, vit_len, vit_seed):
         _ax.legend(loc="upper right", fontsize=8)
         _ax.grid(True, axis="x", alpha=0.25)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -391,6 +394,9 @@ def _(mo):
 def _(ber_decoder, ber_nbits):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
         from scipy.special import erfc
 
@@ -498,7 +504,7 @@ def _(ber_decoder, ber_nbits):
         _ax.grid(True, which="both", alpha=0.3)
         _ax.legend(loc="lower left", fontsize=9)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

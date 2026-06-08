@@ -185,6 +185,9 @@ def _(mo):
 def _(degree, noise_level):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _rng = np.random.default_rng(7)
@@ -240,7 +243,7 @@ def _(degree, noise_level):
         _ax2.grid(True, alpha=0.3)
 
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

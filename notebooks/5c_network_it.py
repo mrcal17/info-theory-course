@@ -160,6 +160,9 @@ def _(mo):
 def _(sw_bias, sw_rho):
     def _run(sw_bias, sw_rho):
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _entropy(p, base=2):
@@ -347,6 +350,9 @@ def _(mo):
 def _(mac_noise):
     def _run(mac_noise):
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _entropy(p, base=2):

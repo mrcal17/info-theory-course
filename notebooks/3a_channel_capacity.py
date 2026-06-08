@@ -202,6 +202,9 @@ def _(mo):
 def _(bsc_p):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _h2(p):
@@ -231,7 +234,7 @@ def _(bsc_p):
         _ax.set_ylim(-0.02, 1.05)
         _ax.legend(loc="lower center")
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -309,6 +312,9 @@ def _(mo):
 def _(bec_eps):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _h2(p):
@@ -339,7 +345,7 @@ def _(bec_eps):
         _ax.set_ylim(-0.02, 1.05)
         _ax.legend(loc="upper right")
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -525,6 +531,9 @@ def _(mo):
 def _(channel_text):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _parse(s):

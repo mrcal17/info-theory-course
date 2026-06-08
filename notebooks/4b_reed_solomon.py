@@ -174,6 +174,9 @@ def _(mo):
 def _(gf_m, gf_op):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _prim = {2: 0b111, 3: 0b1011, 4: 0b10011}
@@ -212,7 +215,7 @@ def _(gf_m, gf_op):
         _ax.set_title(f"GF(2^{_m}) Cayley table:  {_opname}   (q = {_q} elements)")
         _fig.colorbar(_im, ax=_ax, fraction=0.046, pad=0.04)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -518,6 +521,9 @@ def _(mo):
 def _(rs_erasures, rs_k):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _m, _poly, _q = 4, 0b10011, 16
@@ -607,7 +613,7 @@ def _(rs_erasures, rs_k):
                       ha="center", va="top",
                       color="seagreen" if _ok else "crimson", fontsize=12, fontweight="bold")
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

@@ -9,6 +9,7 @@ import os
 import glob
 import shutil
 import re
+import sys
 
 os.chdir(os.path.dirname(__file__))
 
@@ -42,7 +43,7 @@ for nb in notebooks:
     print(f"Exporting {name}...")
     result = subprocess.run(
         [
-            "python", "-m", "marimo", "export", "html-wasm",
+            sys.executable, "-m", "marimo", "export", "html-wasm",
             nb, "-o", out_dir,
             "--mode", "run",
             "--show-code",
@@ -78,7 +79,7 @@ for nb in notebooks:
             html = html.replace('"assets/', '"../assets/')
             # Also fix unquoted src/href
             html = re.sub(r'(?<=["\'])assets/', '../assets/', html)
-            with open(idx_path, "w", encoding="utf-8") as f:
+            with open(idx_path, "w", encoding="utf-8", newline="\n") as f:
                 f.write(html)
 
         # Copy shared static files to notebook dir (.nojekyll, favicon, etc)
@@ -114,7 +115,7 @@ if os.path.exists(home_idx):
         root_html,
     )
 
-    with open(root_idx, "w", encoding="utf-8") as f:
+    with open(root_idx, "w", encoding="utf-8", newline="\n") as f:
         f.write(root_html)
     print("\nCreated root index.html with fixed links")
 
@@ -131,7 +132,7 @@ if os.path.exists(home_idx):
         lambda m: f'href="../{m.group(1)}/index.html"',
         html,
     )
-    with open(home_idx, "w", encoding="utf-8") as f:
+    with open(home_idx, "w", encoding="utf-8", newline="\n") as f:
         f.write(html)
 
 # Copy standalone HTML pages (quiz, etc.) to docs root

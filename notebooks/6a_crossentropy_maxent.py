@@ -139,6 +139,9 @@ def _(mo):
 def _(pred_prob, true_class):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _y = 0 if true_class.value.startswith("class 0") else 1
@@ -180,7 +183,7 @@ def _(pred_prob, true_class):
         _ax2.grid(True, axis="y", alpha=0.3)
 
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -290,6 +293,9 @@ def _(mo):
 def _(smooth_eps):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _K = 6
@@ -331,7 +337,7 @@ def _(smooth_eps):
         _a2.grid(True, axis="y", alpha=0.3)
 
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -408,6 +414,9 @@ def _(mo):
 def _(mean_constraint):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _faces = np.arange(1, 7)
@@ -447,7 +456,7 @@ def _(mean_constraint):
         _ax.legend(loc="upper center", fontsize=9)
         _ax.grid(True, axis="y", alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

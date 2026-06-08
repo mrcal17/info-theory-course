@@ -373,6 +373,9 @@ def _(mo):
 def _(bit0, bit1, bit2, bit3, flip_pos):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         P = np.array([
@@ -441,7 +444,7 @@ def _(bit0, bit1, bit2, bit3, flip_pos):
         _axes[3].set_xlim(-0.3, 7.2)
 
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -486,6 +489,9 @@ def _(mo):
 def _(redundancy):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
         from math import comb
 
@@ -529,7 +535,7 @@ def _(redundancy):
             _ax2.text(_i, np.log2(_v) + 0.3, f"{int(np.log2(_v))}", ha="center", fontsize=9)
 
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

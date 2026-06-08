@@ -396,6 +396,9 @@ def _(text_input):
         import heapq
         from collections import Counter
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _s = text_input.value
@@ -526,6 +529,9 @@ def _(block_size):
         import heapq
         import itertools
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def huffman_lengths(probs):

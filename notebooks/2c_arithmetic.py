@@ -173,6 +173,9 @@ def _(mo):
 def _(arith_msg):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _probs = {"a": 0.4, "b": 0.3, "c": 0.2, "d": 0.1}
@@ -236,7 +239,7 @@ def _(arith_msg):
         _ax.set_xlabel("each row rescales the highlighted slice above it to full width")
         _ax.set_title("Interval narrowing: encoding '" + "".join(_msg) + "'")
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

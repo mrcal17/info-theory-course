@@ -170,6 +170,9 @@ def _(mo):
 def _(p01, p10):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _a = p01.value
@@ -213,7 +216,7 @@ def _(p01, p10):
         _ax2.grid(True, axis="y", alpha=0.3)
 
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -298,6 +301,9 @@ def _(mo):
 def _(bias_slider, n_slider):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _ph = bias_slider.value
@@ -326,7 +332,7 @@ def _(bias_slider, n_slider):
         _ax.legend(loc="upper left")
         _ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return

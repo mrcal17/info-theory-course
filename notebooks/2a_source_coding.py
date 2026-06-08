@@ -178,6 +178,9 @@ def _(mo):
 def _(tree_lengths):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _parse(s):
@@ -263,7 +266,7 @@ def _(tree_lengths):
         _ax.axis("off")
         _ax.text(0.0, 0.25, "root", fontsize=9, color="gray")
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -315,6 +318,9 @@ def _(mo):
 def _(kraft_lengths):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         def _parse(s):
@@ -365,7 +371,7 @@ def _(kraft_lengths):
         _ax.set_xlabel("cumulative Kraft sum  $\\sum_i 2^{-\\ell_i}$")
         _ax.set_title(f"lengths = {_lengths}      sum = {_total:.4f}\n{_verdict}", color=_tcolor)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
@@ -587,6 +593,9 @@ def _(mo):
 def _(source_choice):
     def _run():
         import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
         import matplotlib.pyplot as plt
 
         _choice = source_choice.value
@@ -634,7 +643,7 @@ def _(source_choice):
         _ax.set_ylim(0, max(_vals) * 1.2)
         _ax.grid(True, axis="y", alpha=0.3)
         plt.tight_layout()
-        _fig
+        return _fig
 
     _run()
     return
