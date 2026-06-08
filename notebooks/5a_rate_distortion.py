@@ -347,7 +347,7 @@ def _(rd_distortion, rd_param, rd_source):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/RateDistortionCurve.gif", alt="Animation of a rate-distortion curve trading reconstruction error for bitrate"),
+        mo.Html('<img src="../animations/rendered/RateDistortionCurve.gif" alt="Animation of a rate-distortion curve trading reconstruction error for bitrate" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: the rate-distortion curve trades bitrate against reconstruction error.*"),
     ])
     return

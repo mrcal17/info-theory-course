@@ -510,7 +510,7 @@ def _(cliff_n, cliff_pflip):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/ChannelCodingCliff.gif", alt="Animation of decoding error dropping below capacity and rising above the rate cliff"),
+        mo.Html('<img src="../animations/rendered/ChannelCodingCliff.gif" alt="Animation of decoding error dropping below capacity and rising above the rate cliff" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: error probability forms a rate cliff around channel capacity.*"),
     ])
     return

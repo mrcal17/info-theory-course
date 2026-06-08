@@ -459,7 +459,7 @@ def _(rho):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/MutualInfoDiagram.gif", alt="Animation of overlapping information circles illustrating mutual information"),
+        mo.Html('<img src="../animations/rendered/MutualInfoDiagram.gif" alt="Animation of overlapping information circles illustrating mutual information" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: overlapping information circles show the shared information $I(X;Y)$.*"),
     ])
     return

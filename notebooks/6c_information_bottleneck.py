@@ -439,7 +439,7 @@ def _(plane_epoch):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/InformationPlane.gif", alt="Animation of representations moving through the information plane during fitting and compression"),
+        mo.Html('<img src="../animations/rendered/InformationPlane.gif" alt="Animation of representations moving through the information plane during fitting and compression" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: representations move through the information plane during fitting and compression.*"),
     ])
     return

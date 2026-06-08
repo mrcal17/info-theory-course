@@ -464,7 +464,7 @@ def _(wf_n0, wf_n1, wf_n2, wf_n3, wf_n4, wf_power):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/WaterFilling.gif", alt="Animation of water-filling power allocation across parallel Gaussian channels"),
+        mo.Html('<img src="../animations/rendered/WaterFilling.gif" alt="Animation of water-filling power allocation across parallel Gaussian channels" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: water-filling allocates power to the best parallel Gaussian channels first.*"),
     ])
     return

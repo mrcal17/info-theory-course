@@ -485,7 +485,7 @@ def _(text_input):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/HuffmanTree.gif", alt="Animation of Huffman tree construction by repeatedly merging the least probable symbols"),
+        mo.Html('<img src="../animations/rendered/HuffmanTree.gif" alt="Animation of Huffman tree construction by repeatedly merging the least probable symbols" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: Huffman coding repeatedly merges the least probable symbols into a tree.*"),
     ])
     return

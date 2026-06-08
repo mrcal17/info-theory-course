@@ -236,7 +236,7 @@ def _(coin_bias):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/EntropySurprise.gif", alt="Animation showing rare outcomes carrying more surprise and entropy as average surprise"),
+        mo.Html('<img src="../animations/rendered/EntropySurprise.gif" alt="Animation showing rare outcomes carrying more surprise and entropy as average surprise" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: rare outcomes carry more surprise; entropy is the average surprise.*"),
     ])
     return

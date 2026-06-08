@@ -289,7 +289,7 @@ def _(arith_msg):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/ArithmeticInterval.gif", alt="Animation of arithmetic coding narrowing an interval after each symbol"),
+        mo.Html('<img src="../animations/rendered/ArithmeticInterval.gif" alt="Animation of arithmetic coding narrowing an interval after each symbol" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: arithmetic coding narrows one interval after each encoded symbol.*"),
     ])
     return

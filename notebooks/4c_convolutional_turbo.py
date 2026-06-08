@@ -351,7 +351,7 @@ def _(vit_errors, vit_len, vit_seed):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/ViterbiTrellis.gif", alt="Animation of the Viterbi algorithm selecting a surviving path through a trellis"),
+        mo.Html('<img src="../animations/rendered/ViterbiTrellis.gif" alt="Animation of the Viterbi algorithm selecting a surviving path through a trellis" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: Viterbi decoding keeps the best surviving path through the trellis.*"),
     ])
     return

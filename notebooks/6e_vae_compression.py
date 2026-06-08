@@ -280,7 +280,7 @@ def _(beta_slider):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/BetaVAEPlane.gif", alt="Animation of beta-VAE operating points moving along a rate-distortion plane"),
+        mo.Html('<img src="../animations/rendered/BetaVAEPlane.gif" alt="Animation of beta-VAE operating points moving along a rate-distortion plane" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: beta-VAE operating points move along a rate-distortion plane.*"),
     ])
     return

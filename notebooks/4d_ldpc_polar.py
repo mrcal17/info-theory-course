@@ -245,7 +245,7 @@ def _(bp_erasures, bp_steps):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/MessagePassing.gif", alt="Animation of belief-propagation messages moving between variable and check nodes"),
+        mo.Html('<img src="../animations/rendered/MessagePassing.gif" alt="Animation of belief-propagation messages moving between variable and check nodes" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: belief-propagation messages move between variable nodes and check nodes.*"),
     ])
     return

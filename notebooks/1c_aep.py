@@ -342,7 +342,7 @@ def _(bias_slider, n_slider):
 @app.cell
 def _(mo):
     mo.vstack([
-        mo.image(src="../animations/rendered/TypicalSet.gif", alt="Animation of probability mass concentrating into the typical set as block length grows"),
+        mo.Html('<img src="../animations/rendered/TypicalSet.gif" alt="Animation of probability mass concentrating into the typical set as block length grows" loading="lazy" style="max-width: 100%; height: auto;">'),
         mo.md("*Animation: as block length grows, probability mass concentrates on the typical set.*"),
     ])
     return
