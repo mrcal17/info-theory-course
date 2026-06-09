@@ -176,6 +176,7 @@
     .part-grid { grid-template-columns: 1fr; }
     .topbar { flex-direction: column; gap: 0.5rem; }
   }
+  .kbd-hint { margin-top: 0.6rem; font-size: 0.72rem; color: var(--dim); }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
@@ -417,6 +418,7 @@ function nextQuiz(){
     <div class="score-bar"><div class="sb-left"><span class="sc">Score: ${qScore}/${qTotal-1}</span><span class="st">Streak: ${gStreak}</span></div><div class="sb-right">${qTotal}/${qTotalAll}</div></div>
     <div class="q-card"><div class="q-cat">${q.m} — ${q.c}</div><div class="q-text">${fmt(q.q)}</div>
     <div class="opts">${opts.map(o=>`<button class="opt" data-a="${o===q.a?1:0}" data-key="${attr(o)}">${fmt(o)}</button>`).join("")}</div>
+    <div class="kbd-hint">Keys: 1&ndash;${opts.length} answer &middot; Enter next &middot; Esc back</div>
     <div class="expl" id="expl">${fmt(q.x)}</div></div><button class="nxt" id="nxt">Next</button></div>`;
   app.innerHTML=h;bindBack();renderMath();
   app.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
@@ -456,6 +458,7 @@ function nextTF(){
     <div class="score-bar"><div class="sb-left"><span class="sc">Score: ${tfScore}/${tfTotal-1}</span><span class="st">Streak: ${gStreak}</span></div><div class="sb-right">${tfTotal}/${tfTotalAll}</div></div>
     <div class="q-card"><div class="q-cat">${q.m} — True or False</div><div class="q-text">${fmt(q.q)}</div>
     <div class="opts"><button class="opt" data-v="true">True</button><button class="opt" data-v="false">False</button></div>
+    <div class="kbd-hint">Keys: T / F (or 1 / 2) &middot; Enter next &middot; Esc back</div>
     <div class="expl" id="expl">${fmt(q.x)}</div></div><button class="nxt" id="nxt">Next</button></div>`;
   app.innerHTML=h;bindBack();renderMath();
   app.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
@@ -531,6 +534,7 @@ function nextSpeed(){
     <div class="timer-bar"><div class="timer-fill" id="tf2" style="width:100%"></div></div>
     <div class="q-card"><div class="q-cat">${q.m} — ${q.c} (SPEED)</div><div class="q-text">${fmt(q.q)}</div>
     <div class="opts">${opts.map(o=>`<button class="opt" data-a="${o===q.a?1:0}" data-key="${attr(o)}">${fmt(o)}</button>`).join("")}</div>
+    <div class="kbd-hint">Keys: 1&ndash;${opts.length} answer &middot; Enter next &middot; Esc back</div>
     <div class="expl" id="expl">${fmt(q.x)}</div></div><button class="nxt" id="nxt">Next</button></div>`;
   app.innerHTML=h;bindBack();renderMath();
   const fill=$("#tf2");
@@ -607,12 +611,13 @@ function runFlash(){
     let h=`<div class="game-wrap">${header()}
       <div class="score-bar"><div class="sb-left"><span>${curMod||curPart?"Module "+( curMod||"Part "+curPart):"All"}</span></div><div class="sb-right">${status}</div></div>
       <div class="fc-card" id="fcCard"><div class="fc-inner">
-        <div class="fc-front"><div class="fc-label">${c.m}</div><div class="fc-q">${fmt(c.front)}</div><div class="fc-hint">Click to flip</div></div>
+        <div class="fc-front"><div class="fc-label">${c.m}</div><div class="fc-q">${fmt(c.front)}</div><div class="fc-hint">Click or Space to flip</div></div>
         <div class="fc-back"><div class="fc-a">${fmt(c.back).replace(/\n/g,"<br>")}</div></div>
       </div></div>
       <div class="fc-nav"><button id="fcPrev">&larr; Prev</button><div class="fc-count">${idx+1} / ${cards.length}</div><button id="fcNext">Next &rarr;</button></div>
       <div class="fc-rate"><button class="fc-hard" id="fcH">Hard</button><button class="fc-ok" id="fcO">OK</button><button class="fc-easy" id="fcE">Easy</button></div>
       <div class="fc-meta">Rate the card to schedule it. Current card: ${nextDue}.</div>
+      <div class="kbd-hint">Keys: Space flip &middot; &larr;/&rarr; prev/next &middot; 1 Hard &middot; 2 OK &middot; 3 Easy &middot; Esc back</div>
     </div>`;
     app.innerHTML=h;bindBack();renderMath();
     $("#fcCard").addEventListener("click",()=>$("#fcCard").classList.toggle("flipped"));
@@ -664,6 +669,34 @@ function showSummary(sc,tot,isMatch=false){
   $("#retry").addEventListener("click",()=>{used.clear();startMode();});
   $("#goHome").addEventListener("click",()=>{curPart=null;curMod=null;used.clear();showHome();});
 }
+
+// ===================== KEYBOARD =====================
+document.addEventListener("keydown",e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  const k=e.key;
+  if(k==="Escape"){const b=$("#backNav");if(b){e.preventDefault();b.click();}return;}
+  // Flashcard mode
+  const fc=$("#fcCard");
+  if(fc){
+    if(k===" "||k==="Enter"){e.preventDefault();fc.click();return;}
+    if(k==="ArrowLeft"){$("#fcPrev")?.click();return;}
+    if(k==="ArrowRight"){$("#fcNext")?.click();return;}
+    if(k==="1"){$("#fcH")?.click();return;}
+    if(k==="2"){$("#fcO")?.click();return;}
+    if(k==="3"){$("#fcE")?.click();return;}
+    return;
+  }
+  // Advance after answering, or retry from a summary screen
+  const nxt=$("#nxt");
+  if((k==="Enter"||k===" ")&&nxt&&nxt.classList.contains("show")){e.preventDefault();nxt.click();return;}
+  if(k==="Enter"&&$("#retry")){$("#retry").click();return;}
+  // Answer selection (quiz / true-false / speed)
+  const opts=[...app.querySelectorAll(".opt:not(.lk)")];
+  if(!opts.length)return;
+  if(/^[1-9]$/.test(k)){const i=+k-1;if(opts[i]){e.preventDefault();opts[i].click();}return;}
+  const low=k.toLowerCase();
+  if(low==="t"||low==="f"){const want=low==="t"?"true":"false";opts.find(o=>o.dataset.v===want)?.click();}
+});
 
 // ===================== INIT =====================
 showHome();

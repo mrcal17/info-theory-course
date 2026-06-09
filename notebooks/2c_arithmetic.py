@@ -892,5 +892,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [2B: Huffman Coding](../2b_huffman/) &nbsp;|&nbsp; Next: [2D: Universal Compression](../2d_lempel_ziv/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

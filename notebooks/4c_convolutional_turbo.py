@@ -1059,5 +1059,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [4B: Finite Fields, Reed-Solomon & BCH](../4b_reed_solomon/) &nbsp;|&nbsp; Next: [4D: LDPC, Polar & Modern Codes](../4d_ldpc_polar/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

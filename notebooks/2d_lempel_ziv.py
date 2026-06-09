@@ -952,5 +952,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [2C: Arithmetic & Range Coding](../2c_arithmetic/) &nbsp;|&nbsp; Next: [3A: Channels & Channel Capacity](../3a_channel_capacity/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

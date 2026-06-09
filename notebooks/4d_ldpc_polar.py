@@ -964,5 +964,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [4C: Convolutional & Turbo Codes](../4c_convolutional_turbo/) &nbsp;|&nbsp; Next: [5A: Rate-Distortion Theory](../5a_rate_distortion/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

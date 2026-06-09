@@ -54,7 +54,7 @@ def _(mo):
 def _():
     def _run():
         import numpy as np
-        from math import log2
+        from math import log2, comb
 
         def block_error_rep3(p):
             return comb(3, 2) * p**2 * (1 - p) + comb(3, 3) * p**3
@@ -932,6 +932,19 @@ def _():
         # print(f"uncoded block error ~ {n_fail_raw / N:.4f}")   # should be larger for small p
 
     _run()
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [3C: Differential Entropy & the Gaussian Channel](../3c_gaussian_channel/) &nbsp;|&nbsp; Next: [4B: Finite Fields, Reed-Solomon & BCH](../4b_reed_solomon/) &#8594;
+    """
+    )
     return
 
 

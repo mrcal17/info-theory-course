@@ -883,5 +883,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [2D: Universal Compression](../2d_lempel_ziv/) &nbsp;|&nbsp; Next: [3B: The Noisy-Channel Coding Theorem](../3b_channel_coding_theorem/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

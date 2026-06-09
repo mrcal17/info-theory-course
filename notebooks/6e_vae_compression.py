@@ -809,5 +809,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [6D: Neural Estimation of Mutual Information](../6d_neural_mi/) &nbsp;|&nbsp; Next: [7A: Algorithm & Theorem Study Guide](../7a_study_guide/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

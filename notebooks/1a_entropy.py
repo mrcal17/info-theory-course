@@ -655,5 +655,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [0A: Orientation & Notation](../0a_orientation/) &nbsp;|&nbsp; Next: [1B: Relative Entropy & Mutual Information](../1b_kl_mutual_information/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

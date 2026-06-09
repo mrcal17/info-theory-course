@@ -17,6 +17,19 @@ os.chdir(os.path.dirname(__file__))
 DOCS_DIR = "docs"
 NOTEBOOKS_DIR = "notebooks"
 
+# Static files marimo ships with every export; kept once at docs root.
+SHARED_STATIC = [
+    "android-chrome-192x192.png",
+    "android-chrome-512x512.png",
+    "apple-touch-icon.png",
+    "favicon-16x16.png",
+    "favicon-32x32.png",
+    "favicon.ico",
+    "logo.png",
+    "manifest.json",
+    "site.webmanifest",
+]
+
 
 def prune_copied_instruction_files():
     removed = 0
@@ -79,7 +92,19 @@ for nb in notebooks:
         if os.path.exists(local_assets) and shared_assets_copied:
             shutil.rmtree(local_assets)
 
+        # Deduplicate marimo's per-export static files (favicons, manifests,
+        # logo): keep a single copy at docs root and delete the module's copy.
+        for static_file in SHARED_STATIC + [".nojekyll"]:
+            src = os.path.join(out_dir, static_file)
+            dst_root = os.path.join(DOCS_DIR, static_file)
+            if os.path.exists(src):
+                if not os.path.exists(dst_root):
+                    shutil.copy2(src, dst_root)
+                if static_file != ".nojekyll":
+                    os.remove(src)
+
         # Rewrite the index.html to point to shared assets at ../assets/
+        # and shared static files at ../
         idx_path = os.path.join(out_dir, "index.html")
         if os.path.exists(idx_path):
             with open(idx_path, encoding="utf-8") as f:
@@ -89,15 +114,11 @@ for nb in notebooks:
             html = html.replace('"assets/', '"../assets/')
             # Also fix unquoted src/href
             html = re.sub(r'(?<=["\'])assets/', '../assets/', html)
+            for static_file in SHARED_STATIC:
+                html = html.replace(f'"./{static_file}"', f'"../{static_file}"')
+                html = html.replace(f'"{static_file}"', f'"../{static_file}"')
             with open(idx_path, "w", encoding="utf-8", newline="\n") as f:
                 f.write(html)
-
-        # Copy shared static files to notebook dir (.nojekyll, favicon, etc)
-        for static_file in ["favicon.ico", ".nojekyll"]:
-            src = os.path.join(DOCS_DIR, name, static_file)
-            dst_root = os.path.join(DOCS_DIR, static_file)
-            if os.path.exists(src) and not os.path.exists(dst_root):
-                shutil.copy2(src, dst_root)
     else:
         failed += 1
         print(f"  FAILED: {name}")
@@ -111,8 +132,11 @@ if os.path.exists(home_idx):
     with open(home_idx, encoding="utf-8") as f:
         html = f.read()
 
-    # Root index.html lives one level above home/, so shared assets are ./assets/.
+    # Root index.html lives one level above home/, so shared assets are ./assets/
+    # and shared static files are ./
     root_html = html.replace('"../assets/', '"./assets/')
+    for static_file in SHARED_STATIC:
+        root_html = root_html.replace(f'"../{static_file}"', f'"./{static_file}"')
 
     with open(root_idx, "w", encoding="utf-8", newline="\n") as f:
         f.write(root_html)

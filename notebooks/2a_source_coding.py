@@ -918,5 +918,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [1C: Entropy Rate & the AEP](../1c_aep/) &nbsp;|&nbsp; Next: [2B: Huffman Coding](../2b_huffman/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

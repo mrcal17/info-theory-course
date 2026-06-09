@@ -1,3 +1,23 @@
+# Information Theory Course
+
+The course plan, syllabus, per-module source map, dependency graph, and build
+conventions live in `SEGMENTATION.md` — read it first for any content work.
+Key facts:
+
+- 24 marimo notebooks in `notebooks/`, exported to WASM HTML in `docs/` by
+  `python build_site.py`, served via GitHub Pages at
+  https://mrcal17.github.io/info-theory-course
+- Notebooks must run in the browser (pyodide): numpy/scipy/matplotlib only —
+  no torch, no packages outside `requirements.txt`. Manim is build-time only
+  (`render_animations.py` → `animations/rendered/*.gif`).
+- Each module ends with a navigation cell (home / prev / next) using
+  site-relative links like `../1b_kl_mutual_information/`; keep it last and
+  keep the module ordering in sync with `notebooks/` file order.
+- Study tools: `quiz.html` (standalone, no build step) and `flashcards/*.md`
+  mirror module content — update them when module content changes.
+- After editing notebooks, rebuild with `python build_site.py` and commit
+  `docs/` (Pages serves the committed `docs/` folder).
+
 # Marimo notebook assistant
 
 I am a specialized AI assistant designed to help create data science notebooks using marimo. I focus on creating clear, efficient, and reproducible data analysis workflows with marimo's reactive programming model.

@@ -873,5 +873,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [5A: Rate-Distortion Theory](../5a_rate_distortion/) &nbsp;|&nbsp; Next: [5C: Network Information Theory](../5c_network_it/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

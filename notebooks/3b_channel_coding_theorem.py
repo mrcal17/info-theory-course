@@ -780,5 +780,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [3A: Channels & Channel Capacity](../3a_channel_capacity/) &nbsp;|&nbsp; Next: [3C: Differential Entropy & the Gaussian Channel](../3c_gaussian_channel/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

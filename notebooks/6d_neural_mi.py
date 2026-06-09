@@ -782,5 +782,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [6C: The Information Bottleneck](../6c_information_bottleneck/) &nbsp;|&nbsp; Next: [6E: Rate-Distortion, VAEs & Neural Compression](../6e_vae_compression/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

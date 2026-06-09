@@ -572,5 +572,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; Next: [1A: Entropy & Self-Information](../1a_entropy/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

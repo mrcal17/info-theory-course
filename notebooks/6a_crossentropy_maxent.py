@@ -833,5 +833,18 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    # Course navigation cell
+    mo.md(
+        r"""
+    ---
+
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [5C: Network Information Theory](../5c_network_it/) &nbsp;|&nbsp; Next: [6B: MDL & Model Selection](../6b_mdl/) &#8594;
+    """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
