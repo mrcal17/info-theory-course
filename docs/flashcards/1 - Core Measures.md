@@ -51,6 +51,18 @@ State the data-processing inequality and the role of Jensen's inequality.
 For X → Y → Z: I(X;Z) ≤ I(X;Y). Processing can't create information.
 Jensen: for convex -log, E[-log(·)] ≥ -log E[·], which yields D(p‖q) ≥ 0.
 
+Define the Jensen–Shannon divergence and state its properties.
+?
+JSD(p,q) = ½ D(p‖m) + ½ D(q‖m), with mixture m = ½(p+q).
+Symmetric, always finite, bounded by 1 bit (using log₂); on disjoint supports it equals 1 bit instead of diverging like KL.
+√JSD is a true metric. The GAN objective at its optimum = 2·JSD(p_data, p_model) − 2log2.
+
+What is the f-divergence family?
+?
+D_f(p‖q) = Σ q(x)·f(p(x)/q(x)) for a convex f with f(1) = 0.
+Generators: t·log₂t → KL; −log₂t → reverse KL; ½|t−1| → TV; (t−1)² → Pearson χ²; JSD has its own f.
+Convexity + Jensen give D_f ≥ 0 for all at once; Gibbs' inequality is the f = t·log t case.
+
 ## 1C: Entropy Rate & the AEP
 
 State the AEP (Asymptotic Equipartition Property).

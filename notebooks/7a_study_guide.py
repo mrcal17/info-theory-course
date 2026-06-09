@@ -111,6 +111,14 @@ def _():
                 "connects": "Channel capacity maximizes it (3A); IB (6C) and MINE (6D) estimate/optimize it.",
             },
             {
+                "name": "Jensen-Shannon divergence & f-divergences",
+                "part": 1, "module": "1B", "kind": "theorem",
+                "statement": "A symmetric, always-finite divergence via the mixture m; KL/TV/chi^2 are all f-divergences.",
+                "formula": r"\mathrm{JSD}(p,q) = \tfrac12 D(p\|m) + \tfrac12 D(q\|m),\ m=\tfrac{p+q}{2}",
+                "intuition": "Routing through the average bounds it to 1 bit; sqrt(JSD) is a true metric, unlike KL.",
+                "connects": "Fixes KL's asymmetry/blow-up (1B); D_f>=0 from Jensen (1B); the GAN objective minimizes JSD (6E).",
+            },
+            {
                 "name": "Data-processing inequality",
                 "part": 1, "module": "1B", "kind": "theorem",
                 "statement": "Post-processing cannot create information about the source.",
@@ -255,6 +263,22 @@ def _():
                 "connects": "Foundation for all of Part 4; the Hamming/Singleton bounds limit any code.",
             },
             {
+                "name": "Gilbert-Varshamov bound",
+                "part": 4, "module": "4A", "kind": "theorem",
+                "statement": "Achievability: a code of distance d exists whenever its spheres do not yet cover the space.",
+                "formula": r"M\cdot V(n,d-1) < 2^n \;\Rightarrow\; R \ge 1 - H_2(\delta)",
+                "intuition": "A greedy code keeps grabbing words at distance >= d; the Hamming picture run in reverse.",
+                "connects": "Floor to the Hamming converse (4A); the achievability/converse sandwich of channel coding (3B).",
+            },
+            {
+                "name": "CRC & error detection",
+                "part": 4, "module": "4A", "kind": "channel code",
+                "statement": "GF(2) polynomial division: a zero remainder means clean, else discard and retransmit.",
+                "formula": r"T(x) = x^r m(x) \oplus (x^r m(x)\bmod g(x)),\ \deg g = r",
+                "intuition": "A degree-r CRC catches every burst <= r and lets random errors slip at only 2^{-r}.",
+                "connects": "Detection beats correction per bit of distance (4A); the detect-and-resend ARQ behind Ethernet/TCP.",
+            },
+            {
                 "name": "Reed-Solomon & BCH",
                 "part": 4, "module": "4B", "kind": "channel code",
                 "statement": "Cyclic codes over GF(2^m) hitting the Singleton bound (MDS).",
@@ -383,6 +407,14 @@ def _():
                 "connects": "Softmax/logistic regression are maxent (6A); Gaussian is maxent for fixed variance (3C).",
             },
             {
+                "name": "Kelly criterion & doubling rate",
+                "part": 6, "module": "6A", "kind": "theorem",
+                "statement": "Log-optimal proportional betting; max wealth growth per round is 1 - H_2(p) at even money.",
+                "formula": r"f^\star = 2p-1,\quad W^\star = 1 - H_2(p)",
+                "intuition": "Entropy is the tax on growth; wrong beliefs q cost exactly D(p||q), the third hat of KL.",
+                "connects": "Third operational meaning of entropy (1A); betting on q = log-loss/cross-entropy (6A); side info worth I(X;Y) (1B).",
+            },
+            {
                 "name": "Minimum description length (MDL)",
                 "part": 6, "module": "6B", "kind": "ml",
                 "statement": "The best model is the one that compresses the data plus itself the most.",
@@ -413,6 +445,46 @@ def _():
                 "formula": r"\mathcal{L} = \underbrace{\mathbb{E}[-\log p(x\mid z)]}_{\text{distortion}} + \beta\,\underbrace{D(q(z\mid x)\|p(z))}_{\text{rate}}",
                 "intuition": "beta sweeps a rate-distortion curve in latent space — the same R(D) tradeoff as Part 5.",
                 "connects": "ELBO from Jensen (1B); rate-distortion (5A); bits-back/ANS = arithmetic coding (2C) for compression.",
+            },
+            {
+                "name": "LLM loss = cross-entropy / bits-per-byte",
+                "part": 6, "module": "6F", "kind": "ml",
+                "statement": "An LLM's training loss is the cross-entropy of the next token; bits-per-byte is the tokenizer-free unit.",
+                "formula": r"\mathcal{L} = \tfrac1T\sum_t -\log_2 q_\theta(x_t\mid x_{<t}) = H(p,q_\theta)",
+                "intuition": "Training is MLE on text = minimizing D(p||q); the loss can never drop below the entropy rate H(p).",
+                "connects": "Cross-entropy = H(p)+D(p||q) (6A); entropy rate floor (1C); perplexity = 2^loss (2A).",
+            },
+            {
+                "name": "Neural scaling laws",
+                "part": 6, "module": "6F", "kind": "ml",
+                "statement": "Test loss falls as a power law in model size, bottoming out at an irreducible floor.",
+                "formula": r"L(N) = E + A\,N^{-\alpha},\quad E = H(p)",
+                "intuition": "The reducible part is the shrinking KL D(p||q); the floor E is the entropy rate of text itself.",
+                "connects": "A scaling curve is a compression curve (2A); floor = entropy rate (1C); KL closing with scale (6A).",
+            },
+            {
+                "name": "Language modeling is compression",
+                "part": 6, "module": "6F", "kind": "ml",
+                "statement": "Any next-token predictor + arithmetic coder is a lossless compressor; its length is the cross-entropy.",
+                "formula": r"\mathbb{E}[\text{codelength}] = \textstyle\sum_t -\log_2 q_\theta(x_t\mid x_{<t}) = T\,H(p,q_\theta)",
+                "intuition": "Better prediction is literally fewer bits — predict well and compress well are one problem.",
+                "connects": "Arithmetic coding (2C); cross-entropy loss (6A); MDL's learning-as-compression view (6B).",
+            },
+            {
+                "name": "Temperature sampling as entropy control",
+                "part": 6, "module": "6F", "kind": "ml",
+                "statement": "The temperature-scaled softmax dials the entropy and effective vocabulary of generation.",
+                "formula": r"q_T(i) = \tfrac{\exp(z_i/T)}{\sum_j \exp(z_j/T)}",
+                "intuition": "T->0 is greedy (H->0); T->inf washes out to uniform (H->log2 V); 2^H is the effective vocabulary.",
+                "connects": "Softmax-as-maxent with a knob (6A); entropy as uncertainty (1A); effective branching factor (2A).",
+            },
+            {
+                "name": "Speculative decoding",
+                "part": 6, "module": "6F", "kind": "ml",
+                "statement": "A cheap draft model proposes tokens; the target verifies in parallel, preserving its distribution.",
+                "formula": r"\text{accept }x\sim\text{draft w.p. }\min\!\big(1,\tfrac{p_{\text{tgt}}(x)}{p_{\text{draft}}(x)}\big)",
+                "intuition": "Verify cheaply, correct rarely: fewer big-model passes per token with zero distortion to the samples.",
+                "connects": "Distribution-preserving rejection sampling; same verify-then-fix spirit as ARQ/CRC (4A) and coding theory.",
             },
         ]
 
@@ -886,7 +958,7 @@ def _(mo):
         r"""
     ---
 
-    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [6E: Rate-Distortion, VAEs & Neural Compression](../6e_vae_compression/) &nbsp;|&nbsp; [Quiz & Flashcards](../quiz.html)
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [6F: Information Theory in Modern LLMs](../6f_it_llms/) &nbsp;|&nbsp; [Quiz & Flashcards](../quiz.html)
     """
     )
     return

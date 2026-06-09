@@ -591,7 +591,136 @@ def _(mo):
     mo.md(r"""
     ---
 
-    ## 8. Verifying Single-Error Correction Exhaustively
+    ## 8. The Gilbert–Varshamov Bound: How Good Can Codes *Be*?
+
+    The Hamming bound of Section 7 is a **converse**: it says "no code can beat this" — push the rate too high for a given distance and the spheres must overlap, so correction becomes impossible. But a converse alone is a ceiling with no floor. It rules out the impossible without promising anything is actually *achievable*. Do codes with large distance and decent rate even exist?
+
+    Enter the **Gilbert–Varshamov (GV) bound**, the matching **achievability** result. Where Hamming says "you cannot do better than this," GV says "you can always do at least *this* well" — and it proves it by handing you a construction. This is exactly the achievability/converse sandwich the course celebrated for channel capacity in Part 3 (Module 3B): Shannon's coding theorem paired an achievability proof (good codes exist) with a converse (you cannot exceed capacity). Here the same two-sided logic pins down what block codes can do, and **real codes live in the gap between the two curves**.
+
+    **The greedy construction.** Fix a block length $n$ and a target minimum distance $d$. Build a code one codeword at a time by a greedy rule: keep any binary word that is at Hamming distance $\ge d$ from every word already chosen. When can you add another? A new word is *forbidden* only if it lies within distance $d-1$ of some existing codeword — that is, inside a ball of radius $d-1$ around one of them. Each existing codeword forbids at most $V(n, d-1)$ words (its ball), so $M$ codewords forbid at most $M \cdot V(n, d-1)$ words out of the $2^n$ total. As long as the forbidden words do not yet cover the whole space,
+
+    $$M \cdot V(n,\, d-1) < 2^n ,$$
+
+    there is still a legal word left to grab, and the code grows. (Many texts state the radius as $d-2$; both give the same asymptotics. The clean version: a code of size $M$ and minimum distance $d$ **is guaranteed to exist** whenever the inequality above holds, because the greedy process cannot get stuck before reaching size $M$.) Notice this is the Hamming sphere-packing picture run *in reverse*: Hamming demanded non-overlapping balls of radius $t$; GV only needs the radius-$(d-1)$ balls to not yet **cover** everything.
+
+    **The asymptotic form.** Take logs, write $\delta = d/n$ for the relative distance and $R = \tfrac{1}{n}\log_2 M$ for the rate, and use the volume estimate $\tfrac{1}{n}\log_2 V(n, \delta n) \to H_2(\delta)$ (the binary entropy function from Module 1A, now measuring the log-volume of a Hamming ball). The existence condition becomes
+
+    $$R \;\ge\; 1 - H_2(\delta) \qquad \text{(Gilbert–Varshamov, achievable).}$$
+
+    Compare the Hamming converse, which in the same asymptotic coordinates reads $R \le 1 - H_2(\delta/2)$ (correcting $t \approx d/2$ errors). The two curves are the floor and ceiling of the achievable rate region:
+
+    - **Hamming (converse, upper curve):** $R \le 1 - H_2(\delta/2)$ — *nothing* can beat this.
+    - **Gilbert–Varshamov (achievability, lower curve):** $R \ge 1 - H_2(\delta)$ — a greedy (or random) code *reaches* at least this.
+
+    Everything possible lies between them, and the famous open problem of coding theory is *exactly which curve the truth hugs* for large $n$. Remarkably, for decades no explicit construction reliably beat the humble greedy GV floor in the worst case — random codes are good, but writing one down you can decode fast is hard. That gap is the entire reason Modules 4B–4D exist.
+
+    > [MacKay Ch 13](https://www.inference.org.uk/itprnn/book.pdf) frames the sphere-packing (converse) and GV-style (achievability) bounds together, mirroring the channel-coding theorem of Part 3.
+    > [Roth Ch 4](https://www.cambridge.org/core/books/introduction-to-coding-theory/377D24BE73F473B15378776B0AE63CA3) proves the Gilbert–Varshamov bound and the greedy/probabilistic existence argument in full.
+    """)
+    return
+
+
+@app.cell
+def _():
+    def _run():
+        import numpy as np
+        from math import comb, log2
+
+        print("=== Gilbert–Varshamov existence: greedy guarantee  M * V(n, d-1) < 2^n ===")
+        print("(a binary code of size M and min-distance d is GUARANTEED to exist)")
+
+        def ball_volume(n, t):
+            return sum(comb(n, i) for i in range(t + 1))
+
+        def gv_guaranteed_M(n, d):
+            _V = ball_volume(n, d - 1)
+            _M = 1
+            while (_M + 1) * _V < 2**n:
+                _M += 1
+            return _M
+
+        print(f"\n{'n':>4s}  {'d':>3s}  {'V(n,d-1)':>10s}  {'guaranteed M >=':>16s}  {'k = log2 M':>11s}  {'rate R':>8s}")
+        for _n, _d in [(7, 3), (15, 5), (23, 7), (31, 7), (63, 11)]:
+            _M = gv_guaranteed_M(_n, _d)
+            _k = log2(_M)
+            print(f"{_n:>4d}  {_d:>3d}  {ball_volume(_n, _d - 1):>10d}  {_M:>16d}  {_k:>11.2f}  {_k / _n:>8.3f}")
+        print("\n(e.g. n=7, d=3 guarantees a code as large as Hamming(7,4)'s 16 words.)")
+
+    _run()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    The plot below draws the whole **achievable rate region** for a fixed block length, sandwiched between the two bounds. The relative distance $\delta = d/n$ runs along the $x$-axis; the shaded band is where real codes can live. Watch how the gap between the GV floor and the Hamming ceiling widens as you demand more protection — that gap is the unclaimed territory the rest of Part 4 goes hunting in.
+    """)
+    return
+
+
+@app.cell
+def _():
+    def _run():
+        import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+        import matplotlib.pyplot as plt
+
+        def _h2(x):
+            x = np.asarray(x, dtype=float)
+            _out = np.zeros_like(x)
+            _m = (x > 0) & (x < 1)
+            _xm = x[_m]
+            _out[_m] = -_xm * np.log2(_xm) - (1 - _xm) * np.log2(1 - _xm)
+            return _out
+
+        _delta = np.linspace(1e-4, 0.5, 400)
+        _gv = 1 - _h2(_delta)                 # achievability (lower)
+        _ham = 1 - _h2(_delta / 2)            # converse (upper)
+
+        _fig, _ax = plt.subplots(figsize=(8, 5))
+        _ax.plot(_delta, _ham, color="crimson", lw=2,
+                 label=r"Hamming converse  $R \leq 1 - H_2(\delta/2)$")
+        _ax.plot(_delta, _gv, color="steelblue", lw=2,
+                 label=r"Gilbert–Varshamov  $R \geq 1 - H_2(\delta)$")
+        _ax.fill_between(_delta, _gv, _ham, color="gold", alpha=0.35,
+                         label="achievable region (real codes live here)")
+
+        # Hamming (7,4): n=7, d=3 -> delta = 3/7, rate 4/7
+        _d74, _r74 = 3 / 7, 4 / 7
+        _ax.scatter([_d74], [_r74], color="black", s=70, zorder=6)
+        _ax.annotate("Hamming (7,4)\n$\\delta=3/7,\\ R=4/7$", xy=(_d74, _r74),
+                     xytext=(_d74 + 0.02, _r74 + 0.06), fontsize=9,
+                     arrowprops=dict(arrowstyle="->", lw=1))
+
+        # rep-3: n=3, d=3 -> delta = 1 (off this [0,0.5] axis); mark at the right edge with a note
+        _ax.scatter([0.5], [1 / 3], color="dimgray", s=55, marker="s", zorder=6)
+        _ax.annotate("rep-3 code\n$\\delta=1$ (off-axis),\n$R=1/3$",
+                     xy=(0.5, 1 / 3), xytext=(0.34, 0.40), fontsize=9, color="dimgray",
+                     arrowprops=dict(arrowstyle="->", lw=1, color="dimgray"))
+
+        _ax.set_xlabel(r"relative minimum distance  $\delta = d/n$")
+        _ax.set_ylabel(r"code rate  $R = k/n$")
+        _ax.set_title("Achievable rate region (block length $n = 127$)\n"
+                      "GV floor (achievability) vs Hamming ceiling (converse)")
+        _ax.set_xlim(0, 0.5)
+        _ax.set_ylim(0, 1.0)
+        _ax.legend(loc="upper right", fontsize=8)
+        _ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        return _fig
+
+    _run()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ---
+
+    ## 9. Verifying Single-Error Correction Exhaustively
 
     Claims are cheap; let us *prove* the Hamming code corrects every single-bit error, by brute force. We loop over all $16$ messages and, for each, over all $8$ channel outcomes (no flip, or a flip in any of the 7 positions). That is $16 \times 8 = 128$ cases — every situation the code can face under a single error. The decoder must recover the original message in all of them.
 
@@ -658,6 +787,129 @@ def _():
         print(f"  double-error cases tried: {_cases}")
         print(f"  decoder recovered the original message in {_cases - _fail} of them")
         print(f"  -> single-error-correcting means SINGLE; d_min = 3 forbids correcting 2.")
+
+    _run()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ---
+
+    ## 10. Error *Detection*, CRCs, and ARQ
+
+    Everything so far has chased **correction** — repair the damage on the spot, never ask the sender again. That is the right call when there is no way back: a CD already pressed, a probe halfway to Jupiter, a hard-drive sector read at 3 a.m. But it is *expensive*. Recall the distance arithmetic from Section 5: a code with minimum distance $d$ can **detect** up to $d-1$ errors yet only **correct** up to $\lfloor (d-1)/2 \rfloor$. Detection buys you roughly **twice the reach per unit of distance** — and distance costs redundancy. If a return channel exists, why pay for correction you do not need?
+
+    Most of the systems you touch every day make exactly that trade. **Ethernet** frames, **TCP/IP** segments, **ZIP** archives, **USB** packets, and countless storage formats do not correct errors at all. They *detect* a corrupted block, throw it away, and ask for a retransmission. That request-and-resend loop is **ARQ** — Automatic Repeat reQuest — and it is the dominant error-control strategy in networking. Correction (called FEC, forward error correction, in this context) is reserved for the no-going-back channels. The split is economic: detection is cheap, a retransmission is rare when the channel is decent, and you avoid carrying heavy correction redundancy on every single packet.
+
+    **The workhorse detector is the CRC** — the Cyclic Redundancy Check. A CRC is a linear code in disguise, and the disguise is pure $\mathrm{GF}(2)$ polynomial arithmetic from Section 2. Treat your message bits as the coefficients of a polynomial $m(x)$ over $\mathrm{GF}(2)$ (highest-order bit first). Pick a fixed **generator polynomial** $g(x)$ of degree $r$ — for CRC-8 the standard choice is $g(x) = x^8 + x^2 + x + 1$. To form the codeword you shift the message up by $r$ bits (multiply by $x^r$) and append the remainder of dividing by $g(x)$:
+
+    $$\text{transmit } T(x) = x^{r}\, m(x) \;\oplus\; \big(x^{r} m(x) \bmod g(x)\big),$$
+
+    so that $T(x)$ is *exactly divisible* by $g(x)$. The receiver simply divides the received word by $g(x)$: a **zero remainder means "looks clean,"** a nonzero remainder means "corrupted — discard and ARQ." The division is the same long division you learned for integers, except every subtraction is an XOR (no borrows, no carries — Section 2's field at work). That is all a CRC is: polynomial long division over $\mathrm{GF}(2)$.
+
+    Why is this such a good detector? Two guarantees, both falling straight out of the algebra:
+
+    - **Burst-error guarantee.** A *burst* of length $L$ is an error pattern confined to $L$ consecutive bits. As an error polynomial $e(x)$, a burst of length $L \le r$ has degree $< r$ and a nonzero low-order term, so it is *too small to be divisible* by the degree-$r$ generator $g(x)$ — the division leaves a nonzero remainder and the error is **always caught**. A degree-$r$ CRC catches **every** burst of length $\le r$. Bursts are the dominant failure mode on real channels (a scratch, a noise spike, a dropped clock), which is exactly why CRCs rule.
+    - **Random-error escape probability.** An undetected error must be a *nonzero multiple of $g(x)$* — the error polynomial has to land exactly on a codeword of the CRC. For an error pattern chosen at random, the $r$ check bits are equally likely to be anything, so the chance the remainder happens to be zero is $1$ in $2^{r}$. A CRC-32 therefore lets only about $2^{-32} \approx 2 \times 10^{-10}$ of random corruptions slip past — vanishingly rare.
+
+    **The parity bit is just a CRC with $r=1$**, generator $g(x) = x + 1$. Its remainder is the XOR of all the message bits — a single check bit that catches any *odd* number of flips (every burst of length $\le 1$, i.e. every single-bit error) and slips on even ones with probability $2^{-1}$. Stretch $r$ from 1 up to 8, 16, 32 and you trade a few more check bits for an exponentially tighter net. Same idea, more polynomial.
+
+    > [Lin & Costello Ch 3 & 4](https://openlibrary.org/books/OL3301344M/Error_control_coding) develop cyclic codes, CRCs, and the burst-detection guarantees, plus ARQ protocols, as the engineering standard.
+    > [MacKay Ch 1](https://www.inference.org.uk/itprnn/book.pdf) frames the detect-and-retransmit vs forward-correction choice that decides when ARQ beats FEC.
+    """)
+    return
+
+
+@app.cell
+def _():
+    def _run():
+        import numpy as np
+
+        # CRC-8: generator g(x) = x^8 + x^2 + x + 1, encoded as 0x107 (degree r = 8).
+        _POLY = 0x107
+        _R = 8
+
+        def crc_remainder(bits, poly=_POLY, r=_R):
+            # GF(2) polynomial long division: subtract = XOR, no carries.
+            _reg = [int(b) & 1 for b in bits] + [0] * r
+            _poly_bits = [(poly >> _i) & 1 for _i in range(r, -1, -1)]  # length r+1, MSB first
+            for _i in range(len(bits)):
+                if _reg[_i] == 1:                       # leading term present -> subtract g(x)
+                    for _j in range(r + 1):
+                        _reg[_i + _j] ^= _poly_bits[_j]
+            return _reg[-r:]
+
+        def transmit(bits, poly=_POLY, r=_R):
+            return list(bits) + crc_remainder(bits, poly, r)
+
+        def looks_clean(codeword, poly=_POLY, r=_R):
+            return all(_b == 0 for _b in crc_remainder(codeword, poly, r))
+
+        _rng = np.random.default_rng(0)
+
+        print(f"=== CRC-8 as GF(2) polynomial long division (g(x)=x^8+x^2+x+1, r={_R}) ===")
+        _msg0 = list(_rng.integers(0, 2, 24))
+        print(f"clean transmitted word divides evenly (remainder zero)? {looks_clean(transmit(_msg0))}")
+
+        # (a) every single-bit error is caught
+        _msg = list(_rng.integers(0, 2, 32))
+        _cw = transmit(_msg)
+        _missed = 0
+        for _i in range(len(_cw)):
+            _bad = _cw.copy(); _bad[_i] ^= 1
+            if looks_clean(_bad):       # zero remainder => slipped through undetected
+                _missed += 1
+        print(f"\n(a) single-bit errors: tested {len(_cw)} positions, "
+              f"{_missed} slipped through -> {'ALL CAUGHT' if _missed == 0 else 'MISS'}")
+
+        # (b) exhaustive: every burst of length <= r is caught
+        _msg = list(_rng.integers(0, 2, 16))
+        _cw = transmit(_msg)
+        _n = len(_cw)
+        _burst_missed = 0
+        _burst_total = 0
+        for _L in range(1, _R + 1):                    # burst length 1..r
+            for _start in range(0, _n - _L + 1):
+                for _mask in range(1, 1 << _L):
+                    if not (_mask & 1):                # last bit of window must flip ...
+                        continue
+                    if not (_mask & (1 << (_L - 1))):  # ... and first bit, so it truly spans length L
+                        continue
+                    _bad = _cw.copy()
+                    for _b in range(_L):
+                        if (_mask >> _b) & 1:
+                            _bad[_start + _b] ^= 1
+                    _burst_total += 1
+                    if looks_clean(_bad):
+                        _burst_missed += 1
+        print(f"(b) bursts up to length r={_R}: tested {_burst_total} patterns, "
+              f"{_burst_missed} slipped through -> "
+              f"{'ALL CAUGHT (burst guarantee holds)' if _burst_missed == 0 else 'MISS'}")
+
+        # (c) Monte-Carlo: random errors slip past at ~ 2^-r
+        _msg = list(_rng.integers(0, 2, 64))
+        _cw = np.array(transmit(_msg))
+        _n = len(_cw)
+        _N = 400_000
+        _slips = 0
+        _trials = 0
+        for _ in range(_N):
+            _e = _rng.integers(0, 2, _n)
+            if not _e.any():
+                continue
+            _trials += 1
+            if looks_clean((_cw ^ _e).tolist()):
+                _slips += 1
+        print(f"(c) random errors: empirical slip rate = {_slips / _trials:.5f}  "
+              f"vs expected 2^-r = {2.0**-_R:.5f}")
+
+        print("\nParity bit = CRC with r=1, g(x)=x+1 (remainder = XOR of all bits):")
+        _pmsg = [1, 0, 1, 1, 0, 0, 1]
+        _parity = crc_remainder(_pmsg, poly=0b11, r=1)
+        print(f"  message {_pmsg} -> parity bit {_parity[0]} "
+              f"(= XOR of bits = {int(np.sum(_pmsg) % 2)}); catches any single flip, slips on even ones at 2^-1")
 
     _run()
     return

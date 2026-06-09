@@ -569,6 +569,154 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ---
+
+    ## 7. Kelly Betting: Entropy as a Growth Rate
+
+    > *Optional section. This is a self-contained payoff that does not feed the exercises or later modules — but it is too beautiful to leave out. It gives you the **third operational meaning of entropy**, alongside compression (Part 2) and channel capacity (Part 3), and it turns the cross-entropy story you just learned into a story about money.*
+
+    You have now seen entropy mean two concrete things: the **number of bits** to compress a source (Part 2) and the **rate of reliable communication** through a channel (Part 3). Here is the third, due to Kelly (1956): entropy is a **growth rate of wealth**. The setup is gambling, but the punchline is that *the better-calibrated your probabilities, the faster your money grows*, and the exact exchange rate is measured in bits.
+
+    **The bet.** A biased coin lands heads with probability $p$. The casino offers **even money** (1-to-1 odds): stake $f$ of your wealth on heads; if heads you win $f$, if tails you lose $f$. You play repeatedly, reinvesting. After a win your wealth multiplies by $(1+f)$; after a loss by $(1-f)$. What fraction $f$ should you bet?
+
+    **The doubling rate.** Because wealth *multiplies*, the right thing to maximize is the **expected log growth per bet** — the **doubling rate**
+
+    $$W(f) \;=\; \mathbb{E}\big[\log_2(\text{wealth multiplier})\big] \;=\; p\,\log_2(1+f) \;+\; (1-p)\,\log_2(1-f).$$
+
+    Maximizing the *log* (not the expected wealth) is the whole trick: expected wealth is maximized by betting everything, but that guarantees ruin the first time you lose. The log is what compounds. Setting $W'(f) = 0$ gives the **log-optimal (Kelly) fraction**
+
+    $$f^\star \;=\; 2p - 1 \;=\; p - (1-p),$$
+
+    i.e. *bet your edge*. For $p = 0.6$ that is $f^\star = 0.2$ — stake 20% of your bankroll each round, no more.
+
+    **The connection to entropy.** Plug $f^\star = 2p-1$ back in and the achieved growth rate collapses to
+
+    $$\boxed{\,W^\star \;=\; 1 + p\log_2 p + (1-p)\log_2(1-p) \;=\; 1 - H(p)\,}$$
+
+    There it is: **your maximum growth rate per bet is one bit minus the entropy of the coin.** A fair coin ($p=0.5$, $H=1$) gives $W^\star = 0$ — no edge, no growth, however cleverly you bet. A perfectly predictable coin ($p \to 1$, $H \to 0$) gives $W^\star \to 1$ bit per round — you double your money every flip. Uncertainty (entropy) is *exactly* the tax on your growth rate. The general statement: for fair odds on $m$ outcomes with proportional betting $b = p$, the optimal growth rate is $W^\star = \log_2 m - H(p)$; the even-money coin is the $m=2$ special case.
+
+    **Betting with wrong beliefs costs you $D(p\|q)$.** Suppose you believe the head-probability is $q$, not the true $p$, and bet Kelly-for-$q$ (stake $2q-1$). Your growth rate drops below the optimum by *exactly* the KL divergence:
+
+    $$W^\star_{(p)} - W_{(\text{bet }q)} \;=\; D(p \,\|\, q).$$
+
+    This is the *same* number that measured your wasted bits in cross-entropy (Section 1) and your excess loss in MLE (Section 3). Mismatched beliefs cost you $D(p\|q)$ whether the currency is bits, log-loss, or dollars per round — it is one penalty wearing three hats. And if you acquire **side information** $Y$ correlated with the outcome $X$, the achievable growth rate rises by *exactly* the mutual information $I(X;Y)$ (Cover & Thomas, Theorem 6.1.2; we state it, the proof is in Ch 6) — information you can bet on is worth its weight in growth rate, bit for bit.
+
+    **The bridge to machine learning.** Look back at the doubling rate against your *believed* $q$: maximizing it is minimizing $D(p\|q)$, which is minimizing cross-entropy, which is the **log-loss** you train every probabilistic model with. So **log-loss is (up to sign and a constant) the negative doubling rate**: a model that assigns higher probability to what actually happens is *literally a better gambler*. This is why **proper scoring rules** — log-loss, Brier score — reward honest calibration: under a proper scoring rule, your expected score is optimized by reporting your *true* beliefs, exactly as Kelly betting is optimized by betting your *true* probabilities. Training a well-calibrated classifier and growing a bankroll optimally are the same optimization problem.
+
+    The demo simulates 1000 even-money bets on a $p=0.6$ coin for several betting fractions, over many seeds, and prints the theoretical growth rate next to the empirical one. Watch Kelly ($f=0.2$) win the long run while over-betting ($f=0.4, 0.8$) goes broke *despite a positive edge*. The slider lets you bet on a believed $q$ and reads off the $D(p\|q)$ growth penalty.
+
+    > [Cover & Thomas Ch 6](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) is the definitive treatment of gambling, the doubling rate, and the side-information theorem; [MacKay's book](https://www.inference.org.uk/itprnn/book.pdf) connects log-loss, betting, and proper scoring.
+    """)
+    return
+
+
+@app.cell
+def _():
+    def _run():
+        import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+        import matplotlib.pyplot as plt
+
+        _p = 0.6              # true head-probability
+        _n_bets = 1000
+        _seeds = [0, 1, 2, 3, 4]
+        _fracs = [0.05, 0.2, 0.4, 0.8]   # 0.2 is Kelly = 2p-1
+        _colors = {0.05: "steelblue", 0.2: "seagreen", 0.4: "darkorange", 0.8: "crimson"}
+
+        def _growth_rate(f, p):
+            # doubling rate W(f) = p log2(1+f) + (1-p) log2(1-f)
+            return p * np.log2(1 + f) + (1 - p) * np.log2(1 - f)
+
+        _fig, _ax = plt.subplots(figsize=(8.8, 4.8))
+        for _f in _fracs:
+            _label_done = False
+            for _seed in _seeds:
+                _rng = np.random.default_rng(_seed)
+                _wins = _rng.random(_n_bets) < _p
+                _mult = np.where(_wins, 1 + _f, 1 - _f)
+                _wealth = np.concatenate([[1.0], np.cumprod(_mult)])
+                _tag = f"f = {_f}" + ("  (Kelly)" if abs(_f - (2 * _p - 1)) < 1e-9 else "")
+                _ax.plot(_wealth, color=_colors[_f], alpha=0.55, lw=1.3,
+                         label=(None if _label_done else _tag))
+                _label_done = True
+
+        _ax.set_yscale("log")
+        _ax.axhline(1.0, color="gray", ls=":", alpha=0.6)
+        _ax.set_xlabel("number of bets")
+        _ax.set_ylabel("wealth  (log scale, start = 1)")
+        _ax.set_title(f"Wealth trajectories, even-money p={_p} coin  ({len(_seeds)} seeds each)")
+        _ax.legend(loc="lower left", fontsize=9)
+        _ax.grid(True, which="both", alpha=0.25)
+        plt.tight_layout()
+
+        print(f"=== Theoretical vs empirical growth rate (bits/bet), p={_p}, even money ===")
+        print(f"  Kelly fraction f* = 2p-1 = {2*_p-1:.2f};  optimal W* = 1 - H(p) = "
+              f"{1 + _p*np.log2(_p) + (1-_p)*np.log2(1-_p):.4f} bits/bet\n")
+        print(f"  {'f':>5} | {'theory W(f)':>12} | {'empirical W':>12} | note")
+        for _f in _fracs:
+            _emp = []
+            for _seed in range(40):
+                _rng = np.random.default_rng(1000 + _seed)
+                _wins = _rng.random(_n_bets) < _p
+                _logmult = np.where(_wins, np.log2(1 + _f), np.log2(1 - _f))
+                _emp.append(_logmult.mean())
+            _W = _growth_rate(_f, _p)
+            _note = "Kelly (optimal)" if abs(_f - (2*_p-1)) < 1e-9 else (
+                "over-bet -> broke" if _W < 0 else "under-bet")
+            print(f"  {_f:>5} | {_W:>12.4f} | {np.mean(_emp):>12.4f} | {_note}")
+        print("\n  Positive edge is NOT enough: f=0.4 and f=0.8 have W<0 and ruin you long-run.")
+
+    _run()
+    return
+
+
+@app.cell
+def _(mo):
+    believed_q = mo.ui.slider(start=0.51, stop=0.95, step=0.01, value=0.6,
+                              label="your believed head-probability q   (true p = 0.6)")
+    believed_q
+    return (believed_q,)
+
+
+@app.cell
+def _(believed_q):
+    def _run():
+        import numpy as np
+
+        _p = 0.6                      # the truth
+        _q = float(believed_q.value)  # your belief
+
+        def _growth_rate(f, p):
+            return p * np.log2(1 + f) + (1 - p) * np.log2(1 - f)
+
+        def _kl(p, q):
+            return p * np.log2(p / q) + (1 - p) * np.log2((1 - p) / (1 - q))
+
+        _f_star = 2 * _p - 1          # Kelly with the TRUE p
+        _f_belief = 2 * _q - 1        # Kelly with your believed q
+        _W_star = _growth_rate(_f_star, _p)
+        _W_belief = _growth_rate(_f_belief, _p)
+        _penalty = _W_star - _W_belief
+        _kl_val = _kl(_p, _q)
+
+        print("=== Betting on wrong beliefs costs you exactly D(p||q) in growth rate ===")
+        print(f"  true p = {_p},  believed q = {_q}")
+        print(f"  optimal bet  f* = 2p-1 = {_f_star:.3f}   -> growth W* = {_W_star:.4f} bits/bet")
+        print(f"  your bet  f_q = 2q-1 = {_f_belief:.3f}   -> growth W  = {_W_belief:.4f} bits/bet")
+        print(f"  growth penalty  W* - W = {_penalty:.4f} bits/bet")
+        print(f"  D(p || q)             = {_kl_val:.4f} bits   <- matches the penalty exactly")
+        print("\n  Same KL that measures wasted compression bits and excess log-loss")
+        print("  also measures your lost wealth growth. One penalty, three hats.")
+
+    _run()
+    return
+
+
 @app.cell
 def _(mo):
     mo.md(r"""

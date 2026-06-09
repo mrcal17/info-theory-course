@@ -143,7 +143,7 @@ def _(mo):
 
     > *Where it all pays off: the information-theoretic spine of modern ML.*
 
-    6A and 6B are the gentle entry points from KL and cross-entropy. 6C uses the rate-distortion viewpoint from 5A, 6D is the estimator capstone, and 6E combines 5A with the Gaussian-channel/continuous-entropy ideas from 3C.
+    6A and 6B are the gentle entry points from KL and cross-entropy. 6C uses the rate-distortion viewpoint from 5A, 6D is the estimator capstone, 6E combines 5A with the Gaussian-channel/continuous-entropy ideas from 3C, and 6F is the LLM capstone that ties cross-entropy (6A), arithmetic coding (2C), and neural compression (6E) together.
 
     | # | Module | Topics | Interactive Elements |
     |---|--------|--------|---------------------|
@@ -152,6 +152,7 @@ def _(mo):
     | 6C | [The Information Bottleneck](/info-theory-course/6c_information_bottleneck/) | Relevant information, the IB Lagrangian, the information plane, the DL caveat | β-slider, information-plane trajectory, 1 animation |
     | 6D | [Neural Estimation of Mutual Information](/info-theory-course/6d_neural_mi/) | Variational MI bounds (DV/NWJ/InfoNCE), MINE, the log-N ceiling, pitfalls | MINE-vs-InfoNCE bake-off on known-MI Gaussian |
     | 6E | [Rate-Distortion, VAEs & Neural Compression](/info-theory-course/6e_vae_compression/) | ELBO as rate-distortion, β-VAE & the R-D plane, bits-back/BB-ANS, learned compression | β-slider tracing a VAE R-D curve, 1 animation |
+    | 6F | [Information Theory in Modern LLMs](/info-theory-course/6f_it_llms/) | LLM loss = cross-entropy, bits-per-byte, perplexity, scaling laws as compression curves, LM-is-compression, sampling temperature, BPE & speculative decoding | n-gram + arithmetic coder on your text, scaling-law sliders, temperature/entropy dial |
     """)
     return
 
@@ -194,11 +195,14 @@ def _(mo):
 
     5A (Rate-Distortion) → 5B (IT & Statistics, advanced) → 5C (Network IT, advanced)
        │                         │
-       ├──────────────→ 6C (Info Bottleneck) → 6D (Neural MI)
-       └──────┐                                      │
-              └──────────────→ 6E (Rate-Distortion & VAEs)
-
-    1B (KL & MI) → 6A (CE/KL/MaxEnt) → 6B (MDL)
+       ├──────────────→ 6C (Info Bottleneck) → 6D (Neural MI) ──┐
+       └──────┐                                      │          │
+              └──────────────→ 6E (Rate-Distortion & VAEs) ─────┤
+                                                                ▼
+    1B (KL & MI) → 6A (CE/KL/MaxEnt) → 6B (MDL)         6F (IT in Modern LLMs)
+       │                                                        ▲
+       └────────────────────────────────────────────────────-─┘
+       (2C Arithmetic Coding also feeds 6F)
 
     all modules ─────────────────────────────────────────────→ 7A (Study Guide)
     ```

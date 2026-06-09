@@ -897,6 +897,8 @@ def _(mo):
     ### Exercise 5: The Binning Artifact (Saxe's Point)
 
     Reproduce the core of Saxe et al.'s estimator critique. Take a *fixed* deterministic $\tanh$ "layer" mapping $50$ distinct inputs to scalar activations, then estimate $I(X;T)$ by binning the activations into `n_bins` cells. Show that the *same* layer reports very different $I(X;T)$ as you change `n_bins` — so an apparent "compression" can be an artifact of the estimator, not a change in the map.
+
+    The edges and `np.digitize` are done for you; you fill in the **count → joint → MI** part. Build the $n_x \times n_{\text{bins}}$ joint over (input id, activation bin) by counting, normalize it to a probability table, then reuse the same $\sum p\log_2\frac{p}{p_x p_t}$ pattern from Exercise 1. The estimate should rise *monotonically* with `n_bins` while the underlying map never changes — that rise (read backwards, as bins effectively shrink during training) is the spurious "compression."
     """)
     return
 @app.cell(hide_code=True)
@@ -927,14 +929,29 @@ def _():
             edges = np.linspace(activations.min() - 1e-9, activations.max() + 1e-9, n_bins + 1)
             t_ids = np.clip(np.digitize(activations, edges) - 1, 0, n_bins - 1)
             n_x = x_ids.max() + 1
-            # TODO: build the n_x by n_bins joint count matrix, normalize to a probability
+            # TODO (1): build the n_x by n_bins count matrix `joint`.
+            #   Start joint = np.zeros((n_x, n_bins)); for each (xi, ti) in zip(x_ids, t_ids)
+            #   increment joint[xi, ti] += 1. (A loop is fine; np.add.at(joint,(x_ids,t_ids),1) also works.)
             joint = ...
-            # TODO: return mutual information of `joint` in bits
+            # TODO (2): normalize the counts to a probability table (divide by joint.sum()).
+            joint = ...
+            # TODO (3): marginals px (sum over bins, keepdims) and pt (sum over inputs, keepdims),
+            #   then independent product ind = px @ pt.
+            px = ...
+            pt = ...
+            ind = ...
+            # TODO (4): return sum over NONZERO entries of joint*log(joint/ind), divided by log(base).
+            #   (same masked formula as Exercise 1's mutual_information).
+            _m = joint > 0
             return ...
 
         # for nb in [4, 8, 16, 32, 64, 128, 256]:
         #     print(f"n_bins={nb:4d}  I_hat(X;T)={binned_mi(act, x_ids, nb):.4f} bits")
         # Same layer, wildly different estimates -> 'compression' can be a measurement artifact.
+        # Expected (seed 3): n_bins=4 -> ~1.53 bits, rising monotonically through
+        #   8->~2.05, 16->~2.50, 32->~2.90, 64->~3.24, 128->~3.56, 256->~3.89 bits,
+        #   all well under the true ceiling log2(50) ~ 5.64 bits. The map never changed;
+        #   only the estimator's resolution did.
 
     _run()
     return

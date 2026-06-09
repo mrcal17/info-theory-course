@@ -30,6 +30,27 @@ State the Hamming / sphere-packing bound and what 'perfect' means
 2^k · Σ_{i=0}^{t} C(n,i) ≤ 2^n.
 A perfect code meets it with equality: radius-t balls exactly tile GF(2)ⁿ. Hamming and Golay codes are perfect.
 
+State the Gilbert–Varshamov (GV) bound and how it relates to the Hamming bound.
+?
+GV (achievability): a code with R ≥ 1 − H₂(δ) is guaranteed to exist (greedy/random construction; δ = d/n).
+Hamming (converse): R ≤ 1 − H₂(δ/2).
+The two sandwich the achievable rate region; real codes live in the gap between them.
+
+Detection vs correction: what does minimum distance d buy you?
+?
+A distance-d code detects up to d − 1 errors but corrects only up to ⌊(d−1)/2⌋.
+Detection reaches about twice as far per unit of distance — hence detect-and-resend (ARQ) when a return channel exists.
+
+What burst-error guarantee does a degree-r CRC give, and how does it work?
+?
+A CRC is GF(2) polynomial long division by a degree-r generator g(x) (subtraction = XOR, no carries).
+It catches every burst of length ≤ r: such a burst has degree < r and cannot be a multiple of g(x), so the remainder is nonzero.
+
+What fraction of random errors escapes a degree-r CRC, and what is the r=1 case?
+?
+≈ 2^(−r): an undetected error must be a nonzero multiple of g(x), so a random pattern's remainder is zero with probability 2^(−r).
+The parity bit is a CRC with r = 1, g(x) = x + 1 (remainder = XOR of all bits); catches any single flip, slips on even ones at 2^(−1).
+
 ## 4B: Reed-Solomon & BCH
 
 How is GF(2^m) constructed?

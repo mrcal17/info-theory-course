@@ -764,7 +764,14 @@ def _(mo):
     mo.md(r"""
     ### Exercise 5: A Toy Transform Coder's R-D Curve
 
-    Build a 1-knob transform coder: scale a Gaussian latent by $\sqrt{\lambda}$, add uniform quantization noise on $[-\tfrac12,\tfrac12]$, charge $\tfrac12\log_2(2\pi e\,\mathrm{Var})$ bits per coefficient as the rate, decode by rescaling, and measure MSE distortion. Sweep $\lambda$ and confirm rate rises while distortion falls.
+    Build the 1-knob transform coder from Section 6, end to end, and measure its operating point. The four steps mirror the nonlinear-transform-coding pipeline (analysis → quantize → entropy-code → synthesis), here in one dimension:
+
+    1. **Scale** the latent by $\sqrt{\lambda}$ — a finer $\lambda$ means a finer effective quantizer.
+    2. **Quantize** with the training-time surrogate: add uniform noise $u\sim\mathcal U(-\tfrac12,\tfrac12)$.
+    3. **Entropy-code:** charge $\tfrac12\log_2(2\pi e\,\mathrm{Var}(\hat y))$ bits — the Gaussian entropy of the noisy coefficient, an honest bit count and the **rate**.
+    4. **Synthesize** by rescaling ($\hat x = \hat y/\sqrt\lambda$) and measure MSE — the **distortion**.
+
+    Sweep $\lambda$ and confirm the rate rises while the distortion falls: each $\lambda$ is one point on the codec's operational R-D curve, exactly the $\beta$-sweep of Section 4 with $\lambda \leftrightarrow 1/\beta$.
 
     After your `return`, the file ends with the module-level run guard.
     """)
@@ -792,18 +799,25 @@ def _():
 
         def code(lam):
             scale = np.sqrt(lam)
-            # TODO: y = x*scale ; yhat = y + uniform(-0.5,0.5)
+            # TODO (1) analysis + (2) quantize: y = x*scale, then add uniform noise on [-0.5, 0.5].
+            #   hint: rng.uniform(-0.5, 0.5, size=y.shape) matches y's shape.
             y = ...
             yhat = ...
-            # TODO: rate = 0.5*log2(2*pi*e*Var(yhat)) ; xrec = yhat/scale ; dist = mean((x-xrec)^2)
+            # TODO (3) entropy model -> rate: 0.5*log2(2*pi*e*Var(yhat)), the Gaussian
+            #   differential entropy of the noisy coefficient in bits.
+            #   hint: np.e is Euler's number; use yhat.var().
             rate = ...
+            # TODO (4) synthesis + distortion: rescale xrec = yhat/scale, then MSE = mean((x-xrec)**2).
             dist = ...
             return rate, dist
 
         # for lam in [0.5, 2.0, 8.0]:
         #     r, d = code(lam)
         #     print(f"lambda={lam:5.1f}  rate={r:.3f} bits  dist={d:.4f}")
-        # expect: rate increases with lambda, distortion decreases
+        # expect: rate increases with lambda, distortion decreases.
+        # Expected (seed 2):  lambda=0.5 -> rate ~ 1.66 bits, dist ~ 0.167
+        #                     lambda=2.0 -> rate ~ 2.58 bits, dist ~ 0.042
+        #                     lambda=8.0 -> rate ~ 3.55 bits, dist ~ 0.010
 
     _run()
     return
@@ -816,7 +830,7 @@ def _(mo):
         r"""
     ---
 
-    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [6D: Neural Estimation of Mutual Information](../6d_neural_mi/) &nbsp;|&nbsp; Next: [7A: Algorithm & Theorem Study Guide](../7a_study_guide/) &#8594;
+    [&#8593; Course home](../) &nbsp;|&nbsp; &#8592; Prev: [6D: Neural Estimation of Mutual Information](../6d_neural_mi/) &nbsp;|&nbsp; Next: [6F: Information Theory in Modern LLMs](../6f_it_llms/) &#8594;
     """
     )
     return

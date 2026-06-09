@@ -41,7 +41,7 @@ Polyanskiy–Wu bridges classical IT to statistical learning. Everything else is
 
 ## 2. Course Syllabus
 
-24 content modules across 6 teaching parts + a reference part. No probability unit.
+25 content modules across 6 teaching parts + a reference part. No probability unit.
 
 ### Part 0 — Orientation
 > *One page. What information theory is, the bit, and how to use this course. Not a teaching unit.*
@@ -107,6 +107,7 @@ Polyanskiy–Wu bridges classical IT to statistical learning. Everything else is
 | 6C | The Information Bottleneck | Relevant information, the IB Lagrangian, the information plane, the DL caveat (Saxe) | β-slider on a toy joint, information-plane trajectory, 1 animation |
 | 6D | Neural Estimation of Mutual Information | Variational MI bounds (DV/NWJ/InfoNCE), MINE, the log-N ceiling, pitfalls (Tschannen) | MINE-vs-InfoNCE bake-off on known-MI Gaussian |
 | 6E | Rate-Distortion, VAEs & Neural Compression | ELBO as rate-distortion, β-VAE & the R-D plane, bits-back/BB-ANS, learned compression | β-slider tracing a VAE R-D curve, 1 animation |
+| 6F | Information Theory in Modern LLMs | LLM loss = cross-entropy, bits-per-byte, perplexity = branching factor, scaling laws as compression curves, language-modeling-is-compression, sampling temperature as entropy control, BPE & speculative decoding | n-gram + arithmetic coder on user text, scaling-law sliders, temperature/entropy dial |
 
 ### Part 7 — Reference
 
@@ -144,6 +145,7 @@ Polyanskiy–Wu bridges classical IT to statistical learning. Everything else is
 | 6C | Tishby IB; Shwartz-Ziv; Saxe (caveat); Alemi VIB | Information plane: fitting → compression |
 | 6D | Belghazi MINE; van den Oord InfoNCE; Poole bounds; Tschannen | — (estimator bake-off) |
 | 6E | Alemi "Fixing a Broken ELBO"; Higgins β-VAE; Townsend BB-ANS; MacKay | β tracing the VAE R-D plane |
+| 6F | Delétang "Language Modeling Is Compression" (2309.10668); Kaplan scaling laws (2001.08361); Hoffmann "Chinchilla" (2203.15556); MacKay; Shannon 1951 | — (n-gram+arithmetic-coder widget; scaling-law & temperature sliders) |
 
 ---
 
@@ -167,11 +169,13 @@ Polyanskiy–Wu bridges classical IT to statistical learning. Everything else is
 
 5A (Rate-Distortion) → 5B (IT & Statistics, advanced) → 5C (Network IT, advanced)
    │                         │
-   ├──────────────→ 6C (Information Bottleneck) → 6D (Neural MI)
-   └──────┐                                      │
-          └──────────────→ 6E (Rate-Distortion & VAEs)
-
-1B (KL & MI) → 6A (Cross-Entropy/KL/MaxEnt) → 6B (MDL)
+   ├──────────────→ 6C (Information Bottleneck) → 6D (Neural MI) ──┐
+   └──────┐                                      │                │
+          └──────────────→ 6E (Rate-Distortion & VAEs) ───────────┤
+                                                                  ▼
+1B (KL & MI) → 6A (Cross-Entropy/KL/MaxEnt) → 6B (MDL)   6F (IT in Modern LLMs)
+   │                                                              ▲
+2C (Arithmetic Coding) ───────────────────────────────────────-─┘
 
 all modules ─────────────────────────────────────────────→ 7A (Study Guide)
 ```

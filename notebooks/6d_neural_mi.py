@@ -738,7 +738,9 @@ def _(mo):
     mo.md(r"""
     ### Exercise 5: Bias of the Plug-In Histogram Estimator
 
-    Demonstrate the small-sample positive bias of the naive plug-in MI estimator. For $\rho = 0.5$ (true MI $= -\tfrac12\log_2(1-0.25) \approx 0.2075$ bits), draw samples, bin them into a 2-D histogram, and compute the plug-in MI. Compare $N = 200$ to $N = 20000$ and confirm the small-$N$ estimate is biased **high**.
+    Demonstrate the small-sample positive bias of the naive plug-in MI estimator — the "just estimate the densities" approach Section 1 warned against. For $\rho = 0.5$ (true MI $= -\tfrac12\log_2(1-0.25) \approx 0.2075$ bits), draw samples, bin them into a 2-D histogram with a *fixed* $16\times16$ grid, and compute the plug-in MI directly from the binned joint.
+
+    Fill in `plugin_mi`: from the raw samples build the 2-D histogram of counts, normalize to a joint probability $p(x,y)$, take the two marginals, and sum $p\log_2\frac{p}{p_x p_y}$ over the nonzero cells. Then run it at $N=200$ and $N=20000$. With few samples most of the $256$ cells are empty or hold a single count, and those under-filled cells *manufacture* apparent dependence — so the small-$N$ estimate should come out biased **high**, well above the truth, while the large-$N$ estimate lands close to it.
     """)
     return
 @app.cell(hide_code=True)
@@ -765,11 +767,17 @@ def _():
         _L = np.linalg.cholesky([[1.0, rho], [rho, 1.0]])
 
         def plugin_mi(x, y, bins=16):
-            # TODO: 2-D histogram -> joint prob -> marginals -> sum p*log2(p/(px*py))
+            # TODO (1): 2-D histogram of counts over the bins x bins grid.
+            #   hint: np.histogram2d(x, y, bins=bins) returns (counts, xedges, yedges);
+            #   keep only the counts array.
             _c = ...
+            # TODO (2): normalize counts to a joint probability table p(x,y) = counts / counts.sum().
             _pxy = ...
+            # TODO (3): marginals _px (sum over y, keepdims) and _py (sum over x, keepdims).
             _px = ...
             _py = ...
+            # TODO (4): nonzero mask, then return sum over those cells of p*log2(p/(px*py)).
+            #   hint: the independent product is (_px @ _py); index it with the same mask.
             _m = ...
             return ...
 
@@ -777,6 +785,9 @@ def _():
         #     z = _rng.standard_normal((N, 2)) @ _L.T
         #     est = plugin_mi(z[:, 0], z[:, 1])
         #     print(f"N={N:6d}  plug-in MI = {est:.4f}  (true {true_mi:.4f}, bias {est-true_mi:+.4f})")
+        # Expected (seed 6): N=200 -> plug-in MI ~ 0.78 bits (bias ~ +0.58, badly HIGH);
+        #   N=20000 -> ~ 0.20 bits (bias ~ -0.01, essentially on the truth 0.2075).
+        #   The empty/under-filled cells at small N fake dependence -> positive bias.
 
     _run()
     return

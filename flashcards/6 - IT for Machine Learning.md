@@ -28,6 +28,17 @@ Forward KL(p‖q) vs reverse KL(q‖p) behavior
 Forward KL(p‖q) (MLE/cross-entropy): mean-seeking / zero-avoiding → q covers all modes of p.
 Reverse KL(q‖p): mode-seeking → q locks onto one mode.
 
+Kelly betting: the optimal fraction and the doubling rate (even-money coin, prob p)
+?
+Maximize the doubling rate W(f) = p·log₂(1+f) + (1−p)·log₂(1−f).
+Log-optimal fraction f* = 2p − 1 ("bet your edge").
+Achieved growth W* = 1 − H(p): one bit minus the coin's entropy. Fair coin → 0; predictable coin → 1 bit/round.
+
+Kelly with wrong beliefs and side information — what is each worth?
+?
+Betting Kelly with a wrong belief q costs exactly D(p‖q) in growth rate (same KL as wasted compression bits / excess log-loss).
+Acquiring side information Y correlated with the outcome raises the achievable growth rate by exactly I(X;Y).
+
 ## 6B: MDL
 
 MDL two-part code: what is minimized?
@@ -145,3 +156,49 @@ Learned compression as nonlinear transform coding
 Learned encoder = nonlinear analysis transform (replaces fixed linear DCT of JPEG).
 Latent is quantized + entropy-coded under a learned prior; decoder = synthesis transform.
 Train to minimize rate (latent entropy) + λ·distortion.
+
+## 6F: Information Theory in Modern LLMs
+
+What is an LLM's training loss, information-theoretically, and what is its floor?
+?
+Loss = cross-entropy H(p, q_θ) = H(p) + D(p‖q_θ), the average bits/nats to describe the next token.
+Floor = H(p), the entropy rate of text (1C). Scaling removes D(p‖q_θ); the loss can never beat H(p).
+
+Why report loss in bits-per-byte (BPB) instead of per-token?
+?
+Per-token loss is unfair across tokenizers: how much information each token carries depends on how the tokenizer slices the text.
+BPB = total bits / total raw bytes is tokenizer-independent, putting byte-level models, BPE models, and gzip on one axis.
+
+Define perplexity and its meaning.
+?
+PPL = 2^(cross-entropy loss in bits).
+It is the effective branching factor — the effective number of equally-likely tokens chosen per step.
+Perfect model → 1; uniform over V → V; floor = 2^H(p).
+
+Neural scaling law L(N) = E + A/N^α — what are the two terms?
+?
+E = irreducible loss = entropy rate H(p) of text (the asymptote no scale can beat).
+A/N^α = reducible loss = model-wrongness D(p‖q_θ), a straight line on log-log.
+The whole curve is a compression curve bottoming out at the source's entropy.
+
+In what sense is "language modeling = compression"? (Delétang et al. 2023)
+?
+Any next-token predictor + arithmetic coder (2C) is a lossless compressor.
+Expected codelength = the model's cross-entropy H(p, q_θ).
+Better model = lower cross-entropy = fewer bits, so a strong LM beats gzip on text.
+
+What does sampling temperature T control?
+?
+q_T(i) ∝ exp(z_i / T): T is a dial on the entropy of the output distribution.
+T → 0: greedy/argmax, entropy → 0, effective vocab → 1.
+T → ∞: uniform, entropy → log₂ V, effective vocab → V. (Softmax-as-maxent of 6A, with a knob.)
+
+How is BPE tokenization understood information-theoretically?
+?
+As dictionary coding (the Lempel-Ziv idea of 2D): greedily merge the most frequent adjacent pair into a new symbol.
+It pre-compresses text into denser units of common chunks; the dictionary does part of the compression, the model does the rest.
+
+What does speculative decoding guarantee about its output?
+?
+A cheap draft model proposes k tokens; the target model verifies them in one parallel pass via a rejection-sampling test.
+The emitted tokens are distributed exactly as if sampled from the target alone — provably distribution-preserving, with fewer big-model passes.

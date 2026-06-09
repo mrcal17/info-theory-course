@@ -291,6 +291,133 @@ def _(p0, p1, q0, q1):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ---
+
+    ## 4½. Jensen–Shannon Divergence & the f-Divergence Family
+
+    > *Optional interlude. Nothing later in the course depends on this section — the KL → mutual-information story resumes untouched in Section 5. But if you have ever wondered why people quoting "distribution drift" or training a GAN reach for something other than raw KL, this is the answer, and it costs only one short detour.*
+
+    KL has a flaw you just watched in Section 4: it is asymmetric, and worse, it **blows up to $+\infty$** the moment $p$ puts mass where $q$ is zero. For two distributions on **disjoint supports**, $D(p\|q) = \infty$ — useless as a "how far apart are they?" number. The **Jensen–Shannon divergence (JSD)** fixes this by routing both distributions through their average. Let $m = \tfrac{1}{2}(p + q)$ be the **mixture**, and define
+
+    $$\mathrm{JSD}(p, q) \;=\; \tfrac{1}{2}\,D(p \,\|\, m) \;+\; \tfrac{1}{2}\,D(q \,\|\, m).$$
+
+    Three things make it the symmetric divergence of choice:
+
+    - **Symmetric.** $\mathrm{JSD}(p, q) = \mathrm{JSD}(q, p)$ by construction — the order no longer matters.
+    - **Always finite.** Because $m$ is an average, $m(x) = 0$ only where *both* $p$ and $q$ vanish, so neither inner KL can ever divide by zero. Even on **disjoint supports** — where $D(p\|q) = \infty$ — the JSD stays perfectly well-defined and equals exactly **1 bit** (its maximum). It refuses to explode.
+    - **Bounded, and its root is a metric.** With $\log_2$, $\;0 \le \mathrm{JSD}(p,q) \le 1$ bit. And remarkably, $\sqrt{\mathrm{JSD}}$ is a genuine **metric** (the Jensen–Shannon distance): it is symmetric, zero iff $p = q$, and obeys the triangle inequality — properties KL never had.
+
+    **The f-divergence family.** KL, JSD, and total variation are all special cases of one template. Pick any convex function $f$ with $f(1) = 0$; the **f-divergence** of $p$ from $q$ is
+
+    $$D_f(p \,\|\, q) \;=\; \sum_x q(x)\, f\!\left(\frac{p(x)}{q(x)}\right).$$
+
+    Different choices of $f$ recover every "distance between distributions" you have met:
+
+    | Divergence | generator $f(t)$ | symmetric? | bounded? |
+    |---|---|---|---|
+    | KL $\,D(p\|q)$ | $t \log_2 t$ | no | no (can be $\infty$) |
+    | reverse KL $\,D(q\|p)$ | $-\log_2 t$ | no | no |
+    | total variation (TV) | $\tfrac{1}{2}\lvert t - 1\rvert$ | yes | yes ($\le 1$) |
+    | Pearson $\chi^2$ | $(t-1)^2$ | no | no |
+    | Jensen–Shannon | $\tfrac{1}{2}\big[t\log_2\tfrac{2t}{t+1} + \log_2\tfrac{2}{t+1}\big]$ | yes | yes ($\le 1$ bit) |
+
+    (Here $\mathrm{TV}(p,q) = \tfrac{1}{2}\sum_x \lvert p(x) - q(x)\rvert$, the largest gap in probability any single event can have.) Convexity of $f$ plus Jensen's inequality (Section 2) gives $D_f \ge 0$ for *all* of them at once — Gibbs' inequality was just the $f = t\log t$ instance of one master theorem.
+
+    **The Pinsker tie-in.** Total variation is itself an f-divergence, and Pinsker's inequality (Section 4) is precisely the statement that KL upper-bounds it: $D(p\|q) \ge \tfrac{1}{2\ln 2}\,\big(2\,\mathrm{TV}(p,q)\big)^2$. So the various f-divergences are not independent — they bound one another, and small KL forces small TV forces small JSD.
+
+    **Why ML actually cares.** The original GAN discriminator objective, at its optimum, equals $2\cdot\mathrm{JSD}(p_{\text{data}}, p_{\text{model}}) - 2\log 2$ — training the generator *is* minimizing the Jensen–Shannon divergence between real and generated data (Goodfellow et al., 2014). And when engineers monitor **distribution drift** in production — has the input data shifted since training? — they reach for JSD or TV precisely because, unlike KL, those numbers *don't explode* the first time a feature takes a value the training set never saw. A bounded, symmetric, finite divergence is what you want when a real pipeline can hand you disjoint supports.
+
+    The demo below fixes $q = \mathrm{Bernoulli}(0.5)$ and sweeps $p = \mathrm{Bernoulli}(p)$, plotting $D(p\|q)$, $D(q\|p)$, $\mathrm{JSD}$, and $\mathrm{TV}$ together. Watch the two KL curves shoot toward infinity at the edges while JSD and TV stay calmly bounded.
+
+    > [Cover & Thomas Ch 2](https://onlinelibrary.wiley.com/doi/book/10.1002/047174882X) on f-divergences and the data-processing view; [the GAN objective is Goodfellow et al., 2014](https://arxiv.org/abs/1406.2661); [MacKay Ch 2](https://www.inference.org.uk/itprnn/book.pdf) for the KL intuition this section builds on.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    js_p = mo.ui.slider(start=0.01, stop=0.99, step=0.01, value=0.6,
+                        label="p  for the swept coin Bernoulli(p)   [q fixed at Bernoulli(0.5)]")
+    js_p
+    return (js_p,)
+
+
+@app.cell
+def _(js_p):
+    def _run():
+        import numpy as np
+        import logging
+        logging.getLogger("matplotlib").setLevel(logging.ERROR)
+        logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
+        import matplotlib.pyplot as plt
+
+        _q_head = 0.5  # fixed reference coin Bernoulli(0.5)
+
+        def _kl(p, q):
+            # KL(p||q) in bits for two 2-vectors; 0 log(0/.)=0, p log(p/0)=+inf
+            _d = 0.0
+            for _pi, _qi in zip(p, q):
+                if _pi > 0:
+                    _d += _pi * np.log2(_pi / _qi) if _qi > 0 else np.inf
+            return _d
+
+        def _jsd(p, q):
+            _m = [0.5 * (a + b) for a, b in zip(p, q)]
+            return 0.5 * _kl(p, _m) + 0.5 * _kl(q, _m)
+
+        def _tv(p, q):
+            return 0.5 * sum(abs(a - b) for a, b in zip(p, q))
+
+        _grid = np.linspace(0.001, 0.999, 400)
+        _q = (_q_head, 1 - _q_head)
+        _kl_pq, _kl_qp, _js, _tvv = [], [], [], []
+        for _ph in _grid:
+            _p = (_ph, 1 - _ph)
+            _kl_pq.append(min(_kl(_p, _q), 8.0))   # clip the blow-up for plotting
+            _kl_qp.append(min(_kl(_q, _p), 8.0))
+            _js.append(_jsd(_p, _q))
+            _tvv.append(_tv(_p, _q))
+
+        _ph_now = js_p.value
+        _p_now = (_ph_now, 1 - _ph_now)
+        _vals_now = {
+            "D(p||q)": _kl(_p_now, _q),
+            "D(q||p)": _kl(_q, _p_now),
+            "JSD": _jsd(_p_now, _q),
+            "TV": _tv(_p_now, _q),
+        }
+
+        _fig, _ax = plt.subplots(figsize=(8.5, 4.6))
+        _ax.plot(_grid, _kl_pq, color="steelblue", lw=2, label="D(p||q)  [clipped at 8]")
+        _ax.plot(_grid, _kl_qp, color="darkorange", lw=2, ls="--", label="D(q||p)  [clipped at 8]")
+        _ax.plot(_grid, _js, color="seagreen", lw=2.5, label="JSD (bounded by 1 bit)")
+        _ax.plot(_grid, _tvv, color="crimson", lw=2, label="TV (bounded by 1)")
+        _ax.axhline(1.0, color="gray", ls=":", alpha=0.6)
+        _ax.axvline(_q_head, color="gray", ls=":", alpha=0.5)
+        _ax.axvline(_ph_now, color="black", ls="-", alpha=0.35)
+        _ax.text(_q_head + 0.01, 7.2, "p = q\n(all zero)", fontsize=8, color="gray")
+        _ax.set_xlabel("p  (head-probability of the swept coin)")
+        _ax.set_ylabel("divergence (bits, or TV in [0,1])")
+        _ax.set_ylim(0, 8.2)
+        _ax.set_title("KL blows up at the edges; JSD and TV stay bounded")
+        _ax.legend(loc="upper center", fontsize=9)
+        _ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+
+        print(f"=== At p = {_ph_now:.2f},  q = Bernoulli(0.5) ===")
+        for _name, _v in _vals_now.items():
+            _shown = "inf" if not np.isfinite(_v) else f"{_v:.4f}"
+            print(f"  {_name:8} = {_shown}")
+        print("  Note: as p -> 0 or 1, D(p||q) and D(q||p) diverge, but JSD -> 1 bit and TV -> max.")
+        return _fig
+
+    _run()
+    return
+
+
 @app.cell
 def _(mo):
     mo.md(r"""
