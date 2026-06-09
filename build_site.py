@@ -183,6 +183,17 @@ li{{margin:.4rem 0}}
         f.write(index_html)
     print(f"Copied {len(deck_files)} flashcard decks to docs/flashcards/")
 
+# Copy the game (static, no build step) to docs/game/, minus its design doc.
+game_src = "game"
+game_dst = os.path.join(DOCS_DIR, "game")
+if os.path.isdir(game_src):
+    shutil.copytree(
+        game_src, game_dst,
+        ignore=shutil.ignore_patterns("DESIGN.md"),
+        dirs_exist_ok=True,
+    )
+    print("Copied game/ to docs/game/")
+
 prune_copied_instruction_files()
 
 # Copy .nojekyll to root (prevents GitHub from processing with Jekyll)

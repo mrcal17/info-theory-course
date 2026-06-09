@@ -15,6 +15,9 @@ Key facts:
   keep the module ordering in sync with `notebooks/` file order.
 - Study tools: `quiz.html` (standalone, no build step) and `flashcards/*.md`
   mirror module content — update them when module content changes.
+- The course game ("Signal Lost") lives in `game/` (static HTML/JS, no build
+  step) and is copied to `docs/game/` by `build_site.py`. Minigame contract in
+  `game/DESIGN.md`; smoke-test with `cd _smoke && npm i && node smoke.mjs`.
 - After editing notebooks, rebuild with `python build_site.py` and commit
   `docs/` (Pages serves the committed `docs/` folder).
 

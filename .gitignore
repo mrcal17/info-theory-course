@@ -22,3 +22,7 @@ textbooks/mlpapers/
 # build logs
 *.log
 _wasmtest/
+
+# game smoke-test harness deps (run: cd _smoke && npm i && node smoke.mjs)
+_smoke/node_modules/
+_smoke/package-lock.json
