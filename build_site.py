@@ -194,6 +194,17 @@ if os.path.isdir(game_src):
     )
     print("Copied game/ to docs/game/")
 
+# Copy the adventure game (static) to docs/archipelago/, minus dev artifacts.
+arch_src = "archipelago"
+arch_dst = os.path.join(DOCS_DIR, "archipelago")
+if os.path.isdir(arch_src):
+    shutil.copytree(
+        arch_src, arch_dst,
+        ignore=shutil.ignore_patterns("DESIGN.md", "dev.html", "dev_island.js"),
+        dirs_exist_ok=True,
+    )
+    print("Copied archipelago/ to docs/archipelago/")
+
 prune_copied_instruction_files()
 
 # Copy .nojekyll to root (prevents GitHub from processing with Jekyll)

@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Archipelago sprites — review sheet</title>
+<style>
+  body { margin: 0; background: #1b1f27; color: #cdd2db;
+         font: 12px/1.3 ui-monospace, Menlo, Consolas, monospace; }
+  h2 { margin: 14px 12px 6px; color: #9fd0f0; font-size: 14px; }
+  canvas { display: block; }
+  .wrap { padding: 8px 12px 24px; }
+</style>
+</head>
+<body>
+<div class="wrap"><canvas id="sheet" width="1180" height="1180"></canvas></div>
+
+<!-- stub namespace: only what sprites.js touches -->
+<script>window.G = {};</script>
+<script src="../archipelago/js/sprites.js"></script>
+<script>
+(function () {
+  var c = document.getElementById('sheet');
+  var ctx = c.getContext('2d');
+
+  var NAMES = ['pip','shannon','gull','maren','sift','huff','ada','bea','cee',
+    'lem','ziv','warden','crab','turtle','gullsmall','mailbox','boat',
+    'beacon-off','beacon-on','chest','sign','door','gate','runedoor','letter',
+    'spark','geyser','stamp','dial','lever','???unknown'];
+
+  var TILE = 32, SCALE = 2.2; // upscale so 32px sprites are readable on the sheet
+  var t = 0.3;
+
+  function label(x, y, s, col) {
+    ctx.fillStyle = col || '#aeb6c4';
+    ctx.font = '11px ui-monospace, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(s, x, y);
+  }
+
+  // draw one cell: background tile + sprite, upscaled
+  function cell(cx, cy, name, bg, opts) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(SCALE, SCALE);
+    // background tile
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, TILE, TILE);
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(0.5, 0.5, TILE - 1, TILE - 1);
+    G.sprites.draw(ctx, name, 0, 0, t, opts || { dir: 's', moving: false, hat: null });
+    ctx.restore();
+  }
+
+  var cellW = TILE * SCALE + 18;   // ~88
+  var cellH = TILE * SCALE + 28;   // ~98
+  var GRASS = '#7cbb5f', CAVE = '#4a4f5e';
+  var cols = 11;
+
+  function grid(title, opts, bg, startY) {
+    label(70, startY - 8, title, '#9fd0f0');
+    var y = startY;
+    for (var i = 0; i < NAMES.length; i++) {
+      var col = i % cols, row = Math.floor(i / cols);
+      var cx = 16 + col * cellW;
+      var cy = y + row * cellH;
+      cell(cx, cy, NAMES[i], bg, opts);
+      label(cx + (TILE * SCALE) / 2, cy + TILE * SCALE + 12, NAMES[i]);
+    }
+    var rows = Math.ceil(NAMES.length / cols);
+    return y + rows * cellH;
+  }
+
+  var yy = 40;
+  // Row block A: idle, facing south, on grass
+  yy = grid('idle  dir:s  (grass #7cbb5f)', { dir: 's', moving: false, hat: null }, GRASS, yy) + 18;
+  // Row block B: moving east, on cave
+  yy = grid('moving  dir:e  (cave #4a4f5e)', { dir: 'e', moving: true, hat: null }, CAVE, yy) + 18;
+
+  // Pip with each hat (and a couple facings)
+  label(70, yy - 8, 'pip hats + facings', '#9fd0f0');
+  var hatRow = [
+    { dir: 's', hat: null, lbl: 'pip s' },
+    { dir: 's', hat: 'cap', lbl: 'cap' },
+    { dir: 's', hat: 'sunhat', lbl: 'sunhat' },
+    { dir: 's', hat: 'crown', lbl: 'crown' },
+    { dir: 'n', hat: 'cap', lbl: 'cap back' },
+    { dir: 'e', hat: 'crown', lbl: 'crown e' },
+    { dir: 'w', hat: 'sunhat', lbl: 'sunhat w' },
+  ];
+  for (var h = 0; h < hatRow.length; h++) {
+    var hx = 16 + h * cellW;
+    cell(hx, yy, 'pip', GRASS, { dir: hatRow[h].dir, moving: false, hat: hatRow[h].hat });
+    label(hx + (TILE * SCALE) / 2, yy + TILE * SCALE + 12, hatRow[h].lbl);
+  }
+  yy += cellH + 18;
+
+  // Facing test: pip n/s/e/w on cave
+  label(70, yy - 8, 'pip facings n/s/e/w', '#9fd0f0');
+  var dirs = ['n', 's', 'e', 'w'];
+  for (var d = 0; d < dirs.length; d++) {
+    var dx = 16 + d * cellW;
+    cell(dx, yy, 'pip', CAVE, { dir: dirs[d], moving: false, hat: null });
+    label(dx + (TILE * SCALE) / 2, yy + TILE * SCALE + 12, 'pip ' + dirs[d]);
+  }
+  yy += cellH + 18;
+
+  // Portraits row
+  label(70, yy - 8, 'portraits (96x96)', '#9fd0f0');
+  var portNames = ['pip','shannon','gull','maren','sift','huff','warden',
+    'ada','bea','cee','lem','crab','turtle','gullsmall','???unknown'];
+  var pCols = 11;
+  for (var pI = 0; pI < portNames.length; pI++) {
+    var pc = pI % pCols, pr = Math.floor(pI / pCols);
+    var pxp = 16 + pc * cellW;
+    var pyp = yy + pr * (96 + 28);
+    var pc2 = G.sprites.portrait(portNames[pI]);
+    if (pc2) ctx.drawImage(pc2, pxp, pyp);
+    label(pxp + 48, pyp + 96 + 12, portNames[pI]);
+  }
+
+  window.__SPRITES_DONE__ = true;
+})();
+</script>
+</body>
+</html>

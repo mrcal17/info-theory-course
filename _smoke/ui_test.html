@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI harness — The Quiet Archipelago</title>
+<link rel="stylesheet" href="../archipelago/css/style.css">
+<style>
+  /* a faint stand-in for the canvas world behind overlays */
+  body { background:
+    radial-gradient(ellipse at 30% 20%, #1b3a2a, #0c1a12 60%),
+    #0c1a12; }
+  #world { background: linear-gradient(135deg, #143a25, #0d2418); }
+</style>
+</head>
+<body>
+<canvas id="world"></canvas>
+<script>
+/* ---- minimal engine stub: exactly the surface ui.js touches ---- */
+(function () {
+  'use strict';
+
+  var FAKE_ISLANDS = [
+    { id: 'beacon-rock',  name: 'Beacon Rock',           order: 1 },
+    { id: 'dunes',        name: 'The Dune of Surprises',  order: 2 },
+    { id: 'huffman-wood', name: 'Huffman Wood',           order: 3 },
+    { id: 'strait',       name: 'The Static Strait',      order: 4 },
+    { id: 'caverns',      name: 'Echo Caverns',           order: 5 },
+    { id: 'spires',       name: 'Mirror Spires',          order: 6 },
+    { id: 'grand-beacon', name: 'The Grand Beacon',       order: 7 },
+  ];
+
+  var flags = {};
+  var sparkN = 9;          // enough to show a hat (cap at 7)
+  var saveData = {
+    started: true, island: 'huffman-wood', x: 4, y: 4,
+    sound: true, dpad: 'auto', sparks: sparkN, flags: [],
+  };
+
+  var soundOn = true;
+  window.QA = { sfx: [], music: [] };
+
+  var G = window.G = {
+    TILE: 32, time: 0, state: 'title', paused: false,
+    save: {
+      data: saveData,
+      persist: function () {},
+      reset: function () { flags = {}; saveData.started = false; window.QA.reset = true; },
+    },
+    flags: {
+      has: function (f) { return !!flags[f]; },
+      set: function (f) { flags[f] = true; },
+      clear: function (f) { delete flags[f]; },
+      all: function () { return Object.keys(flags); },
+    },
+    sparks: {
+      count: function () { return sparkN; },
+      give: function (n) { sparkN += (n || 1); },
+      hat: function () {
+        if (sparkN >= 21) return 'crown';
+        if (sparkN >= 14) return 'sunhat';
+        if (sparkN >= 7) return 'cap';
+        return null;
+      },
+    },
+    islands: {
+      list: function () { return FAKE_ISLANDS.slice(); },
+      get: function (id) { return FAKE_ISLANDS.find(function (i) { return i.id === id; }); },
+    },
+    world: {
+      island: { id: 'huffman-wood', name: 'Huffman Wood' },
+      player: { x: 4, y: 4 },
+      load: function () {}, teleport: function () {}, update: function () {},
+    },
+    audio: {
+      enabled: function () { return soundOn; },
+      setEnabled: function (b) { soundOn = !!b; saveData.sound = soundOn; },
+      sfx: function (name) { window.QA.sfx.push(name); },
+      music: function (id) { window.QA.music.push(id); },
+    },
+    input: { updateDpad: function () { window.QA.dpad = true; } },
+    game: {
+      newGame: function () { window.QA.newGame = true; G.state = 'world'; },
+      continueGame: function () { window.QA.continueGame = true; G.state = 'world'; },
+    },
+    render: { fadeIn: function () {} },
+    bus: { on: function () {}, emit: function () {} },
+  };
+
+  // set a couple of flags so the map shows mixed states:
+  // beacon-rock done, dunes done -> huffman-wood is current ('here'),
+  // strait open, caverns/spires/grand-beacon locked.
+  flags['br.done'] = true;
+  flags['dn.done'] = true;
+})();
+</script>
+<script src="../archipelago/js/ui.js"></script>
+<script>
+  // expose hooks for the puppeteer driver
+  window.OPEN_TITLE = function () { G.ui.openTitle(); };
+  window.OPEN_MAP   = function () { G.ui.openMapScreen(); };
+  window.OPEN_MENU  = function () { G.ui.openMenu(); };
+  window.OPEN_END   = function () { G.ui.ending(); };
+  document.addEventListener('DOMContentLoaded', function () { G.ui.openTitle(); });
+</script>
+</body>
+</html>

@@ -254,6 +254,8 @@ function showMap() {
   foot.appendChild(home);
   var quiz = el('a', null, '🃏 Quiz & flashcards'); quiz.href = '../quiz.html';
   foot.appendChild(quiz);
+  var adv = el('a', null, '🏝️ The Quiet Archipelago'); adv.href = '../archipelago/';
+  foot.appendChild(adv);
   var reset = el('span', null, '⟲ Reset progress');
   reset.addEventListener('click', function () { if (resetProgress()) showMap(); });
   foot.appendChild(reset);

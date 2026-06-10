@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>audio-test-ok</title>
+</head>
+<body>
+<h1>Quiet Archipelago audio smoke test</h1>
+<pre id="log"></pre>
+<script>
+// Minimal G stub matching what audio.js touches.
+window.G = {
+  save: { data: { sound: true }, persist: function () {} }
+};
+function log(msg) {
+  var el = document.getElementById('log');
+  if (el) el.textContent += msg + '\n';
+}
+window.addEventListener('error', function (e) {
+  document.title = 'ERROR: ' + (e.message || 'unknown');
+  log('window error: ' + (e.message || 'unknown'));
+});
+</script>
+<!-- the file under test -->
+<script src="../archipelago/js/core/audio.js"></script>
+<script>
+(function () {
+  var SFX = ['step','bump','talk','choice','select','open','close','solve',
+             'fail','spark','door','splash','sail','zap','quake','beacon',
+             'hat','save'];
+  var MUSIC = ['title','shore','dunes','forest','strait','caverns','spires',
+               'beacon','ending'];
+
+  function safe(fn) {
+    try { fn(); }
+    catch (e) { document.title = 'ERROR: ' + e.message; log('threw: ' + e.message); }
+  }
+
+  // 1) Fire every sfx once, spaced 150ms.
+  var i = 0;
+  function nextSfx() {
+    if (i >= SFX.length) { startMusic(); return; }
+    var name = SFX[i++];
+    safe(function () { G.audio.sfx(name); });
+    log('sfx ' + name);
+    setTimeout(nextSfx, 150);
+  }
+
+  // 2) Cycle through every music id every 1.5s.
+  var j = 0;
+  function startMusic() {
+    function nextMusic() {
+      if (j >= MUSIC.length) {
+        safe(function () { G.audio.music(null); });
+        log('music null (fade out)');
+        log('DONE');
+        return;
+      }
+      var id = MUSIC[j++];
+      safe(function () { G.audio.music(id); });
+      log('music ' + id);
+      setTimeout(nextMusic, 1500);
+    }
+    nextMusic();
+  }
+
+  // Kick off after load.
+  if (document.readyState === 'complete') nextSfx();
+  else window.addEventListener('load', nextSfx);
+})();
+</script>
+</body>
+</html>

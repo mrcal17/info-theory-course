@@ -18,6 +18,11 @@ Key facts:
 - The course game ("Signal Lost") lives in `game/` (static HTML/JS, no build
   step) and is copied to `docs/game/` by `build_site.py`. Minigame contract in
   `game/DESIGN.md`; smoke-test with `cd _smoke && npm i && node smoke.mjs`.
+- The adventure game ("The Quiet Archipelago") lives in `archipelago/` (static
+  canvas engine + islands), copied to `docs/archipelago/` minus dev files.
+  Contracts in `archipelago/DESIGN.md`. Tests: `_smoke/engine_test.mjs` (engine
+  via dev.html), `_smoke/walkthrough.mjs` (full game in Chrome), and
+  `_smoke/validate_island.mjs <file> <id> <prefix>` for island content.
 - After editing notebooks, rebuild with `python build_site.py` and commit
   `docs/` (Pages serves the committed `docs/` folder).
 

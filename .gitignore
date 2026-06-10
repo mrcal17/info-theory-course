@@ -26,3 +26,4 @@ _wasmtest/
 # game smoke-test harness deps (run: cd _smoke && npm i && node smoke.mjs)
 _smoke/node_modules/
 _smoke/package-lock.json
+_smoke/shots/

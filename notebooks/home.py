@@ -167,6 +167,7 @@ def _(mo):
     | 7A | [Algorithm & Theorem Study Guide](/info-theory-course/7a_study_guide/) | Every code, algorithm, and theorem in the course — filterable by part, with statements, intuition, and connections |
     | | [Quiz & Flashcards](/info-theory-course/quiz.html) | Interactive study tool with quizzes and spaced repetition across all modules |
     | | [🎮 Signal Lost — the course as a game](/info-theory-course/game/) | Eight minigames where the mechanics are the theorems: interrogate with entropy, forge Huffman codes, beat the noisy channel, repair Hamming blocks, bet with Kelly, and be the language model |
+    | | [🏝️ The Quiet Archipelago — an adventure game](/info-theory-course/archipelago/) | A full top-down adventure: walk seven islands as Pip the postal robot, where every gate is a concept — optimal questions, surprisal geysers, a forest that is a Huffman tree, parity lighthouses, compression caverns, and the Grand Beacon finale |
     """)
     return
 
