@@ -498,10 +498,12 @@ window.Game = {
   boot: boot,
 };
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot);
-} else {
-  boot();
-}
+/* Deferred scripts run while readyState is already 'interactive', before
+   DOMContentLoaded — so booting on "not loading" would fire before any game
+   registers. Wait for DOMContentLoaded; boot() is idempotent, so the extra
+   load-event and readyState paths only cover late/dynamic injection. */
+document.addEventListener('DOMContentLoaded', boot);
+window.addEventListener('load', boot);
+if (document.readyState === 'complete') boot();
 
 })();
