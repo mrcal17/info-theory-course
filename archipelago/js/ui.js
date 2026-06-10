@@ -809,6 +809,12 @@ function ensureToastWrap() {
 G.ui.toast = function (text) {
   ensureStyle();
   var wrap = ensureToastWrap();
+  // rapid repeated fails (puzzle gates) must not pile up: drop same-text
+  // toasts still on screen, and cap the stack at 3.
+  for (var i = wrap.children.length - 1; i >= 0; i--) {
+    if (wrap.children[i].textContent === text) wrap.children[i].remove();
+  }
+  while (wrap.children.length >= 3) wrap.firstChild.remove();
   var t = el('div', 'toast'); // reuse style.css .toast look
   t.textContent = text;
   wrap.appendChild(t);

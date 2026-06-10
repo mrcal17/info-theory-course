@@ -1,20 +1,34 @@
 /* THE QUIET ARCHIPELAGO — puzzle mechanic: 'parity-charm'
-   The Parity Sisters' crossing charms (Static Strait).
-   Config: { dataBits:k, mode:'detect'|'correct', trips:t }
-   - detect: one parity charm; player sets it so total #1s is even; storm flips
-     <=1 bit; player declares CLEAN / CORRUPTED.
-   - correct: k=4 with 3 charms wired as Hamming(7,4); each charm watches a group;
-     player sets each so ITS group is even; storm flips <=1 bit; player clicks the
-     flipped bit (or "all clean") — the syndrome names it.
-   Contract: ../../DESIGN.md (schema 7). complete() exactly once; never binds Esc;
-   destroy() clears timers; clean re-create. */
+   The Parity Sisters' crossing charms (Static Strait + Grand Beacon).
+   Config (FROZEN, schema 7): { dataBits:k, mode:'detect'|'correct', trips:t }
+   - detect: one parity charm; rig the codeword even; the storm flips <=1 chip
+     per crossing; declare CLEAN / CORRUPTED. Gate: t right calls IN A ROW —
+     a wrong call resets the streak with fresh randomness, and every window of
+     t crossings is scripted to contain both flips and one clean crossing, so
+     spamming either button can never converge. First completion ends with a
+     scripted TWO-FLIP demonstration (parity passes, message wrong) before the
+     debrief; the demo never fails and never double-fires complete().
+   - correct: k forced to 4, wired as Hamming(7,4); three charms (Ada/Bea/Cee)
+     each keep their own group even; the storm flips <=1 of the 7 chips; the
+     player's FIRST tap must be the flipped chip (or 'All clean') — any guess
+     resets the round with a fresh flip and drops the streak to 0.
+   Teaching loop per ../../PEDAGOGY.md §1/§6.7: hook (detect only) -> guided
+   first crossing -> stripped crossings -> streak gate -> two-flip demo
+   (detect, first time only) -> debrief. Taught flags are PER MODE:
+   'parity-charm-detect' and 'parity-charm-correct' (so the first correct-mode
+   door still teaches after a detect door was passed). Coaches: ada (detect),
+   bea (correct), via G.pz.
+   Contract: ../../DESIGN.md. complete() exactly once; never binds Esc;
+   destroy() clears timers; clean re-create. Pure logic exposed under `_test`
+   on the registered def for the node harness (_smoke/pz_test_parity-charm.mjs). */
 (function () {
 'use strict';
 
 /* ============================ pure logic ============================ */
-/* (exhaustively verified in a scratch node test: detect catches every single
-   flip in the k+1 codeword; Hamming(7,4) gives a unique syndrome per single
-   flip and the symmetric difference for two flips.) */
+/* (exhaustively verified by _smoke/pz_test_parity-charm.mjs: detect catches
+   every single flip and misses every double; Hamming(7,4) gives a unique
+   syndrome per single flip; two flips decode to the symmetric difference —
+   a confident wrong chip; the no-guess gate cannot be beaten by guessing.) */
 
 function countOnes(bits) {
   var n = 0;
@@ -64,6 +78,28 @@ function positionFromSyndrome(odd) {
   return -1;
 }
 
+/* ---- gate predicates (the no-guessing rule + streak) ---- */
+/* correct mode: first tap on a chip — win only if it IS the named flip. */
+function pickOutcome(ans, pos) { return (ans !== 0 && pos === ans) ? 'win' : 'reset'; }
+/* correct mode: the 'All clean' button — win only if the syndrome is empty. */
+function cleanOutcome(ans) { return ans === 0 ? 'win' : 'reset'; }
+/* detect mode: the declaration must match what actually happened. */
+function declareOutcome(truthCorrupted, saysCorrupted) {
+  return truthCorrupted === saysCorrupted ? 'win' : 'reset';
+}
+function streakAfter(streak, won) { return won ? streak + 1 : 0; }
+/* per-window flip schedule: trip 0 always flips (teach the catch first);
+   EXACTLY ONE clean crossing at a random later index. This is the kill-switch:
+   spamming CLEAN (or 'All clean') dies on the flips, spamming CORRUPTED (or
+   rune-tapping) dies on the guaranteed clean trip — no constant or rune-only
+   strategy can ever finish a window. */
+function makeSchedule(t, rng) {
+  var s = [];
+  for (var i = 0; i < t; i++) s.push(true);
+  if (t >= 2) s[1 + Math.floor(rng() * (t - 1))] = false;
+  return s;
+}
+
 /* ============================ style ============================ */
 var STYLE_ID = 'pc-style';
 function injectStyle() {
@@ -89,8 +125,14 @@ function injectStyle() {
   '.pc-chip.pc-pick{cursor:pointer}' +
   '.pc-chip.pc-pick:hover{border-color:var(--yellow);color:var(--yellow)}' +
   '.pc-chip.pc-flipd{outline:2px solid var(--red);outline-offset:2px}' +
+  '.pc-chip.pc-hintglow{outline:2px dashed var(--yellow);outline-offset:2px}' +
+  '.pc-chip.pc-mini{width:30px;height:30px;min-width:30px;font-size:.85rem;border-radius:7px;border-width:1px}' +
+  '.pc-cmp{display:flex;flex-direction:column;gap:.35rem;align-items:center}' +
+  '.pc-cmprow{display:flex;gap:.3rem;align-items:center;justify-content:center;flex-wrap:wrap}' +
+  '.pc-cmplab{font-size:.68rem;color:var(--dim);min-width:52px;text-align:right;letter-spacing:.05em}' +
   '.pc-lab{font-size:.62rem;color:var(--dim);letter-spacing:.05em}' +
   '.pc-meter{text-align:center;font-size:.92rem}' +
+  '.pc-meter.pc-dimnote{font-size:.74rem;color:var(--dim)}' +
   '.pc-even{color:var(--green);font-weight:600}' +
   '.pc-odd{color:var(--red);font-weight:600}' +
   '.pc-charms{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}' +
@@ -122,19 +164,70 @@ function injectStyle() {
   '.pc-feedback.pc-good{color:var(--green)}' +
   '.pc-feedback.pc-bad{color:var(--yellow)}' +
   '.pc-prog{text-align:center;font-size:.82rem;color:var(--muted)}' +
-  '.pc-lesson{border-left:3px solid var(--green)}' +
-  '.pc-lesson h4{color:var(--green);margin-bottom:.4rem;font-size:.95rem}' +
-  '.pc-lesson p{font-size:.85rem;line-height:1.55;color:var(--text)}' +
-  '@media (max-width:560px){.pc-charmcard{flex-basis:46%}}';
+  '.pc-syn{margin:0 auto;border-collapse:collapse;font-size:.78rem;font-variant-numeric:tabular-nums}' +
+  '.pc-syn th{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:600}' +
+  '.pc-syn td,.pc-syn th{padding:.18rem .5rem;text-align:center;border-bottom:1px solid var(--surface2)}' +
+  '.pc-syn .pc-dim{color:var(--dim)}' +
+  '.pc-brkline{display:none}' +
+  '@media (max-width:560px){.pc-charmcard{flex-basis:46%}' +
+    '.pc-brkline{display:block;flex-basis:100%;height:0}}';
   document.head.appendChild(s);
 }
 
 /* charm color per name (matches venn-lock ring colors) */
 var CHARM_COLOR = { A: 'var(--red)', B: 'var(--green)', C: 'var(--blue)' };
 
+function sisterName(c) { return c === 'A' ? 'Ada' : c === 'B' ? 'Bea' : 'Cee'; }
+function sisterList(arr, joiner) {
+  var names = [];
+  for (var i = 0; i < arr.length; i++) names.push(sisterName(arr[i]));
+  return names.join(joiner || ' and ');
+}
+/* "Ada", "Ada and Bea", "Ada, Bea and Cee" */
+function nameList(arr, bold) {
+  var names = [];
+  for (var i = 0; i < arr.length; i++) {
+    names.push(bold ? '<b>' + sisterName(arr[i]) + '</b>' : sisterName(arr[i]));
+  }
+  if (names.length <= 1) return names.join('');
+  return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+}
+function posLabel(p) { return p <= 4 ? ('d' + p) : ('p' + (p - 4)); }
+
+/* the filled syndrome decoder table for the correct-mode debrief */
+function synTableHtml() {
+  var rows = [
+    [[], 'clean'],
+    [['A'], 'p1'], [['B'], 'p2'], [['C'], 'p3'],
+    [['A', 'B'], 'd1'], [['A', 'C'], 'd2'], [['B', 'C'], 'd3'], [['A', 'B', 'C'], 'd4'],
+  ];
+  var h = '<table class="pc-syn"><tr><th>Ada</th><th>Bea</th><th>Cee</th><th></th><th>flip</th></tr>';
+  for (var r = 0; r < rows.length; r++) {
+    h += '<tr>';
+    for (var i = 0; i < CHARMS.length; i++) {
+      var cn = CHARMS[i];
+      h += '<td>' + (rows[r][0].indexOf(cn) >= 0
+        ? '<b style="color:' + CHARM_COLOR[cn] + '">ODD</b>'
+        : '<span class="pc-dim">even</span>') + '</td>';
+    }
+    h += '<td class="pc-dim">→</td><td><b>' + rows[r][1] + '</b></td></tr>';
+  }
+  return h + '</table>';
+}
+
 /* ============================ mechanic ============================ */
 G.puzzles.register('parity-charm', {
   title: 'The Parity Sisters’ Charm',
+  /* pure functions for the node logic harness — not used by the engine */
+  _test: {
+    countOnes: countOnes, isEven: isEven, detectCharm: detectCharm,
+    hammingCharm: hammingCharm, syndrome: syndrome,
+    positionFromSyndrome: positionFromSyndrome,
+    MEMBER: MEMBER, DATA_OF: DATA_OF, PAR_OF: PAR_OF, CHECK_OF: CHECK_OF,
+    pickOutcome: pickOutcome, cleanOutcome: cleanOutcome,
+    declareOutcome: declareOutcome, streakAfter: streakAfter,
+    makeSchedule: makeSchedule,
+  },
   create: function (root, config, api) {
     injectStyle();
 
@@ -144,17 +237,27 @@ G.puzzles.register('parity-charm', {
     /* correct mode is wired specifically as Hamming(7,4): force k=4. */
     if (mode === 'correct') k = 4;
 
-    var trips = 0;
+    var taughtKey = 'parity-charm-' + mode;          // per-mode taught flag
+    var taughtHere = G.pz.taught(taughtKey);          // repeat encounter?
+    var coachWho = mode === 'detect' ? 'ada' : 'bea';
+
+    var streak = 0;           // clean crossings in a row (the gate)
+    var schedule = [];        // current window's flip plan
     var timers = [];          // animation timeouts to clear on destroy
     var finished = false;     // guards complete()
-    var phase = 'rig';        // 'rig' | 'cross' | 'declare'
+    var phase = 'rig';        // 'hook' | 'rig' | 'cross' | 'declare' | 'demo' | 'debrief'
+
+    /* hint ladder (PEDAGOGY §1.7) — tokens map to mode-specific dynamic text */
+    var ladder = G.pz.hintLadder(['1', '2', '3']);
+    var pendingHint = 0;      // 0 = none, 1..3 = level for the NEXT declare
 
     /* per-trip state */
     var data = [];            // k message bits
     var detectBit = 0;        // detect-mode charm value (player-set)
     var charmBit = { A: 0, B: 0, C: 0 }; // correct-mode charm values
-    var received = [];        // bits as they arrived (1-based for correct, 0-based array for detect)
-    var flippedPos = -1;      // which position the storm flipped (-1 none); correct=1..7, detect=0..k
+    var received = [];        // detect: 0-based length k+1; correct: 1-based [.,1..7]
+    var flippedPos = -1;      // storm flip (-1 none); correct=1..7, detect=0..k
+    var demo = null;          // two-flip demonstration state
 
     var wrap = document.createElement('div');
     wrap.className = 'pc-wrap';
@@ -167,12 +270,18 @@ G.puzzles.register('parity-charm', {
     function later(fn, ms) { var id = setTimeout(fn, ms); timers.push(id); return id; }
 
     function updateStatus() {
-      var modeWord = mode === 'detect' ? 'detect' : 'correct';
-      api.status('Clean crossings: <b style="color:var(--green)">' + trips + '</b> / ' + totalTrips +
-        ' &middot; ' + modeWord + ' mode');
+      api.status('In a row: <b style="color:var(--green)">' + streak + '</b> / ' + totalTrips +
+        ' &middot; ' + mode + ' mode');
     }
+    /* GUIDE = first crossing of a window, first encounter of this mode only */
+    function guided() { return !taughtHere && streak === 0; }
 
-    /* ---- new trip: fresh random message ---- */
+    /* ---- window / trip orchestration ---- */
+    function newWindow() {
+      streak = 0;
+      schedule = makeSchedule(totalTrips, api.rng);
+      newTrip();
+    }
     function newTrip() {
       clearTimers();
       phase = 'rig';
@@ -186,27 +295,53 @@ G.puzzles.register('parity-charm', {
       updateStatus();
     }
 
+    /* =================== HOOK (detect, first encounter) =================== */
+    function renderHook() {
+      phase = 'hook';
+      wrap.innerHTML = '';
+      wrap.appendChild(G.pz.hookCard({
+        question: 'The storm flips at most ONE chip per crossing. With one extra charm — ' +
+          'can you always CATCH a flip? Can you always FIND it?',
+        options: [
+          { label: 'Catch it and find it', note: 'one charm does both' },
+          { label: 'Catch yes — find no', note: 'it knows THAT, not WHERE' },
+          { label: 'Neither', note: 'one charm is too little' },
+        ],
+        correct: 1,
+        reveal: 'One charm makes the lit count <b>even</b>. Any single flip turns it odd — ' +
+          '<b>caught, every time</b>. But “odd” is a single yes/no answer: it can never point ' +
+          'at a chip. <b>Found — never.</b> That gap is this whole island.',
+        onDone: function () { newWindow(); },
+      }));
+    }
+
     /* =================== PHASE A: rig the charm =================== */
     function renderRig() {
       wrap.innerHTML = '';
 
       var rain = document.createElement('div');
       rain.className = 'pc-rain';
-      rain.innerHTML = mode === 'detect'
-        ? 'Rain hisses on the rail. <b>Ada</b> sets the message; you set the one <b>charm</b> so the count of lit chips is <b>even</b>. One even charm survives any single flip in the storm.'
-        : 'Three sisters, three charms. <b>Ada</b>, <b>Bea</b> and <b>Cee</b> each watch their own chips. Set every charm so <b>its</b> group is even — then a single flip cannot hide.';
+      if (mode === 'detect') {
+        rain.innerHTML = taughtHere
+          ? 'The strait again. Rig the charm <b>even</b>; call each arrival as it lands.'
+          : 'Rain hisses on the rail. <b>Ada</b> sets the message; you set the one <b>charm</b> so the count of lit chips is <b>even</b>. One even charm survives any single flip in the storm.';
+      } else {
+        rain.innerHTML = taughtHere
+          ? 'Three rings, your hands. Set every charm so <b>its</b> group is even.'
+          : 'Three sisters, three charms. <b>Ada</b>, <b>Bea</b> and <b>Cee</b> each watch their own chips. Set every charm so <b>its</b> group is even — then a single flip cannot hide.';
+      }
       wrap.appendChild(rain);
 
       var phaseLbl = document.createElement('div');
       phaseLbl.className = 'pc-phase';
-      phaseLbl.textContent = 'Phase A · Rig the charm';
+      phaseLbl.textContent = 'Phase A · Rig the charm · crossing ' + (streak + 1) + ' / ' + totalTrips;
       wrap.appendChild(phaseLbl);
 
       if (mode === 'detect') renderDetectRig();
       else renderCorrectRig();
     }
 
-    /* ---------- detect: message chips + one charm + parity meter ---------- */
+    /* ---------- detect: message chips + one charm + (guided) parity meter ---------- */
     function renderDetectRig() {
       var card = document.createElement('div');
       card.className = 'g-card';
@@ -215,9 +350,10 @@ G.puzzles.register('parity-charm', {
       bits.className = 'pc-bits';
       // message chips (read-only)
       for (var i = 0; i < k; i++) {
-        bits.appendChild(makeChip(data[i], false, 'm' + (i + 1)));
+        bits.appendChild(makeChip(data[i], 'm' + (i + 1)));
       }
-      // the single charm chip (clickable)
+      // the single charm chip (clickable); on narrow screens it gets its own line
+      bits.appendChild(lineBreak());
       var charm = makeCharmChip();
       bits.appendChild(charm);
       card.appendChild(bits);
@@ -234,12 +370,16 @@ G.puzzles.register('parity-charm', {
       actions.appendChild(send);
       card.appendChild(actions);
 
+      var fb = document.createElement('div');
+      fb.className = 'pc-feedback';
+      card.appendChild(fb);
+
       wrap.appendChild(card);
 
       function makeCharmChip() {
-        var c = document.createElement('div');
         var cell = document.createElement('div');
         cell.className = 'pc-cell';
+        var c = document.createElement('div');
         function paint() {
           c.className = 'pc-chip pc-charm' + (detectBit ? ' pc-one' : '');
           c.textContent = detectBit;
@@ -252,6 +392,7 @@ G.puzzles.register('parity-charm', {
           api.sfx('select');
           paint();
           refreshMeter();
+          fb.textContent = '';
         });
         paint();
         cell.appendChild(c);
@@ -263,29 +404,46 @@ G.puzzles.register('parity-charm', {
       }
 
       function refreshMeter() {
+        if (!guided()) {            // STRIP: the count is the player's job now
+          meter.className = 'pc-meter pc-dimnote';
+          meter.textContent = 'No meter out here — count the lit chips yourself.';
+          return;
+        }
         var all = data.concat([detectBit]);
         var n = countOnes(all);
         var even = (n & 1) === 0;
+        meter.className = 'pc-meter';
         meter.innerHTML = '1s so far: <b>' + n + '</b> — ' +
           '<span class="' + (even ? 'pc-even' : 'pc-odd') + '">' + (even ? 'even ✓' : 'odd ✗') + '</span>';
-        send.disabled = false; // never softlock; sending an odd charm just fails the call honestly
       }
       refreshMeter();
 
       send.addEventListener('click', function () {
+        // the charm MUST leave even, or arrival parity means nothing.
+        if (!isEven(data.concat([detectBit]))) {
+          api.sfx('bump');
+          fb.className = 'pc-feedback pc-bad';
+          fb.textContent = 'Ada catches your wrist: “Hold — count again. It must leave EVEN, or odd-at-arrival means nothing.”';
+          return;
+        }
         startCrossing();
       });
     }
 
     /* ---------- correct: Hamming charms with bracket groups ---------- */
     function renderCorrectRig() {
+      if (guided() && pendingHint === 0) {
+        wrap.appendChild(G.pz.coachCard('bea',
+          'Three charms, three yes/no checks — <b>2³ = 8</b> patterns. Seven chips and ' +
+          '“clean” is exactly eight. Set each group even; the storm gets one flip and nowhere to hide.'));
+      }
+
       var card = document.createElement('div');
       card.className = 'g-card';
 
-      // build the 7-position code from data + current charm bits, for bracket display
+      // positions 1..4 = data, 5..7 = charm parity (A,B,C)
       var bits = document.createElement('div');
       bits.className = 'pc-bits';
-      // positions 1..4 = data, 5..7 = charm parity (A,B,C)
       var posCells = {};
       for (var p = 1; p <= 7; p++) {
         var isData = p <= 4;
@@ -308,11 +466,12 @@ G.puzzles.register('parity-charm', {
         lab.textContent = isData ? ('d' + p) : ('p' + (p - 4));
         cell.appendChild(lab);
         bits.appendChild(cell);
+        if (p === 4) bits.appendChild(lineBreak());
         posCells[p] = chip;
       }
       card.appendChild(bits);
 
-      // charm cards (one per sister) with set-to-even buttons + nod indicator
+      // charm cards (one per sister) with toggle buttons + nod indicator
       var charms = document.createElement('div');
       charms.className = 'pc-charms';
       var nodEls = {};
@@ -322,7 +481,7 @@ G.puzzles.register('parity-charm', {
         var name = document.createElement('div');
         name.className = 'pc-cname';
         name.style.color = CHARM_COLOR[cn];
-        name.textContent = (cn === 'A' ? 'Ada' : cn === 'B' ? 'Bea' : 'Cee') + ' (' + cn + ')';
+        name.textContent = sisterName(cn) + ' (' + cn + ')';
         cc.appendChild(name);
         var watch = document.createElement('div');
         watch.className = 'pc-cwatch';
@@ -343,6 +502,7 @@ G.puzzles.register('parity-charm', {
           api.sfx('select');
           btn.textContent = 'charm = ' + charmBit[cn];
           refresh();
+          fb.textContent = '';
         });
       });
       card.appendChild(charms);
@@ -354,11 +514,14 @@ G.puzzles.register('parity-charm', {
       send.textContent = 'Send across →';
       actions.appendChild(send);
       card.appendChild(actions);
+
+      var fb = document.createElement('div');
+      fb.className = 'pc-feedback';
+      card.appendChild(fb);
       wrap.appendChild(card);
 
       function currentCode() {
-        var code = [0, data[0], data[1], data[2], data[3], charmBit.A, charmBit.B, charmBit.C];
-        return code;
+        return [0, data[0], data[1], data[2], data[3], charmBit.A, charmBit.B, charmBit.C];
       }
       function refresh() {
         var code = currentCode();
@@ -379,19 +542,33 @@ G.puzzles.register('parity-charm', {
           e.nod.textContent = even ? 'the sister nods ✓' : 'group still odd';
           if (!even) allGood = false;
         });
-        send.disabled = false; // never softlock
         return allGood;
       }
       refresh();
 
-      send.addEventListener('click', function () { startCrossing(); });
+      send.addEventListener('click', function () {
+        if (!refresh()) {
+          api.sfx('bump');
+          fb.className = 'pc-feedback pc-bad';
+          fb.textContent = 'A sister won’t nod — her group is still odd. Every charm must make ITS group even before the boat goes.';
+          return;
+        }
+        startCrossing();
+      });
     }
 
-    function makeChip(val, clickable, lab) {
+    /* flex line-break (visible only ≤560px): splits data | parity rows */
+    function lineBreak() {
+      var b = document.createElement('i');
+      b.className = 'pc-brkline';
+      return b;
+    }
+
+    function makeChip(val, lab, mini) {
       var cell = document.createElement('div');
       cell.className = 'pc-cell';
       var c = document.createElement('div');
-      c.className = 'pc-chip' + (val ? ' pc-one' : '');
+      c.className = 'pc-chip' + (mini ? ' pc-mini' : '') + (val ? ' pc-one' : '');
       c.textContent = val;
       cell.appendChild(c);
       if (lab) {
@@ -414,8 +591,8 @@ G.puzzles.register('parity-charm', {
         code = [0, data[0], data[1], data[2], data[3], charmBit.A, charmBit.B, charmBit.C]; // 1-based 1..7
       }
 
-      // storm flips 0 or 1 bits (50/50)
-      var doFlip = api.rng() < 0.5;
+      // the storm follows this window's schedule (trip index = current streak)
+      var doFlip = !!schedule[Math.min(streak, schedule.length - 1)];
       flippedPos = -1;
       if (doFlip) {
         if (mode === 'detect') {
@@ -429,14 +606,16 @@ G.puzzles.register('parity-charm', {
       received = code;
 
       // animate boat crossing, then reveal
-      renderCrossing();
+      renderCrossing(function () { renderDeclare(); }, false);
     }
 
-    function renderCrossing() {
+    /* the boat animation; the storm label NEVER says whether it flipped —
+       reading the arrival is the player's job. */
+    function renderCrossing(onArrive, twoFlips) {
       wrap.innerHTML = '';
       var rain = document.createElement('div');
       rain.className = 'pc-rain';
-      rain.innerHTML = 'The charm slides into the storm…';
+      rain.innerHTML = twoFlips ? 'Ada’s boat slides into a <b>worse</b> storm…' : 'The charm slides into the storm…';
       wrap.appendChild(rain);
 
       var lane = document.createElement('div');
@@ -460,13 +639,13 @@ G.puzzles.register('parity-charm', {
         boat.style.transition = 'left 1.15s ease-in-out';
         boat.style.left = 'calc(100% + 12px)';
       }, 30);
-      // a crack of static at mid-crossing
+      // a crack of static at mid-crossing (deliberately uninformative)
       later(function () {
         api.sfx('zap');
-        storm.textContent = flippedPos >= 0 ? '⚡ a flip!' : '⛈ clear-ish';
+        storm.textContent = twoFlips ? '⚡⚡ TWO strikes!' : '⚡ static crackles…';
       }, 640);
-      // arrival -> declare phase
-      later(function () { renderDeclare(); }, 1300);
+      if (twoFlips) later(function () { api.sfx('zap'); }, 840);
+      later(onArrive, 1300);
     }
 
     /* =================== PHASE C: declare / decode =================== */
@@ -476,11 +655,34 @@ G.puzzles.register('parity-charm', {
 
       var phaseLbl = document.createElement('div');
       phaseLbl.className = 'pc-phase';
-      phaseLbl.textContent = 'Arrival · ' + (mode === 'detect' ? 'declare the charm' : 'name the flip');
+      phaseLbl.textContent = 'Arrival · ' + (mode === 'detect' ? 'declare the charm' : 'name the flip') +
+        ' · crossing ' + (streak + 1) + ' / ' + totalTrips;
       wrap.appendChild(phaseLbl);
 
       if (mode === 'detect') renderDetectDeclare();
       else renderCorrectDeclare();
+    }
+
+    /* ---- mode-specific hint text for the current arrival ---- */
+    function detectHintHtml(level) {
+      var n = countOnes(received);
+      var odd = (n & 1) === 1;
+      if (level === 1) return 'Count the lit chips — charm included. <b>Even</b> count: clean. <b>Odd</b> count: the storm flipped one. With at most one flip, parity never lies.';
+      if (level === 2) return 'This crossing arrived with <b>' + n + '</b> lit chips. Say it out loud: even, or odd?';
+      return '<b>' + n + '</b> is ' + (odd ? '<b>odd</b> — a chip flipped. Press CORRUPTED.' : '<b>even</b> — nothing flipped. Press CLEAN.');
+    }
+    function correctHintHtml(level, odd, ans) {
+      if (level === 1) return 'Which charms went odd? The flipped rune sits in <b>ALL</b> of them and <b>NONE</b> of the others.';
+      if (level === 2) {
+        if (ans === 0) return 'Every sister nods — no chip is named. What does the empty pattern mean?';
+        var evens = [];
+        for (var i = 0; i < CHARMS.length; i++) if (odd.indexOf(CHARMS[i]) < 0) evens.push(CHARMS[i]);
+        return 'Find the chip watched by <b>' + sisterList(odd, ' AND ') + '</b>' +
+          (evens.length ? ' — and NOT by ' + sisterList(evens, ' or ') : '') + '. Only one chip fits.';
+      }
+      if (ans === 0) return 'Nothing flipped this time — press <b>All clean</b>.';
+      return 'It’s chip <b>' + posLabel(ans) + '</b> — the one under ' + sisterList(odd, '’s and ') +
+        '’s bars and no one else’s. Press it.';
     }
 
     function renderDetectDeclare() {
@@ -489,16 +691,22 @@ G.puzzles.register('parity-charm', {
 
       var bits = document.createElement('div');
       bits.className = 'pc-bits';
-      for (var i = 0; i < k; i++) bits.appendChild(makeChip(received[i], false, 'm' + (i + 1)));
-      bits.appendChild(makeChip(received[k], false, 'charm'));
+      for (var i = 0; i < k; i++) bits.appendChild(makeChip(received[i], 'm' + (i + 1)));
+      bits.appendChild(lineBreak());
+      bits.appendChild(makeChip(received[k], 'charm'));
       card.appendChild(bits);
 
-      // parity readout the player reasons from
-      var even = isEven(received);
+      // GUIDE round shows the parity readout; STRIP rounds make counting the job
       var meter = document.createElement('div');
-      meter.className = 'pc-meter';
-      meter.innerHTML = 'Arrived 1s: <b>' + countOnes(received) + '</b> — ' +
-        '<span class="' + (even ? 'pc-even' : 'pc-odd') + '">' + (even ? 'parity even' : 'parity odd') + '</span>';
+      if (guided()) {
+        var even0 = isEven(received);
+        meter.className = 'pc-meter';
+        meter.innerHTML = 'Arrived 1s: <b>' + countOnes(received) + '</b> — ' +
+          '<span class="' + (even0 ? 'pc-even' : 'pc-odd') + '">' + (even0 ? 'parity even' : 'parity odd') + '</span>';
+      } else {
+        meter.className = 'pc-meter pc-dimnote';
+        meter.textContent = 'Count the lit chips. Even or odd?';
+      }
       card.appendChild(meter);
 
       var actions = document.createElement('div');
@@ -517,26 +725,34 @@ G.puzzles.register('parity-charm', {
       fb.className = 'pc-feedback';
       card.appendChild(fb);
       wrap.appendChild(card);
+
+      // coach: hint after failures, else the principle line on the guided round
+      if (pendingHint > 0) {
+        wrap.appendChild(G.pz.coachCard('ada', detectHintHtml(pendingHint)));
+      } else if (guided()) {
+        wrap.appendChild(G.pz.coachCard('ada',
+          'Count what arrived. Odd means the storm touched a chip — <b>caught, every time</b>. ' +
+          'But notice: odd can’t say <b>which</b>. One charm catches; it never finds.'));
+      }
       wrap.appendChild(progressLine());
 
-      // truth: with a correctly-rigged even charm, parity-odd <=> a flip happened.
-      // (and with <=1 flip the two never disagree — that is the lesson.)
-      var truthCorrupted = !even;
+      // truth = what actually happened (the rig phase guarantees an even send)
+      var truthCorrupted = flippedPos >= 0;
       function answer(saysCorrupt) {
         clean.disabled = corrupt.disabled = true;
-        if (saysCorrupt === truthCorrupted) {
+        if (declareOutcome(truthCorrupted, saysCorrupt) === 'win') {
           fb.className = 'pc-feedback pc-good';
           fb.textContent = 'Right. ' + (truthCorrupted
-            ? 'Parity is odd — the storm flipped a bit.'
-            : 'Parity holds even — nothing flipped.');
+            ? 'The count came in odd — the storm flipped a bit.'
+            : 'The count held even — it crossed clean.');
           api.sfx('select');
           tripWon();
         } else {
           fb.className = 'pc-feedback pc-bad';
           fb.textContent = (truthCorrupted
-            ? 'Look again — the count came in odd, so a bit DID flip.'
-            : 'Look again — the count is even, so it crossed clean.') +
-            ' Ada waits; try the trip once more.';
+            ? 'The count came in ODD — a bit DID flip.'
+            : 'The count is EVEN — it crossed clean.') +
+            ' The streak resets; Ada only counts crossings you call right in a row.';
           api.fail();
           tripLost();
         }
@@ -549,8 +765,9 @@ G.puzzles.register('parity-charm', {
       var card = document.createElement('div');
       card.className = 'g-card';
 
-      // the three charm checks light red/green
+      // the three charm checks light red/green — the rings ARE the instrument
       var odd = syndrome(received);
+      var ans = positionFromSyndrome(odd);
       var rings = document.createElement('div');
       rings.className = 'pc-actions';
       CHARMS.forEach(function (cn) {
@@ -558,7 +775,7 @@ G.puzzles.register('parity-charm', {
         var pill = document.createElement('span');
         pill.className = 'pc-ring ' + (isOdd ? 'pc-rred' : 'pc-rgreen');
         pill.style.color = CHARM_COLOR[cn];
-        pill.textContent = (cn === 'A' ? 'Ada' : cn === 'B' ? 'Bea' : 'Cee') + ' ' + (isOdd ? 'ODD' : 'even');
+        pill.textContent = sisterName(cn) + ' ' + (isOdd ? 'ODD' : 'even');
         rings.appendChild(pill);
       });
       card.appendChild(rings);
@@ -586,21 +803,34 @@ G.puzzles.register('parity-charm', {
           cell.appendChild(chip);
           var lab = document.createElement('div');
           lab.className = 'pc-lab';
-          lab.textContent = pos <= 4 ? ('d' + pos) : ('p' + (pos - 4));
+          lab.textContent = posLabel(pos);
           cell.appendChild(lab);
           bits.appendChild(cell);
+          if (pos === 4) bits.appendChild(lineBreak());
           chips[pos] = chip;
         })(p);
       }
       card.appendChild(bits);
 
+      // GUIDE: first round spells the syndrome out in ring-words.
+      // STRIP: later rounds just light the rings.
       var hint = document.createElement('div');
-      hint.className = 'pc-meter';
-      var ans = positionFromSyndrome(odd);
-      hint.innerHTML = odd.length === 0
-        ? 'All three sisters nod — <span class="pc-even">no flip</span>.'
-        : 'Odd: <b>' + odd.map(function (c) { return c === 'A' ? 'Ada' : c === 'B' ? 'Bea' : 'Cee'; }).join(' · ') +
-          '</b> — the brackets point at exactly one chip.';
+      if (guided()) {
+        hint.className = 'pc-meter';
+        if (odd.length === 0) {
+          hint.innerHTML = 'All three sisters nod — that pattern means <span class="pc-even">no flip at all</span>.';
+        } else {
+          var evens = [];
+          for (var i = 0; i < CHARMS.length; i++) if (odd.indexOf(CHARMS[i]) < 0) evens.push(CHARMS[i]);
+          hint.innerHTML = nameList(odd, true) + (odd.length > 1 ? ' frown' : ' frowns') +
+            (evens.length ? '; ' + nameList(evens, true) + (evens.length > 1 ? ' nod' : ' nods') + '.' : ' — all three.') +
+            ' The flipped chip sits in ' + (odd.length > 1 ? 'EVERY frowning group' : 'the frowning group') +
+            (evens.length ? ' and in NO nodding group' : '') + '. Only one chip does.';
+        }
+      } else {
+        hint.className = 'pc-meter pc-dimnote';
+        hint.textContent = 'First tap = your answer. A guess resets the crossing.';
+      }
       card.appendChild(hint);
 
       var actions = document.createElement('div');
@@ -615,6 +845,16 @@ G.puzzles.register('parity-charm', {
       fb.className = 'pc-feedback';
       card.appendChild(fb);
       wrap.appendChild(card);
+
+      // coach: escalating hints after failures; first-round rule otherwise
+      if (pendingHint > 0) {
+        wrap.appendChild(G.pz.coachCard('bea', correctHintHtml(pendingHint, odd, ans)));
+        if (pendingHint >= 3 && ans > 0) chips[ans].classList.add('pc-hintglow');
+      } else if (guided()) {
+        wrap.appendChild(G.pz.coachCard('bea',
+          'Read the rings <b>before</b> you touch — your first tap is the answer. ' +
+          'A guess resets the crossing with a fresh flip.'));
+      }
       wrap.appendChild(progressLine());
 
       var answered = false;
@@ -623,42 +863,40 @@ G.puzzles.register('parity-charm', {
         allclean.disabled = true;
         for (var p = 1; p <= 7; p++) chips[p].className = 'pc-chip';
       }
+      /* NO-GUESSING GATE: the first chip tapped must BE the named flip. */
       function pick(pos) {
         if (answered) return;
-        // correct answer: ans (0 = clean, else the flipped position)
-        if (ans !== 0 && pos === ans) {
+        if (pickOutcome(ans, pos) === 'win') {
           lockAll();
           chips[pos].className = 'pc-chip pc-flipd';
           fb.className = 'pc-feedback pc-good';
-          fb.textContent = 'Got it — chip ' + pos + ' was the flip. The brackets named it alone.';
+          fb.textContent = 'Got it — chip ' + posLabel(pos) + ' was the flip. The rings named it alone.';
           api.sfx('select');
           tripWon();
         } else {
-          // wrong pick
-          if (!answered) {
-            fb.className = 'pc-feedback pc-bad';
-            fb.textContent = ans === 0
-              ? 'But all three sisters nodded — nothing flipped. Try “All clean”.'
-              : 'Not that one. Read the red sisters’ brackets — they overlap on a single chip.';
-            api.fail();
-            lockAll();
-            tripLost();
-          }
+          lockAll();
+          fb.className = 'pc-feedback pc-bad';
+          fb.textContent = (ans === 0
+            ? 'All three sisters nodded — nothing flipped, and you tapped anyway.'
+            : 'Not that one.') +
+            ' A guess costs the round: fresh flip, streak back to zero.';
+          api.fail();
+          tripLost();
         }
       }
       allclean.addEventListener('click', function () {
         if (answered) return;
-        if (ans === 0) {
+        if (cleanOutcome(ans) === 'win') {
           lockAll();
           fb.className = 'pc-feedback pc-good';
           fb.textContent = 'Right — every sister nodded, the message crossed clean.';
           api.sfx('select');
           tripWon();
         } else {
-          fb.className = 'pc-feedback pc-bad';
-          fb.textContent = 'A sister is red — something flipped. Find the chip her brackets share.';
-          api.fail();
           lockAll();
+          fb.className = 'pc-feedback pc-bad';
+          fb.textContent = 'A sister is red — something flipped. A guess costs the round: fresh flip, streak back to zero.';
+          api.fail();
           tripLost();
         }
       });
@@ -668,67 +906,197 @@ G.puzzles.register('parity-charm', {
       var p = document.createElement('div');
       p.className = 'pc-prog';
       var dots = '';
-      for (var i = 0; i < totalTrips; i++) dots += (i < trips ? '◉ ' : '○ ');
-      p.innerHTML = 'Crossings: ' + dots.trim();
+      for (var i = 0; i < totalTrips; i++) dots += (i < streak ? '◉ ' : '○ ');
+      p.innerHTML = 'In a row: ' + dots.trim();
       return p;
     }
 
     /* ---- trip resolution ---- */
     function tripWon() {
-      trips++;
+      ladder.reset();
+      pendingHint = 0;
+      streak = streakAfter(streak, true);
       updateStatus();
-      if (trips >= totalTrips) {
-        later(showLesson, 750);
+      if (streak >= totalTrips) {
+        // gate met: first detect completion gets the two-flip demonstration
+        if (mode === 'detect' && !taughtHere) later(startDemo, 900);
+        else later(showDebrief, 900);
       } else {
         later(newTrip, 950);
       }
     }
     function tripLost() {
-      // gentle retry — the SAME trip repeats with a fresh message.
-      later(newTrip, 1400);
+      // the no-guessing rule: streak resets, fresh randomness, escalate hints
+      streak = streakAfter(streak, false);
+      var h = ladder.fail();
+      pendingHint = h ? parseInt(h, 10) : 0;
+      updateStatus();
+      later(newWindow, 1500);
     }
 
-    /* ---- lesson card + complete ---- */
-    function showLesson() {
+    /* ============ THE TWO-FLIP DEMONSTRATION (detect, first completion) ============
+       Scripted, no fail state: the storm flips TWO message chips; the parity
+       check passes; the delivered message is visibly wrong; Ada names the gap. */
+    function startDemo() {
       clearTimers();
-      wrap.innerHTML = '';
-      var card = document.createElement('div');
-      card.className = 'g-card pc-lesson';
-      var h = document.createElement('h4');
-      h.textContent = mode === 'detect' ? 'One charm, one flip' : 'Three charms, one culprit';
-      card.appendChild(h);
-      var p = document.createElement('p');
-      if (mode === 'detect') {
-        p.innerHTML = 'One parity bit makes the whole message even, so <b>any single flip</b> turns it ' +
-          'odd — caught every time. But it can’t say <b>where</b> the flip was, and <b>two</b> ' +
-          'flips cancel back to even and slip past clean. (With ≤1 flip, parity and the truth never ' +
-          'disagree — odd means a flip, even means none.)';
-      } else {
-        p.innerHTML = 'Three overlapping parities point straight at the culprit. Each charm is one ' +
-          'yes/no check, so 3 checks distinguish <b>2³ = 8</b> cases — the 7 chip positions ' +
-          '<b>plus</b> “all clean.” That is exactly Hamming(7,4): four data bits, three charms, ' +
-          'every single flip corrected.';
-      }
-      card.appendChild(p);
+      phase = 'demo';
+      api.status('A demonstration &middot; detect mode');
+      var ddata = [];
+      for (var i = 0; i < k; i++) ddata.push(api.rng() < 0.5 ? 0 : 1);
+      var sent = ddata.concat([detectCharm(ddata)]);
+      // flip TWO distinct MESSAGE chips (the delivered words go wrong)
+      var f1 = Math.floor(api.rng() * k);
+      var f2 = Math.floor(api.rng() * (k - 1));
+      if (f2 >= f1) f2++;
+      var recv = sent.slice();
+      recv[f1] ^= 1;
+      recv[f2] ^= 1;
+      demo = { sent: sent, recv: recv, flips: [f1, f2] };
+      renderDemoIntro();
+    }
 
-      var btn = document.createElement('button');
-      btn.className = 'btn btn-primary';
-      btn.style.minHeight = '44px';
-      btn.textContent = 'The sisters wave you on →';
-      btn.addEventListener('click', doComplete);
-      card.appendChild(btn);
+    function renderDemoIntro() {
+      wrap.innerHTML = '';
+      var rain = document.createElement('div');
+      rain.className = 'pc-rain';
+      rain.innerHTML = 'Ada holds the rail before you can celebrate. “One more crossing — <b>mine</b>. The storm is worse tonight. Watch what one charm cannot do.”';
+      wrap.appendChild(rain);
+
+      var phaseLbl = document.createElement('div');
+      phaseLbl.className = 'pc-phase';
+      phaseLbl.textContent = 'Demonstration · Ada’s crossing';
+      wrap.appendChild(phaseLbl);
+
+      var card = document.createElement('div');
+      card.className = 'g-card';
+      var bits = document.createElement('div');
+      bits.className = 'pc-bits';
+      for (var i = 0; i <= k; i++) bits.appendChild(makeChip(demo.sent[i], i < k ? ('m' + (i + 1)) : 'charm'));
+      card.appendChild(bits);
+      var meter = document.createElement('div');
+      meter.className = 'pc-meter';
+      meter.innerHTML = 'Ada rigs it herself: <b>' + countOnes(demo.sent) + '</b> lit — <span class="pc-even">even ✓</span>';
+      card.appendChild(meter);
+      var actions = document.createElement('div');
+      actions.className = 'pc-actions';
+      var go = document.createElement('button');
+      go.className = 'btn btn-primary';
+      go.textContent = 'Watch the crossing →';
+      go.addEventListener('click', function () {
+        renderCrossing(function () { renderDemoArrival(); }, true);
+      });
+      actions.appendChild(go);
+      card.appendChild(actions);
       wrap.appendChild(card);
+    }
+
+    function renderDemoArrival() {
+      phase = 'demo';
+      wrap.innerHTML = '';
+      var phaseLbl = document.createElement('div');
+      phaseLbl.className = 'pc-phase';
+      phaseLbl.textContent = 'Demonstration · two flips';
+      wrap.appendChild(phaseLbl);
+
+      var card = document.createElement('div');
+      card.className = 'g-card';
+
+      var cmp = document.createElement('div');
+      cmp.className = 'pc-cmp';
+      cmp.appendChild(demoRow('sent', demo.sent, []));
+      cmp.appendChild(demoRow('arrived', demo.recv, demo.flips));
+      card.appendChild(cmp);
+
+      var meter = document.createElement('div');
+      meter.className = 'pc-meter';
+      meter.innerHTML = 'Arrived 1s: <b>' + countOnes(demo.recv) + '</b> — ' +
+        '<span class="pc-even">parity even ✓</span> &nbsp;·&nbsp; the charm calls it <b>CLEAN</b>.';
+      card.appendChild(meter);
+
+      var fb = document.createElement('div');
+      fb.className = 'pc-feedback pc-bad';
+      fb.textContent = 'But look at the chips — two flipped, and the message arrived wrong.';
+      card.appendChild(fb);
+      wrap.appendChild(card);
+
+      wrap.appendChild(G.pz.coachCard('ada',
+        '“<b>Even errors slip past an even-counter.</b> Two flips cancel — the charm never blinks. ' +
+        'Remember the feeling.”'));
+
+      var actions = document.createElement('div');
+      actions.className = 'pc-actions';
+      var go = document.createElement('button');
+      go.className = 'btn btn-primary';
+      go.textContent = 'Continue →';
+      go.addEventListener('click', function () { showDebrief(); });
+      actions.appendChild(go);
+      wrap.appendChild(actions);
+    }
+
+    function demoRow(label, bitsArr, marks) {
+      var row = document.createElement('div');
+      row.className = 'pc-cmprow';
+      var lab = document.createElement('span');
+      lab.className = 'pc-cmplab';
+      lab.textContent = label;
+      row.appendChild(lab);
+      for (var i = 0; i < bitsArr.length; i++) {
+        var c = document.createElement('div');
+        c.className = 'pc-chip pc-mini' + (bitsArr[i] ? ' pc-one' : '') +
+          (marks.indexOf(i) >= 0 ? ' pc-flipd' : '');
+        c.textContent = bitsArr[i];
+        row.appendChild(c);
+      }
+      return row;
+    }
+
+    /* =================== DEBRIEF + complete =================== */
+    function showDebrief() {
+      clearTimers();
+      phase = 'debrief';
+      wrap.innerHTML = '';
+      var opts;
+      if (mode === 'detect') {
+        opts = {
+          title: 'One charm: catch, not find',
+          tone: 'win',
+          html: 'Across your <b>' + totalTrips + '</b> straight crossings the one even charm caught ' +
+            'every single flip — odd count, every time. <b>Catch: always.</b> But one charm is one ' +
+            'yes/no answer — <span class="pzk-eq">1 bit</span> — enough to split clean from corrupted, ' +
+            'nowhere near the <span class="pzk-eq">log₂ ' + (k + 2) + ' ≈ ' +
+            G.pz.fmt(G.pz.log2(k + 2), 1) + ' bits</span> it would take to also name which of the ' +
+            (k + 1) + ' chips (or “clean”). <b>Find: never.</b> And you just watched two flips cancel ' +
+            'back to even and stroll past. Finding — and surviving the pair — takes more charms: ' +
+            'the sisters up the boardwalk keep three.',
+        };
+      } else {
+        opts = {
+          title: 'Three checks, eight answers',
+          tone: 'win',
+          html: 'The table you have been reading, written out:' + synTableHtml() +
+            '<p style="margin:.5rem 0 0"><b>3 checks, 8 patterns: 7 positions + clean.</b> ' +
+            '<span class="pzk-eq">2³ = 8 = 7 + 1</span> — exactly enough, not a charm wasted. ' +
+            'That is Hamming(7,4): four message bits, three overlapping parities, and every single ' +
+            'flip is not just caught but <b>named</b> — and undone.</p>',
+        };
+      }
+      opts.buttonLabel = 'The sisters wave you on →';
+      opts.onButton = doComplete;
+      wrap.appendChild(G.pz.debriefCard(opts));
     }
 
     function doComplete() {
       if (finished) return;
       finished = true;
       clearTimers();
+      G.pz.markTaught(taughtKey);
       api.complete();
     }
 
     /* ---- go ---- */
-    newTrip();
+    if (mode === 'detect' && !taughtHere) renderHook();
+    else newWindow();
+    updateStatus();
 
     return {
       destroy: function () { clearTimers(); }

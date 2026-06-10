@@ -94,7 +94,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
     /* ---- GATE DEEP: mastery door (spark 1), off the rotunda's east wall ---- */
     { id: 'ec-plaque-deep', type: 'sign', x: 33, y: 11,
-      text: 'DEEP GALLERY — NANANANANA. nest the stamp inside the stamp.' },
+      text: 'DEEP GALLERY — NANANANANA. one long stamp beats two short ones.' },
     { id: 'ec-gate-deep', type: 'door', x: 34, y: 10, sprite: 'runedoor',
       puzzle: { type: 'stamp-carver', config: { pattern: 'nananananabnananana', parCost: 11 } },
       flag: 'ec.deep.done', sparks: 1, ifNotFlag: 'ec.deep.done',

@@ -200,7 +200,7 @@ arch_dst = os.path.join(DOCS_DIR, "archipelago")
 if os.path.isdir(arch_src):
     shutil.copytree(
         arch_src, arch_dst,
-        ignore=shutil.ignore_patterns("DESIGN.md", "dev.html", "dev_island.js"),
+        ignore=shutil.ignore_patterns("DESIGN.md", "PEDAGOGY.md", "dev.html", "dev_island.js"),
         dirs_exist_ok=True,
     )
     print("Copied archipelago/ to docs/archipelago/")
