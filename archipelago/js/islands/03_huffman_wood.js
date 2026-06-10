@@ -100,8 +100,15 @@ TTTTTTTTTTTTTTTTTTTTTT=TTTTTTTTTTTTTTTTTTTTTTTTTTTTT
     { id: 'hw-huff', type: 'npc', x: 23, y: 34, sprite: 'huff', dir: 'w',
       dialogue: [
         { ifFlag: 'game.finished', use: 'hw-huff-post' },
+        // post-completion: oak side quest done — Huff's warmest, fullest variant
+        { ifFlag: 'hw.sq1.done', use: 'hw-huff-done-oak' },
+        // post-completion: side-quest accepted, turns to gather / oak not yet found
+        { ifFlag: 'hw.sq1.start', use: 'hw-huff-oak-nag' },
+        // post-completion: main quest done — Huff offers the oak side quest
         { ifFlag: 'hw.done', use: 'hw-huff-done' },
         { ifFlag: 'hw.signs.done', use: 'hw-huff-relay' },
+        // mid-progress: plan carved, heading for the workshop to carve the signs
+        { ifFlag: 'hw.plan.heard', use: 'hw-huff-mid-workshop' },
         { ifFlag: 'hw.plan.done', use: 'hw-huff-after-plan' },
         { ifFlag: 'hw.met-huff', use: 'hw-huff-again' },
         { use: 'hw-huff-1' },
@@ -136,7 +143,12 @@ TTTTTTTTTTTTTTTTTTTTTT=TTTTTTTTTTTTTTTTTTTTTTTTTTTTT
     /* -------- Village leaf: Mosswick (busiest, depth 1) -------- */
     // West tee at row 29; clearing rows 27-31, x 8-16.
     { id: 'hw-moss-crab', type: 'npc', x: 12, y: 29, sprite: 'crab', wander: true,
-      dialogue: 'hw-moss-crab' },
+      dialogue: [
+        // side-quest: Mosswick keeps the FIRST turn of the way to the old Oak
+        { ifFlag: 'hw.sq1.t1', use: 'hw-moss-crab-told' },
+        { ifFlag: 'hw.sq1.start', use: 'hw-moss-crab-turn' },
+        { use: 'hw-moss-crab' },
+      ] },
     { id: 'hw-moss-gull', type: 'npc', x: 14, y: 28, sprite: 'gullsmall', wander: true,
       dialogue: 'hw-moss-gull' },
     { id: 'hw-moss-sign', type: 'sign', x: 11, y: 28,
@@ -145,6 +157,17 @@ TTTTTTTTTTTTTTTTTTTTTT=TTTTTTTTTTTTTTTTTTTTTTTTTTTTT
     { id: 'hw-deliver-trigger', type: 'trigger', x: 16, y: 29, once: true,
       ifFlag: 'hw.whistle.got', ifNotFlag: 'hw.whistle.done',
       actions: [{ goto: 'hw-deliver' }] },
+
+    /* -------- Oak side-quest: the decoded grove in Mosswick's quiet corner -------- */
+    // The remembered code "● ○" (west off the root, then on up) reads out to the
+    // hushed northwest corner of the busiest clearing. No spark — lore only.
+    { id: 'hw-oak-trigger', type: 'trigger', x: 10, y: 27, once: true,
+      ifFlag: 'hw.sq1.t2', ifNotFlag: 'hw.sq1.done',
+      actions: [{ set: 'hw.sq1.done' }, { goto: 'hw-oak-found' }] },
+    // The unearthed grove marker — appears only after the Oak is found.
+    { id: 'hw-oak-grove', type: 'prop', x: 9, y: 27, sprite: 'chest', ifFlag: 'hw.sq1.done' },
+    { id: 'hw-oak-sign', type: 'sign', x: 10, y: 30, ifFlag: 'hw.sq1.done',
+      text: ['THE FIRST-FORK OAK — grove rediscovered.', 'Read west-then-up (● ○), the way every village half-remembered.'] },
 
     /* -------- Village leaf: Fernholt (depth 2) -------- */
     // East tee at row 22; clearing rows 21-25, x 28-39.
@@ -156,7 +179,13 @@ TTTTTTTTTTTTTTTTTTTTTT=TTTTTTTTTTTTTTTTTTTTTTTTTTTTT
     /* -------- Village leaf: Bramblebury (depth 3) -------- */
     // West tee at row 17; clearing rows 15-18, x 6-15.
     { id: 'hw-bramble-crab', type: 'npc', x: 11, y: 16, sprite: 'crab', wander: true,
-      dialogue: 'hw-bramble-crab' },
+      dialogue: [
+        // side-quest: Bramblebury keeps the SECOND turn (only after Mosswick's)
+        { ifFlag: 'hw.sq1.t2', use: 'hw-bramble-crab-told' },
+        { ifFlag: 'hw.sq1.t1', use: 'hw-bramble-crab-turn' },
+        { ifFlag: 'hw.sq1.start', use: 'hw-bramble-crab-wait' },
+        { use: 'hw-bramble-crab' },
+      ] },
     { id: 'hw-bramble-sign', type: 'sign', x: 9, y: 16,
       text: 'BRAMBLEBURY — 6 a day. Three forks in. Quiet mornings, mostly.' },
     // Hint to the secret grove, on the trail wall by the grass gap.
@@ -241,6 +270,20 @@ TTTTTTTTTTTTTTTTTTTTTT=TTTTTTTTTTTTTTTTTTTTTTTTTTTTT
       text: 'A deep branch signpost, blank and weathered. The right wood swallows the trail.' },
     { id: 'hw-rfork-carved', type: 'sign', x: 33, y: 31, ifFlag: 'hw.signs.done',
       text: ['DEEP BRANCH, carved:', 'Owl’s End ○○○●    Thistledown ○○○○'] },
+
+    /* -------- Ambient flavor: trail markers (0/1 carvings) and depth posts -------- */
+    // At the root fork, a low marker teaching the carving convention.
+    { id: 'hw-mark-root', type: 'sign', x: 25, y: 34,
+      text: ['A weathered trail marker, freshly recut:', '●  = turn west (a 0).   ○  = stay on the trunk (a 1).'] },
+    // Mosswick is one fork in — depth post by the busy clearing.
+    { id: 'hw-depth-moss', type: 'sign', x: 13, y: 15,
+      text: 'DEPTH POST: ●●● — three turns to Bramblebury. The deeper the post, the longer the code.' },
+    // A depth post in the Fernholt clearing, near the relay.
+    { id: 'hw-depth-fern', type: 'sign', x: 35, y: 24,
+      text: 'DEPTH POST: ○●  — Fernholt, two turns deep. Short post, short walk, short whistle.' },
+    // A trail marker on the deep east branch counting the deepest leaves.
+    { id: 'hw-mark-deep', type: 'sign', x: 39, y: 28,
+      text: ['Deep-branch tally, knife-cut into the bark:', 'four marks to the leaves down here. Quiet roads pay in length.'] },
   ],
 
   objectives: [
@@ -284,7 +327,15 @@ TTTTTTTTTTTTTTTTTTTTTT=TTTTTTTTTTTTTTTTTTTTTTTTTTTTT
       { who: 'huff', text: 'Your plan didn’t just match the trees — it IS the trees. Mosswick one fork in, Thistledown four.' },
       { who: 'huff', text: 'Now the signs. Whistle-codes, at the workshop in the deep east wood. Carve them prefix-free.' },
       { who: 'pip', text: 'Prefix-free?' },
-      { who: 'huff', text: 'No whistle may begin another. A whistle that could keep going is a lie — you can’t trust where it ends.' },
+      { who: 'huff', text: 'No whistle may begin another. A whistle that could keep going is a lie — you can’t trust where it ends.',
+        actions: [{ set: 'hw.plan.heard' }] },
+    ],
+    /* mid-progress: said between the stump door and the workshop (plan done,
+       signs not yet carved) — Huff points the way without re-explaining. */
+    'hw-huff-mid-workshop': [
+      { who: 'huff', text: 'Plan’s holding. *jerks a thumb northeast* The workshop’s the deep east branch — Owl’s End way.' },
+      { who: 'pip', text: 'And the whistles must be prefix-free.' },
+      { who: 'huff', text: 'No whistle starts another. Five boards, five clean codes. Then the relay can read the wood.' },
     ],
     'hw-huff-relay': [
       { who: 'huff', text: 'Plan set. Signs carved. *grins* The relay should wake now — it reads the wood’s shape.' },
@@ -298,6 +349,36 @@ TTTTTTTTTTTTTTTTTTTTTT=TTTTTTTTTTTTTTTTTTTTTTTTTTTTT
     'hw-huff-done': [
       { who: 'huff', text: 'Eighty-one walks, five honest signs, one steady light. A good wood.' },
       { who: 'huff', text: 'Average whistle, by the way? Under two bits — nineteen-twenty-nine, near as the trees allow.' },
+      { who: 'huff', text: '*flips to the back of the clipboard* …Long as you’re standing about. There’s an old riddle in the wood.' },
+      { who: 'huff', text: 'The First-Fork Oak. The very tree the trails grew from. Nobody’s walked to its grove in years.' },
+      { choice: [
+        { label: 'Tell me about the Oak.', goto: 'hw-oak-brief' },
+        { label: 'Maybe later.', end: true },
+      ] },
+    ],
+    /* ----- post-completion: the oldest-tree side quest (Huff's register) ----- */
+    'hw-oak-brief': [
+      { who: 'huff', text: 'The Oak’s grove was never marked — the way to it lived only in the villages’ memory.' },
+      { who: 'huff', text: 'Each clearing kept ONE turn of the walk. String the turns together and the path spells itself.' },
+      { who: 'pip', text: 'A path that’s also a code.' },
+      { who: 'huff', text: 'Same thing here, always. Ask Mosswick for the first turn, then Bramblebury for the next.' },
+      { who: 'huff', text: 'A dot is west, a circle is on up the trunk — read them in order, like a whistle. Off you go.',
+        actions: [{ set: 'hw.sq1.start' }] },
+    ],
+    'hw-huff-oak-nag': [
+      { who: 'huff', text: 'Still after the Oak? *taps clipboard* Mosswick keeps the first turn, Bramblebury the second.' },
+      { ifNotFlag: 'hw.sq1.t1', who: 'huff', text: 'You’ve not asked Mosswick yet. The busy folk remember the short, bright start.' },
+      { ifFlag: 'hw.sq1.t1', ifNotFlag: 'hw.sq1.t2', who: 'huff',
+        text: 'One turn down. Bramblebury, three forks in, holds the rest of it.' },
+      { ifFlag: 'hw.sq1.t2', who: 'huff',
+        text: 'Both turns in hand? Then walk them — dot, then circle. The grove’s where the reading ends.' },
+    ],
+    'hw-huff-done-oak': [
+      { who: 'huff', text: 'You FOUND it. *thumps the clipboard down* The First-Fork Oak. I’d half stopped believing in it.' },
+      { who: 'pip', text: 'The remembered turns spelled the path exactly.' },
+      { who: 'huff', text: 'Course they did. A village never forgets its own turn — it just forgets it’s a code.' },
+      { who: 'huff', text: 'Eighty-one walks, five honest signs, one steady light, and now the old root’s on the map again.' },
+      { who: 'huff', text: 'A whole wood, written down. *quietly pleased* Best morning I’ve had in years.' },
     ],
     'hw-huff-post': [
       { who: 'huff', text: 'Heard the Grand Beacon’s lit. *taps clipboard, satisfied* Knew the trail plans would hold.' },
@@ -321,6 +402,40 @@ TTTTTTTTTTTTTTTTTTTTTT=TTTTTTTTTTTTTTTTTTTTTTTTTTTTT
     /* ----- Bramblebury (depth 3) ----- */
     'hw-bramble-crab': [
       { who: 'crab', text: 'Three forks in. Six of us go down most days. The brambles keep the noise off.' },
+    ],
+
+    /* ----- oak side-quest: the two remembered turns ----- */
+    // Mosswick (busy, depth 1) keeps the FIRST turn: a dot — west, off the root.
+    'hw-moss-crab-turn': [
+      { who: 'crab', text: 'The OLD Oak? *clicks* Hah — everyone forgets, but Mosswick remembers the first turn.' },
+      { who: 'crab', text: 'Off the very root you go WEST. One dot — ● — same as our short whistle. Busy roads, bright starts!' },
+      { who: 'pip', text: 'West. A dot. I’ll keep it.' },
+      { who: 'crab', text: 'Bramblebury keeps the next turn. Three forks in — go ask the quiet crab there.',
+        actions: [{ set: 'hw.sq1.t1' }] },
+    ],
+    'hw-moss-crab-told': [
+      { who: 'crab', text: 'First turn’s a dot — west! Bramblebury’s got the rest. Move along now, twenty-one of us!' },
+    ],
+    // Bramblebury (depth 3) keeps the SECOND turn: a circle — on up the trunk.
+    'hw-bramble-crab-wait': [
+      { who: 'crab', text: 'A turn for the Oak? *peers* I keep the SECOND one. Get Mosswick’s first — it comes before mine.' },
+    ],
+    'hw-bramble-crab-turn': [
+      { who: 'crab', text: 'So you’ve the dot from Mosswick. *nods slow* Then here’s the second turn of the old way.' },
+      { who: 'crab', text: 'After the dot, you keep ON up the trunk. A circle — ○ — the quieter child. Don’t branch off.' },
+      { who: 'pip', text: 'Dot, then circle. West, then straight on up.' },
+      { who: 'crab', text: 'Walk it where the trails first split, and the reading ends at the Oak’s own grove.',
+        actions: [{ set: 'hw.sq1.t2' }] },
+    ],
+    'hw-bramble-crab-told': [
+      { who: 'crab', text: 'Dot then circle. West, then on up the trunk. The Oak’s where the reading runs out.' },
+    ],
+    // discovery: walking onto the decoded grove tile with both turns in hand.
+    'hw-oak-found': [
+      { who: 'pip', text: '…Dot, then circle. West off the root, then on up. This is where the turns run out.' },
+      { who: 'pip', text: 'A great old stump, broader than the gate-stump — rings on rings. The First-Fork Oak.' },
+      { who: 'pip', text: 'The whole wood is its children. Every trail a branch; every village a leaf. *files it away*',
+        actions: [{ sfx: 'spark' }] },
     ],
 
     /* ----- Owl's End (depth 4) — side-quest giver ----- */
@@ -367,5 +482,44 @@ TTTTTTTTTTTTTTTTTTTTTT=TTTTTTTTTTTTTTTTTTTTTTTTTTTTT
     ],
   },
 });
+
+/* ---------------- Codex lore (Pip's field notes for Huffman Wood) ----------------
+   Registered after the island; codex.js loads before islands and exposes
+   G.codex.register. Each page unlocks on an hw.* flag and toasts on unlock. */
+if (G.codex && G.codex.register) {
+  // Unlocks when the wood's relay is lit (main quest done): the geography lesson.
+  G.codex.register({
+    id: 'lore.hw.tree-shaped', kind: 'lore', island: 'huffman-wood',
+    title: 'Why the wood grew tree-shaped',
+    body: 'The trails were never planned on paper — they grew the way Huff plans them: ' +
+      'join the two quietest first, then the next two, until one trunk reaches the dock. ' +
+      'So the map <i>is</i> a Huffman tree. Busy Mosswick sits one fork in; quiet Thistledown ' +
+      'four. Depth is code length, and the wood already minimised it before anyone could read.',
+    unlock: 'hw.done',
+    hint: 'Light the wood’s relay — set Huff’s plan and the signpost whistles.',
+  });
+  // Unlocks when the oldest-tree side quest completes.
+  G.codex.register({
+    id: 'lore.hw.first-fork-oak', kind: 'lore', island: 'huffman-wood',
+    title: 'The First-Fork Oak',
+    body: 'No one wrote down the way to the wood’s oldest tree — each village simply kept ' +
+      'one turn of it. Mosswick remembered a dot (west, a 0); Bramblebury a circle (on up the ' +
+      'trunk, a 1). Read in order, the remembered turns <b>are a codeword</b>, and walking that ' +
+      'codeword ends exactly at the Oak’s grove. A path through a tree and a string of bits are the same thing.',
+    unlock: 'hw.sq1.done',
+    hint: 'Gather the remembered turns from Mosswick and Bramblebury, then walk them out.',
+  });
+  // Unlocks on the hidden grove spark — the prefix-free idea, found early.
+  G.codex.register({
+    id: 'lore.hw.secret-short-path', kind: 'lore', island: 'huffman-wood',
+    title: 'The one short path kept secret',
+    body: 'The grove west-up-high holds a spark and a card: “for the one who looked west, up high.” ' +
+      'A short path spent on a quiet place is a small extravagance — the mirror of giving a long ' +
+      'whistle to a busy road. The wood teaches it both ways: short codes belong to the busy, and ' +
+      'every short code you spend is a short code some other traveller can no longer have.',
+    unlock: 'hw.secret.got',
+    hint: 'Find the sealed grove through the grass gap, west of Bramblebury.',
+  });
+}
 
 })();

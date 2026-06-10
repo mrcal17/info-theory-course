@@ -154,9 +154,17 @@ function showStep() {
   fullText = s.text || '';
   textEl.innerHTML = '';
   hintEl.style.display = 'none';
+  if (typeTimer) clearInterval(typeTimer);
+  var speed = (G.save && G.save.data && G.save.data.textSpeed) || 'normal';
+  if (speed === 'instant') {
+    textEl.textContent = fullText;
+    typing = false;
+    hintEl.style.display = '';
+    if (G.audio) G.audio.sfx('talk');
+    return;
+  }
   typing = true;
   var i = 0;
-  if (typeTimer) clearInterval(typeTimer);
   typeTimer = setInterval(function () {
     i++;
     textEl.textContent = fullText.slice(0, i);
@@ -166,7 +174,7 @@ function showStep() {
       typing = false;
       hintEl.style.display = '';
     }
-  }, 17);
+  }, speed === 'fast' ? 8 : 17);
 }
 
 function pickChoice(o) {

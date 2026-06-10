@@ -27,11 +27,23 @@ const G = global.G = global.window.G;
 load('js/core/tiles.js');
 load('js/core/map.js');
 
+// islands may register codex lore pages (js/codex.js loads before islands in
+// the real page); collect them here and sanity-check after the island loads.
+const codexRegs = [];
+G.codex = { register: e => codexRegs.push(e) };
+
 // real registered puzzle types from the puzzles dir
 const puzzleTypes = new Set(allowTypes);
 for (const f of fs.readdirSync(path.join(arch, 'js', 'puzzles'))) {
-  const m = fs.readFileSync(path.join(arch, 'js', 'puzzles', f), 'utf8').match(/G\.puzzles\.register\('([^']+)'/);
-  if (m) puzzleTypes.add(m[1]);
+  const src = fs.readFileSync(path.join(arch, 'js', 'puzzles', f), 'utf8');
+  const m = src.match(/G\.puzzles\.register\('([^']+)'/);
+  if (m) { puzzleTypes.add(m[1]); continue; }
+  // some puzzles register via a TYPE variable: var TYPE = 'noisy-bridge'; G.puzzles.register(TYPE, …)
+  const v = src.match(/G\.puzzles\.register\((\w+),/);
+  if (v) {
+    const decl = src.match(new RegExp('(?:var|const|let)\\s+' + v[1] + "\\s*=\\s*'([^']+)'"));
+    if (decl) puzzleTypes.add(decl[1]);
+  }
 }
 
 const MUSIC = new Set(['title', 'shore', 'dunes', 'forest', 'strait', 'caverns', 'spires', 'beacon', 'ending']);
@@ -179,6 +191,17 @@ ents.forEach((e, i) => {
   const reach = seen.has(e.x + ',' + e.y) ||
     [[0,1],[0,-1],[1,0],[-1,0]].some(([dx,dy]) => seen.has((e.x+dx) + ',' + (e.y+dy)));
   if (!reach) err(tag + ': not reachable from spawn');
+});
+
+// ---- codex lore registrations (optional) ----
+codexRegs.forEach((e, i) => {
+  const tag = 'codex#' + i + (e && e.id ? ' (' + e.id + ')' : '');
+  if (!e || !e.id || !e.title || !e.body) { err(tag + ': codex entry needs id/title/body'); return; }
+  if (e.kind !== 'lore') err(tag + ': island codex entries must be kind "lore"');
+  if (e.island !== expectId) err(tag + ': island field must be "' + expectId + '"');
+  const flags = Array.isArray(e.unlock) ? e.unlock : (e.unlock ? [e.unlock] : []);
+  if (!flags.length) err(tag + ': needs an unlock flag');
+  flags.forEach(f => { if (!f.startsWith(prefix + '.')) err(tag + ': unlock flag ' + f + ' must use prefix ' + prefix + '.'); });
 });
 
 console.log('--- validate ' + expectId + ' ---');

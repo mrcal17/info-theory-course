@@ -135,6 +135,14 @@ var STYLE = [
 '  background:transparent;color:var(--muted);font-family:inherit;font-size:.85rem;}',
 '.ui-seg button.on{background:var(--blue);color:#08111f;font-weight:700;}',
 '.ui-back{margin-top:1.1rem;}',
+'.ui-slider{flex:1 1 120px;max-width:190px;accent-color:var(--blue);min-height:40px;cursor:pointer;}',
+
+/* wardrobe */
+'.ui-ward{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin:.2rem 0 .7rem;}',
+'.ui-ward .ui-set-label{margin-right:.2rem;}',
+'.ui-ward-b{min-height:36px;padding:.25rem .6rem;border:1px solid var(--surface2);border-radius:9px;',
+'  background:transparent;color:var(--muted);font-family:inherit;font-size:.82rem;cursor:pointer;}',
+'.ui-ward-b.on{border-color:var(--purple);color:var(--purple);font-weight:700;}',
 
 /* ===== map chart ===== */
 '.ui-map .ui-panel{width:min(560px,100%);}',
@@ -345,15 +353,46 @@ G.ui.openMenu = function () {
 
   var stat = el('div', 'ui-stat');
   stat.appendChild(el('span', 'ui-chip', '✦ ' + sparkCount() + '/21'));
-  var hat = G.sparks && G.sparks.hat ? G.sparks.hat() : null;
+  var hat = G.sparks && G.sparks.wornHat ? G.sparks.wornHat() : null;
   if (hat) stat.appendChild(el('span', 'ui-chip ui-hat', hatLabel(hat)));
   panel.appendChild(stat);
+
+  /* wardrobe: pick any earned hat (appears once the first hat is earned) */
+  var earned = (G.sparks && G.sparks.unlockedHats) ? G.sparks.unlockedHats() : [];
+  if (earned.length) {
+    var ward = el('div', 'ui-ward');
+    ward.appendChild(el('span', 'ui-set-label', 'Wardrobe'));
+    var opts = [{ id: 'auto', label: 'Auto' }, { id: 'none', label: 'None' }]
+      .concat(earned.map(function (h) { return { id: h, label: hatLabel(h) }; }));
+    var cur = G.sparks.hatChoice();
+    opts.forEach(function (o) {
+      var b = el('button', 'ui-ward-b' + (cur === o.id ? ' on' : ''), o.label);
+      b.addEventListener('click', function () {
+        sfx('select');
+        G.sparks.setHatChoice(o.id);
+        Array.prototype.forEach.call(ward.querySelectorAll('.ui-ward-b'), function (c) { c.classList.remove('on'); });
+        b.classList.add('on');
+        var worn = G.sparks.wornHat();
+        var chips = stat.querySelector('.ui-hat');
+        if (chips) chips.remove();
+        if (worn) stat.appendChild(el('span', 'ui-chip ui-hat', hatLabel(worn)));
+      });
+      ward.appendChild(b);
+    });
+    panel.appendChild(ward);
+  }
 
   var menu = el('div', 'ui-menu');
   menu.appendChild(btn('Resume', 'ui-btn-primary', resumeFromMenu));
   menu.appendChild(btn('Archipelago map', '', function () {
     closeMenu(); G.ui.openMapScreen(); // map manages its own state
   }));
+  if (G.ui.openCodex) {
+    var cdxCount = (G.codex && G.codex.count) ? G.codex.count() : null;
+    menu.appendChild(btn('Field notes' + (cdxCount ? ' · ' + cdxCount.unlocked + '/' + cdxCount.total : ''), '', function () {
+      closeMenu(); G.ui.openCodex();
+    }));
+  }
   menu.appendChild(btn('Settings', '', function () { openSettings('menu'); }));
   menu.appendChild(btn('Save & quit to title', '', function () {
     sfx('select'); closeMenu();
@@ -398,6 +437,20 @@ function openSettings(origin) {
   panel.appendChild(toggleRow('Sound', [
     { label: 'On', on: sndOn, click: function () { setSound(true); } },
     { label: 'Off', on: !sndOn, click: function () { setSound(false); } },
+  ]));
+
+  /* volumes (only meaningful while sound is on) */
+  panel.appendChild(sliderRow('Music volume', G.audio && G.audio.getVolume ? G.audio.getVolume('music') : 1,
+    function (v) { if (G.audio && G.audio.setVolume) G.audio.setVolume('music', v); }));
+  panel.appendChild(sliderRow('Effects volume', G.audio && G.audio.getVolume ? G.audio.getVolume('sfx') : 1,
+    function (v) { if (G.audio && G.audio.setVolume) G.audio.setVolume('sfx', v); sfx('select'); }));
+
+  /* text speed */
+  var tspeed = (G.save && G.save.data && G.save.data.textSpeed) || 'normal';
+  panel.appendChild(toggleRow('Text speed', [
+    { label: 'Normal', on: tspeed === 'normal', click: function () { setTextSpeed('normal'); } },
+    { label: 'Fast', on: tspeed === 'fast', click: function () { setTextSpeed('fast'); } },
+    { label: 'Instant', on: tspeed === 'instant', click: function () { setTextSpeed('instant'); } },
   ]));
 
   /* d-pad */
@@ -456,6 +509,26 @@ function toggleRow(label, opts) {
   });
   row.appendChild(seg);
   return row;
+}
+
+function sliderRow(label, value, onInput) {
+  var row = el('div', 'ui-set-row');
+  row.appendChild(el('span', 'ui-set-label', label));
+  var s = el('input', 'ui-slider');
+  s.type = 'range';
+  s.min = 0; s.max = 100; s.step = 5;
+  s.value = Math.round((value == null ? 1 : value) * 100);
+  s.setAttribute('aria-label', label);
+  s.addEventListener('input', function () { onInput(s.value / 100); });
+  row.appendChild(s);
+  return row;
+}
+
+function setTextSpeed(v) {
+  try {
+    if (G.save && G.save.data) G.save.data.textSpeed = v;
+    if (G.save && G.save.persist) G.save.persist();
+  } catch (e) {}
 }
 
 function setSound(on) {

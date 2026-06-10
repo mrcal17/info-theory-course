@@ -69,7 +69,10 @@ G.islands.register({
     { id: 'st-ada', type: 'npc', x: 20, y: 29, sprite: 'ada', dir: 's',
       dialogue: [
         { ifNotFlag: 'st.charm1.done', use: 'st-ada-charm' },
-        { ifFlag: 'st.done', use: 'st-ada-done' },
+        { ifFlag: 'st.sq1.start', ifNotFlag: 'st.sq1.done', use: 'st-ada-lamp' },
+        { ifFlag: 'st.done', ifNotFlag: 'st.sq1.done', use: 'st-ada-done' },
+        { ifFlag: 'st.done', use: 'st-ada-done2' },
+        { ifFlag: 'st.charm1.done', ifNotFlag: 'st.bridge.done', use: 'st-ada-mid' },
         { use: 'st-ada-after' },
       ] },
     { id: 'st-ada-bird', type: 'prop', x: 22, y: 29, sprite: 'gullsmall', solid: false,
@@ -105,6 +108,24 @@ G.islands.register({
     { id: 'st-sign-dock', type: 'sign', x: 17, y: 35,
       text: 'Dock of the Three Lights. South to Huffman Wood. North, the lighthouses — if they ever relight.' },
 
+    /* Ambient flavor — charm rack, tide marks, side-quest notice board. */
+    { id: 'st-charm-rack', type: 'prop', x: 28, y: 31, sprite: 'sign', solid: true,
+      text: ['CHARM RACK. Spare parity chips, sorted by colour: red for Ada, green',
+             'for Bea, blue for Cee. Take one, leave the count even. Always even.'] },
+    { id: 'st-tide-mark', type: 'sign', x: 29, y: 29,
+      text: ['TIDE MARKS, scratched in the rock: ▔▔ spring · ▔ neap · ▁ the night',
+             'the lights went dark. The tide leaves things on the ledge east of here.'] },
+    { id: 'st-sign-lamps', type: 'sign', x: 13, y: 26,
+      text: ['HARBOUR NOTICE: the storm scattered our three signal lamps. Until each',
+             'sister’s window-count comes out EVEN again, none of them will burn. Ask us.'] },
+
+    /* Side-quest signal lamps (one per islet). Dark until the parity riddle is
+       solved, then all three burn. Optional — never gate the main path. */
+    { id: 'st-lamp-ada-off', type: 'prop', x: 15, y: 29, sprite: 'beacon-off', ifNotFlag: 'st.sq1.done',
+      text: 'Ada’s red signal lamp — cold and dark. The storm knocked it off true.' },
+    { id: 'st-lamp-ada-on',  type: 'prop', x: 15, y: 29, sprite: 'beacon-on',  ifFlag: 'st.sq1.done',
+      text: 'Ada’s red signal lamp, burning steady. Its count came out even at last.' },
+
     /* Hidden spark on the wave-cut shallow ledge east of Ada's light. */
     { id: 'st-spark-ledge', type: 'item', x: 31, y: 28, gives: 'spark',
       flag: 'st.spark.got', ifNotFlag: 'st.spark.got' },
@@ -114,6 +135,9 @@ G.islands.register({
       dialogue: [
         { ifFlag: 'st.bottle.got', ifNotFlag: 'st.bottle.done', use: 'st-bea-bottle' },
         { ifNotFlag: 'st.bridge.done', use: 'st-bea-bridge' },
+        { ifNotFlag: 'st.sq1.start', use: 'st-bea-lamp' },
+        { ifNotFlag: 'st.sq1.done', use: 'st-bea-lamp-wait' },
+        { ifFlag: 'st.done', use: 'st-bea-done2' },
         { ifFlag: 'st.done', use: 'st-bea-done' },
         { use: 'st-bea-after' },
       ] },
@@ -132,12 +156,21 @@ G.islands.register({
       text: ['BOARDWALK SAFETY: never trust a single plank. Lay three; if two of',
              'the three hold, the deck holds. When in doubt, lay five. — Sister Bea'] },
 
+    /* Bea's scattered signal lamp. */
+    { id: 'st-lamp-bea-off', type: 'prop', x: 25, y: 17, sprite: 'beacon-off', ifNotFlag: 'st.sq1.done',
+      text: 'Bea’s green signal lamp, dark. She keeps glancing at it between gusts.' },
+    { id: 'st-lamp-bea-on',  type: 'prop', x: 25, y: 17, sprite: 'beacon-on',  ifFlag: 'st.sq1.done',
+      text: 'Bea’s green signal lamp, lit. "Told you the parity would close," she mutters.' },
+
     /* ================= CEE — north islet (blue), the stone relay ================= */
     { id: 'st-cee', type: 'npc', x: 20, y: 9, sprite: 'cee', dir: 'n',
       dialogue: [
         { ifNotFlag: 'st.charm2.done', use: 'st-cee-charm' },
         { ifNotFlag: 'st.lock.done', use: 'st-cee-lock' },
-        { ifFlag: 'st.done', use: 'st-cee-done' },
+        { ifFlag: 'st.sq1.clue', ifNotFlag: 'st.sq1.done', use: 'st-cee-lamp' },
+        { ifFlag: 'st.sq1.start', ifNotFlag: 'st.sq1.clue', use: 'st-cee-lamp-need' },
+        { ifFlag: 'st.done', ifNotFlag: 'st.sq1.done', use: 'st-cee-done' },
+        { ifFlag: 'st.done', use: 'st-cee-done2' },
         { use: 'st-cee-after' },
       ] },
     { id: 'st-cee-bird', type: 'prop', x: 22, y: 9, sprite: 'gullsmall', solid: false,
@@ -159,6 +192,12 @@ G.islands.register({
 
     { id: 'st-sign-relay', type: 'sign', x: 18, y: 9,
       text: 'THE RELAY: four words go in, three charms guard them, the storm flips but one. Read the rings.' },
+
+    /* Cee's scattered signal lamp — the one jammed alight (the riddle's fixed bit). */
+    { id: 'st-lamp-cee-off', type: 'prop', x: 24, y: 8, sprite: 'beacon-off', ifNotFlag: 'st.sq1.done',
+      text: 'Cee’s blue signal lamp. Its switch is salt-jammed — it will only ever read LIT.' },
+    { id: 'st-lamp-cee-on',  type: 'prop', x: 24, y: 8, sprite: 'beacon-on',  ifFlag: 'st.sq1.done',
+      text: 'Cee’s blue signal lamp, lit — as it was stuck doing all along.' },
 
     /* Beacon-lighting trigger in the innermost sanctum (fires once both relay
        doors are open but before the lights are lit). */
@@ -224,6 +263,18 @@ G.islands.register({
       { who: 'ada', text: 'My ring matters most, of course. Mine carries the message itself. Bea and Cee only guard it.' },
       { who: 'ada', text: 'Don’t tell them I said so. Actually — do. It’ll make a lovely argument.' },
     ],
+    /* mid-progress: charm earned, bridge not yet — Ada concedes Bea's turn. */
+    'st-ada-mid': [
+      { who: 'ada', text: 'You set my charm clean three crossings running. Earned, not lucky — I can tell the difference.' },
+      { who: 'ada', text: 'Bea’s next, up the boardwalk. She’ll grumble that one charm is a parlour trick. She’s not wrong, exactly.' },
+      { who: 'ada', text: 'I catch the flip; she outvotes it; Cee names it. Three of us, each checking the other two. Go on.' },
+    ],
+    /* post-completion variant once the side-quest is also done. */
+    'st-ada-done2': [
+      { who: 'ada', text: 'Lights lit AND the signal lamps even again. The harbour hasn’t looked this honest in years.' },
+      { who: 'ada', text: 'Bea says you read my parity like you’d set it yourself. From her, that’s a parade.' },
+      { who: 'ada', text: 'My ring still matters most, mind. But I’ll allow the three of us together matter more. Once.' },
+    ],
 
     'st-soaked-talk': [
       { who: 'gullsmall', text: 'Soaked to the feathers. Don’t mind me — I just cling to the post and watch the sisters bicker.' },
@@ -269,6 +320,12 @@ G.islands.register({
       { who: 'bea', text: 'MY ring matters most. Ada’s message would drown without copies; Cee’s cleverness is just bookkeeping atop mine.' },
       { who: 'bea', text: 'She’ll say the opposite. She’s wrong — but say hello.' },
     ],
+    /* post-completion variant once the side-quest is also done. */
+    'st-bea-done2': [
+      { who: 'bea', text: 'Three lights, three lamps, all squared away. You’re the first courier in a long while to balance the lot.' },
+      { who: 'bea', text: 'I told Ada you earned her charm. She pretended not to care. She cared.' },
+      { who: 'bea', text: 'We’re a vote of three, the sisters — any one of us drifts, the other two outvote her back to true. Family parity.' },
+    ],
 
     /* ====================== CEE ====================== */
     'st-cee-charm': [
@@ -313,6 +370,69 @@ G.islands.register({
       { who: 'cee', text: 'MY ring matters most, naturally. Anyone can shout a message twice. I tell you exactly which letter the storm lied about.' },
       { who: 'cee', text: 'Ada says the message, Bea says the copies. I say: a single charm is cheap, and three of them are a miracle.' },
     ],
+    /* post-completion variant once the side-quest is also done. */
+    'st-cee-done2': [
+      { who: 'cee', text: 'You closed the lamp parity from two clues and a stuck switch. That’s syndrome thinking, courier. I’m almost proud.' },
+      { who: 'cee', text: 'The three of us are a code on each other: scatter one sister’s count and the other two pin exactly which drifted.' },
+      { who: 'cee', text: 'My ring still matters most. But don’t quote me to Ada — she’ll demand a recount.' },
+    ],
+
+    /* ====================== SIDE QUEST: the scattered signal lamps ======================
+       Optional. Each sister's lighthouse-window count must read EVEN. The storm
+       scattered three coloured signal lamps; Cee's is salt-jammed permanently LIT.
+       Each sister checks the OTHER TWO lamps (a parity check on each other):
+         Ada even  ⟺  Bea + Cee  even
+         Bea even  ⟺  Ada + Cee  even
+         Cee even  ⟺  Ada + Bea  even   (Cee's own switch is stuck at LIT = 1)
+       Bea gives the player one constraint (start), Ada gives the second (clue);
+       with Cee = 1 fixed, both remaining constraints force Ada = Bea = LIT, so the
+       third lamp's state is DEDUCED, not told. Cee holds the board; the correct
+       choice sets st.sq1.done. Wrong choices hint and let the player retry. NO sparks.
+       All flags under st.sq1.* — never touches the door/puzzle flags. */
+    'st-bea-lamp': [
+      { who: 'bea', text: 'Now you’re across — a favour, if you’ve the patience. The storm flung our three signal lamps off true.' },
+      { who: 'pip', text: 'Signal lamps?' },
+      { who: 'bea', text: 'Little coloured beacons, one each. Harbour rule: every sister’s window-count must read EVEN, or her lamp won’t hold.' },
+      { who: 'bea', text: 'Here’s my check: MY count goes even only when Ada’s lamp and Cee’s lamp sum even. I watch the other two, never my own.' },
+      { who: 'bea', text: 'And Cee’s switch is salt-jammed — stuck LIT, can’t be doused. Carry that to Ada; she’ll give you the second check.' },
+      { actions: [{ set: 'st.sq1.start' }, { sfx: 'select' }] },
+    ],
+    'st-bea-lamp-wait': [
+      { who: 'bea', text: 'Got my check? Ada’s lamp plus Cee’s must sum even. Get Ada’s rule too, then Cee’ll let you set the board.' },
+      { who: 'bea', text: 'Remember Cee’s is jammed lit. With a stuck 1 in the sum, the even rule decides the rest for you.' },
+    ],
+    'st-ada-lamp': [
+      { who: 'ada', text: 'Bea sent you about the lamps. Good. Here’s MY check, and mine alone watches the other two:' },
+      { who: 'ada', text: 'My window-count reads even only when Bea’s lamp and Cee’s lamp sum even. That’s the whole of it.' },
+      { who: 'pip', text: 'And Cee’s is stuck lit — so for your sum to be even, Bea’s lamp must be lit too.' },
+      { who: 'ada', text: 'Quick courier. Hold that thread. Take both checks to Cee at the relay — her board sets all three at once.' },
+      { actions: [{ set: 'st.sq1.clue' }, { sfx: 'select' }] },
+    ],
+    'st-cee-lamp-need': [
+      { who: 'cee', text: 'The lamp board? I’ll open it once you’ve BOTH sisters’ checks. Bea gave you one. Ada has the other — go on.' },
+    ],
+    'st-cee-lamp': [
+      { who: 'cee', text: 'Both checks in hand. The board sets Ada’s and Bea’s lamps; mine’s jammed LIT and won’t budge. Reason it out.' },
+      { who: 'cee', text: 'Bea’s rule: Ada + Cee even. Ada’s rule: Bea + Cee even. With my lamp a fixed 1, what must Ada’s and Bea’s be?' },
+      { choice: [
+        { label: 'Light BOTH Ada’s and Bea’s lamps.', goto: 'st-cee-lamp-win' },
+        { label: 'Light only Ada’s lamp.', goto: 'st-cee-lamp-miss' },
+        { label: 'Light only Bea’s lamp.', goto: 'st-cee-lamp-miss' },
+        { label: 'Leave both dark.', goto: 'st-cee-lamp-miss' },
+        { label: 'Let me think on it.', end: true },
+      ] },
+    ],
+    'st-cee-lamp-miss': [
+      { who: 'cee', text: 'No — a count goes odd. Take Bea’s rule: Ada + Cee even, and Cee = 1. An odd partner can’t make an even sum.' },
+      { who: 'cee', text: 'So Ada’s lamp must be 1. Run the same on Ada’s rule for Bea. Then both are forced. Try the board again.' },
+    ],
+    'st-cee-lamp-win': [
+      { who: 'cee', text: 'There. Cee = 1 fixed, so Ada = 1 and Bea = 1 to make every sum even. All three lamps — lit.' },
+      { who: 'pip', text: 'Two checks pinned the third lamp without anyone telling me its state.' },
+      { who: 'cee', text: 'That’s the trick of three. Scatter any one sister’s count and the other two name exactly which drifted.' },
+      { who: 'cee', text: 'We are a parity check on each other, courier. Always have been. The lamps just make it visible.' },
+      { actions: [{ set: 'st.sq1.done' }, { sfx: 'beacon' }, { quake: 250 }, { focus: { x: 15, y: 29 } }] },
+    ],
 
     /* ====================== beacon-lighting sequence ====================== */
     'st-lighting': [
@@ -342,5 +462,43 @@ G.islands.register({
     { ifFlag: 'game.finished', goto: 'st-postgame' },
   ],
 });
+
+/* ---------------- codex lore (Pip's field notes for the Static Strait) ----------------
+   Unlocked by st.* quest flags. kind:'lore', island:'strait'. codex.js loads
+   before islands, so G.codex is present; guard anyway for stub loaders. */
+if (G.codex && G.codex.register) {
+  G.codex.register({
+    id: 'lore.st.lamps', kind: 'lore', island: 'strait',
+    title: 'The harbour of squared accounts', icon: '🏮',
+    unlock: 'st.sq1.done',
+    body: 'Three signal lamps, and a rule older than the lights: every sister’s ' +
+      'window-count must read <b>even</b>. Each sister checks only the <i>other two</i> ' +
+      'lamps — never her own — so one stuck switch and two even-checks pin the rest ' +
+      'with no guessing. A scattered count never hides for long when three keepers ' +
+      'count each other.',
+    hint: 'Relight the scattered signal lamps for the Parity Sisters.' });
+
+  G.codex.register({
+    id: 'lore.st.sisters', kind: 'lore', island: 'strait',
+    title: 'Three sisters, one parity check', icon: '🕯️',
+    unlock: 'st.done',
+    body: 'Ada catches a flip, Bea outvotes it, Cee names it — but the deeper trick ' +
+      'is that the sisters are a code <i>on each other</i>. Let any one drift and the ' +
+      'other two, frowning together, point straight at her. Triplet redundancy isn’t ' +
+      'three copies of a message; it’s three keepers refusing to let one quietly lie. ' +
+      'That, Pip notes, is just family.',
+    hint: 'Relight all three lighthouses of the Static Strait.' });
+
+  G.codex.register({
+    id: 'lore.st.eatswords', kind: 'lore', island: 'strait',
+    title: 'Why the strait ate words', icon: '🌧️',
+    unlock: 'st.charm1.done',
+    body: 'The strait was never malicious — only <b>noisy</b>. A bottle sent bare ' +
+      'loses a letter to the wind and arrives as nonsense; a bottle sent with even ' +
+      'one parity charm arrives <i>knowing</i> it was bitten. The fix for a hungry ' +
+      'channel was never a quieter sea. It was speaking so the sea couldn’t swallow ' +
+      'you whole.',
+    hint: 'Learn Ada’s single parity charm at the south light.' });
+}
 
 })();

@@ -85,6 +85,30 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       flag: 'ec.echo.heard',
       actions: [{ sfx: 'talk' }, { goto: 'ec-echo-echoes' }] },
 
+    /* ---- SIDE QUEST (ec.sq1.*): the twins' echo survey. Three marked listening
+       posts ring the rotunda; the player interacts to "listen". Two chambers
+       echo back a repeat (compressible); one — the deep east shelf — answers
+       only once (incompressible). Report the silent one to Lem & Ziv. The posts
+       are props so interact runs their dialogue (which sets the spot flag). ---- */
+    { id: 'ec-survey-sign', type: 'sign', x: 16, y: 7,
+      text: ['ECHO SURVEY (Lem & Ziv): listen at all three carved posts.',
+             'Two halls hand your call back; one keeps it. Find the hall that does not repeat.'] },
+    { id: 'ec-post-north', type: 'prop', x: 28, y: 5, sprite: 'sign',
+      dialogue: [
+        { ifFlag: 'ec.sq1.done', use: 'ec-post-north-done' },
+        { use: 'ec-post-north-listen' },
+      ] },
+    { id: 'ec-post-west', type: 'prop', x: 19, y: 9, sprite: 'sign',
+      dialogue: [
+        { ifFlag: 'ec.sq1.done', use: 'ec-post-west-done' },
+        { use: 'ec-post-west-listen' },
+      ] },
+    { id: 'ec-post-east', type: 'prop', x: 31, y: 13, sprite: 'sign',
+      dialogue: [
+        { ifFlag: 'ec.sq1.done', use: 'ec-post-east-done' },
+        { use: 'ec-post-east-listen' },
+      ] },
+
     /* ---- relay-waker: exists only after the VAULT is sealed; its set fires
        only when the GALLERY is also sealed. No once-flag, so it re-fires
        harmlessly until both are true, regardless of completion order. The tile
@@ -92,18 +116,32 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
     { id: 'ec-done-trigger', type: 'trigger', x: 12, y: 6, ifFlag: 'ec.vault.done',
       actions: [{ ifFlag: 'ec.gallery1.done', set: 'ec.done' }] },
 
+    /* ---- ambient flavor: glyph fragments, a stamp rack, echo warnings ---- */
+    { id: 'ec-glyph-frag', type: 'sign', x: 17, y: 12,
+      text: 'A glyph fragment, chiselled then abandoned: "MO— MO— (rest worn away)".' },
+    { id: 'ec-stamp-rack', type: 'prop', x: 31, y: 5, sprite: 'stamp', solid: true,
+      text: 'A rack of finished stamps, each a hallway carved once. The diggers re-press, never re-carve.' },
+    { id: 'ec-echo-warn', type: 'sign', x: 24, y: 13,
+      text: 'CAUTION: the rotunda answers thrice. Do not mistake a copy for fresh news.' },
+
     /* ---- GATE DEEP: mastery door (spark 1), off the rotunda's east wall ---- */
     { id: 'ec-plaque-deep', type: 'sign', x: 33, y: 11,
       text: 'DEEP GALLERY — NANANANANA. one long stamp beats two short ones.' },
     { id: 'ec-gate-deep', type: 'door', x: 34, y: 10, sprite: 'runedoor',
       puzzle: { type: 'stamp-carver', config: { pattern: 'nananananabnananana', parCost: 11 } },
       flag: 'ec.deep.done', sparks: 1, ifNotFlag: 'ec.deep.done',
-      lockedText: 'A tighter wall: nananananabnananana. The repeat repeats — a stamp can live inside a stamp.' },
+      lockedText: 'A tighter wall: nananananabnananana. Carve the whole refrain once — press it again and again.' },
 
     /* ---- Lem & Ziv's dig camp (central lower room) ---- */
+    /* Both twins share one selector. Order = most-specific first (first match
+       wins). The side-quest branches (ec.sq1.*) sit above the main-progress
+       branches but only resolve while the survey is live and unfinished. */
     { id: 'ec-lem', type: 'npc', x: 20, y: 22, sprite: 'lem',
       dialogue: [
         { ifFlag: 'game.finished', use: 'ec-twins-postgame' },
+        { ifFlag: 'ec.done', use: 'ec-twins-done' },
+        { ifFlag: 'ec.sq1.start', use: 'ec-twins-sq1' },
+        { ifFlag: 'ec.deep.done', use: 'ec-twins-deep-done' },
         { ifFlag: 'ec.vault.done', use: 'ec-twins-vault-done' },
         { ifFlag: 'ec.gallery1.done', use: 'ec-twins-vault-set' },
         { ifFlag: 'ec.met-twins', use: 'ec-twins-again' },
@@ -112,6 +150,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
     { id: 'ec-ziv', type: 'npc', x: 22, y: 22, sprite: 'ziv',
       dialogue: [
         { ifFlag: 'game.finished', use: 'ec-twins-postgame' },
+        { ifFlag: 'ec.done', use: 'ec-twins-done' },
+        { ifFlag: 'ec.sq1.start', use: 'ec-twins-sq1' },
+        { ifFlag: 'ec.deep.done', use: 'ec-twins-deep-done' },
         { ifFlag: 'ec.vault.done', use: 'ec-twins-vault-done' },
         { ifFlag: 'ec.gallery1.done', use: 'ec-twins-vault-set' },
         { ifFlag: 'ec.met-twins', use: 'ec-twins-again' },
@@ -188,6 +229,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
     'ec-twins-again': [
       { who: 'lem', text: '"see a repeat, carve a stamp—"' },
       { who: 'ziv', text: '"—press it each time it comes back. that\'s the whole job."' },
+      { ifNotFlag: 'ec.sq1.done', who: 'lem', text: '"oh — do us a favour? we ran an echo survey of the—"' },
+      { ifNotFlag: 'ec.sq1.done', who: 'ziv', text: '"—rotunda. three carved posts. listen at each, then tell us which hall did NOT repeat."' },
     ],
     'ec-twins-vault-set': [
       { who: 'lem', text: '"gallery\'s open — good. now the hard one, the—"' },
@@ -195,13 +238,90 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       { who: 'lem', text: '"—repeat anywhere. you\'ll try to stamp it and—"' },
       { who: 'ziv', text: '"—fail, and that failing IS the answer. pull the lever."' },
     ],
-    'ec-twins-vault-done': [
-      { who: 'lem', text: '"you sealed the vault. some things are exactly as long—"' },
-      { who: 'ziv', text: '"—as themselves. that\'s how you know they\'re full."' },
-    ],
     'ec-twins-postgame': [
       { who: 'lem', text: '"network\'s lit again. and we never carved the same beam—"' },
       { who: 'ziv', text: '"—twice. waste not, courier. waste not."' },
+    ],
+
+    /* ---- post-completion: gallery AND vault both sealed (ec.done), before the
+       finale. Two split-sentence variants so the twins stay in voice. ---- */
+    'ec-twins-done': [
+      { ifNotFlag: 'ec.deep.done', who: 'lem', text: '"relay\'s lit — felt the hum from down here. you sealed the long hall and the—"' },
+      { ifNotFlag: 'ec.deep.done', who: 'ziv', text: '"—Patternless Vault. one repeats, one refuses. you read them both right."' },
+      { ifFlag: 'ec.deep.done', who: 'lem', text: '"gallery, vault, AND the deep wall — the whole cavern hums now. you carve like a—"' },
+      { ifFlag: 'ec.deep.done', who: 'ziv', text: '"—mole, courier. high praise. now go, the Spires won\'t carve themselves."' },
+      { who: 'lem', text: '"remember the rule, wherever the boat takes you—"' },
+      { who: 'ziv', text: '"—see a repeat, carve it once. that\'s the whole of it."' },
+    ],
+
+    /* ---- mid-progress: vault sealed but the deep gallery still uncarved ---- */
+    'ec-twins-vault-done': [
+      { who: 'lem', text: '"you sealed the vault. some things are exactly as long—"' },
+      { who: 'ziv', text: '"—as themselves. that\'s how you know they\'re full."' },
+      { ifNotFlag: 'ec.deep.done', who: 'lem', text: '"one wall left, if you\'re greedy — the Deep Gallery, off the—"' },
+      { ifNotFlag: 'ec.deep.done', who: 'ziv', text: '"—rotunda\'s east. NANANANA, a stamp tucked inside a stamp. tighter than tight."' },
+    ],
+    'ec-twins-deep-done': [
+      { who: 'lem', text: '"the deep wall too! a stamp inside a stamp — you found the—"' },
+      { who: 'ziv', text: '"—nesting. that\'s the spark you\'re holding. now just wake the relay."' },
+    ],
+
+    /* ---- SIDE QUEST dialogues (ec.sq1.*) ---- */
+    'ec-twins-sq1': [
+      /* not all three heard yet: nudge */
+      { ifNotFlag: 'ec.sq1.heardN', who: 'lem', text: '"survey\'s not done — three posts ring the rotunda, you\'ve missed—"' },
+      { ifNotFlag: 'ec.sq1.heardN', who: 'ziv', text: '"—the north shelf. stand at the carved post and listen."' },
+      { ifFlag: 'ec.sq1.heardN', ifNotFlag: 'ec.sq1.heardW', who: 'lem', text: '"north\'s logged. still need the—"' },
+      { ifFlag: 'ec.sq1.heardN', ifNotFlag: 'ec.sq1.heardW', who: 'ziv', text: '"—west post. go on, we\'ll wait."' },
+      { ifFlag: 'ec.sq1.heardW', ifNotFlag: 'ec.sq1.heardE', who: 'lem', text: '"two down. the deep east shelf\'s the last—"' },
+      { ifFlag: 'ec.sq1.heardW', ifNotFlag: 'ec.sq1.heardE', who: 'ziv', text: '"—post. listen close out there. it\'s a strange one."' },
+      /* all three heard: ask which hall did NOT repeat */
+      { ifFlag: 'ec.sq1.heardE', who: 'lem', text: '"all three posts logged! so — which hall kept your call—"' },
+      { ifFlag: 'ec.sq1.heardE', who: 'ziv', text: '"—instead of handing it back? the one that did NOT repeat."' },
+      { ifFlag: 'ec.sq1.heardE', choice: [
+        { label: 'The north shelf.', goto: 'ec-sq1-wrong' },
+        { label: 'The west post.', goto: 'ec-sq1-wrong' },
+        { label: 'The deep east shelf.', goto: 'ec-sq1-right' },
+      ] },
+    ],
+    'ec-sq1-wrong': [
+      { who: 'lem', text: '"no — that one came back. you HEARD it twice. think which—"' },
+      { who: 'ziv', text: '"—had nothing to give back. listen again if you must."' },
+    ],
+    'ec-sq1-right': [
+      { who: 'lem', text: '"the deep east! right. it answered once and kept the rest—"' },
+      { who: 'ziv', text: '"—because there was no pattern in it to echo. nothing to repeat."' },
+      { who: 'lem', text: '"a hall with no repeat can\'t be carved short. that\'s the—"' },
+      { who: 'ziv', text: '"—incompressible one. like the vault." (Lem rounds on Ziv.) "—which YOU mismarked on the map—"' },
+      { who: 'lem', text: '"—I mismarked? you\'re the one who chiselled the post facing the wrong—"' },
+      { who: 'ziv', text: '"—wall! ...ahem. take this for settling it, courier."' },
+      { actions: [{ set: 'ec.sq1.done' }, { clear: 'ec.sq1.start' }, { sfx: 'spark' }] },
+    ],
+
+    /* ---- listening posts (props; interact = "listen"). Two echo, one is silent ---- */
+    'ec-post-north-listen': [
+      { who: 'sign', text: '(you call into the north shelf) — north shelf… north shelf… north shelf…' },
+      { who: 'pip', text: 'It came back. A repeat — I only needed the first.' },
+      { actions: [{ set: 'ec.sq1.start' }, { set: 'ec.sq1.heardN' }, { sfx: 'talk' }] },
+    ],
+    'ec-post-west-listen': [
+      { who: 'sign', text: '(you call into the west hall) — west hall… west hall… west hall…' },
+      { who: 'pip', text: 'Three copies again. Nothing new after the first.' },
+      { actions: [{ set: 'ec.sq1.start' }, { set: 'ec.sq1.heardW' }, { sfx: 'talk' }] },
+    ],
+    'ec-post-east-listen': [
+      { who: 'sign', text: '(you call into the deep east shelf) — …east shelf.' },
+      { who: 'pip', text: 'Just once. No echo. This hall keeps everything it is.' },
+      { actions: [{ set: 'ec.sq1.start' }, { set: 'ec.sq1.heardE' }, { sfx: 'talk' }] },
+    ],
+    'ec-post-north-done': [
+      { who: 'sign', text: 'north shelf… north shelf… north shelf… (logged: repeats).' },
+    ],
+    'ec-post-west-done': [
+      { who: 'sign', text: 'west hall… west hall… west hall… (logged: repeats).' },
+    ],
+    'ec-post-east-done': [
+      { who: 'sign', text: '…east shelf. (logged: incompressible — the one that does not repeat).' },
     ],
 
     /* ---- crab miner ---- */
@@ -221,6 +341,42 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
   onEnter: [
     { ifNotFlag: 'ec.intro', goto: 'ec-onenter-intro' },
   ],
+});
+
+/* ---------------- codex lore (Echo Caverns) ---------------- */
+
+G.codex.register({
+  id: 'lore.ec.echo-survey', kind: 'lore', island: 'caverns',
+  title: 'The Survey of Three Halls',
+  unlock: 'ec.sq1.done',
+  body: 'Lem and Ziv had me call into three rotunda halls. Two handed my voice ' +
+    'straight back — three copies, no new word after the first; cheap to write ' +
+    'down, because a repeat is free. The deep east shelf answered once and kept ' +
+    'the rest. <b>A hall with nothing to repeat cannot be carved short.</b> ' +
+    '(They are still arguing over who mismarked the map.)',
+  hint: 'Run the twins\' echo survey: listen at all three carved posts.',
+});
+
+G.codex.register({
+  id: 'lore.ec.patternless-vault', kind: 'lore', island: 'caverns',
+  title: 'Legend of the Patternless Vault',
+  unlock: 'ec.done',
+  body: 'The diggers say the Vault wall was struck once by something with no habits ' +
+    'at all — fourteen marks, no two stretches alike, no echo anywhere in it. ' +
+    'You cannot stamp it, cannot shorten it; <b>it is exactly as long as itself.</b> ' +
+    'That is how the moles know a wall is full: when honesty is the only carving left.',
+  hint: 'Seal the gallery and the vault, then wake the cavern relay.',
+});
+
+G.codex.register({
+  id: 'lore.ec.lem-and-ziv', kind: 'lore', island: 'caverns',
+  title: 'How the Twins Dig',
+  unlock: 'ec.met-twins',
+  body: 'Lem starts a sentence and Ziv finishes it — they say a hallway works the ' +
+    'same way. See a corridor you have dug before? Do not re-chisel it: carve a ' +
+    '<i>stamp</i> once and press it each time the pattern returns. <b>A second copy ' +
+    'of anything is free.</b> The whole cavern is dug this way, and that is exactly Lempel and Ziv.',
+  hint: 'Meet Lem & Ziv at the dig camp below the rotunda.',
 });
 
 })();

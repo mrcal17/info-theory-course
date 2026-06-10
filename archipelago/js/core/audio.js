@@ -34,6 +34,15 @@ var actx = null;          // the AudioContext (or null until first sound)
 var master = null;        // final gain -> destination
 var masterFilter = null;  // global lowpass, keeps chiptune voices soft
 var sfxBus = null;        // all sfx route here
+var musicBus = null;      // all music decks route here (user music volume)
+
+// persisted user volume (0..1) for 'music' / 'sfx'; default full
+function volPref(kind) {
+  try {
+    var v = G.save.data[kind + 'Vol'];
+    return (typeof v === 'number' && v >= 0 && v <= 1) ? v : 1;
+  } catch (e) { return 1; }
+}
 var delay = null;         // feedback delay (space send)
 var delayFb = null;       // delay feedback gain
 var delayFilt = null;     // lowpass inside the delay loop
@@ -82,8 +91,12 @@ function ensureGraph() {
 
   // sfx bus
   sfxBus = actx.createGain();
-  sfxBus.gain.value = 1.0;
+  sfxBus.gain.value = volPref('sfx');
   sfxBus.connect(masterFilter);
+
+  musicBus = actx.createGain();
+  musicBus.gain.value = volPref('music');
+  musicBus.connect(masterFilter);
 
   return true;
 }
@@ -342,7 +355,7 @@ var decks = []; // { id, gain, def, nextNoteTime, beatPos, alive }
 function makeDeckGain() {
   var g = actx.createGain();
   g.gain.value = 0.0;
-  g.connect(masterFilter);
+  g.connect(musicBus || masterFilter);
   return g;
 }
 
@@ -822,6 +835,18 @@ G.audio = {
       switchMusic(id == null ? null : id);
     } catch (e) { /* never throw into the game */ }
   },
+
+  /* user volume, 0..1, persisted; applies live if the graph exists */
+  setVolume: function (kind, v) {
+    try {
+      v = Math.max(0, Math.min(1, Number(v) || 0));
+      G.save.data[kind + 'Vol'] = v;
+      G.save.persist();
+      var node = kind === 'music' ? musicBus : (kind === 'sfx' ? sfxBus : null);
+      if (node) node.gain.setTargetAtTime(v, actx.currentTime, 0.03);
+    } catch (e) {}
+  },
+  getVolume: function (kind) { return volPref(kind); },
 };
 
 // Respect persisted preference on load (default on unless explicitly false).

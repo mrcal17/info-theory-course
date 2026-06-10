@@ -321,7 +321,7 @@ world.drawList = function () {
   }
   var p = world.player;
   if (p) list.push({ y: p.py + T + 0.1, sprite: 'pip', sx: p.px, sy: p.py,
-                     opts: { dir: p.dir, moving: p.moving, hat: G.sparks.hat() } });
+                     opts: { dir: p.dir, moving: p.moving, hat: G.sparks.wornHat() } });
   return list;
 };
 

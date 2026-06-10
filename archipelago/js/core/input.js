@@ -8,6 +8,7 @@ var dirStack = [];          // most-recently-pressed direction wins
 var interactQueued = false;
 var menuQueued = false;
 var mapQueued = false;
+var codexQueued = false;
 
 var DIRS = {
   ArrowUp: 'n', KeyW: 'n',
@@ -41,6 +42,8 @@ document.addEventListener('keydown', function (e) {
     menuQueued = true;
   } else if (e.code === 'KeyM') {
     if (G.state === 'world') mapQueued = true;
+  } else if (e.code === 'KeyN') {
+    if (G.state === 'world') codexQueued = true;
   }
 });
 
@@ -65,6 +68,7 @@ G.input = {
   takeInteract: function () { var v = interactQueued; interactQueued = false; return v; },
   takeMenu: function () { var v = menuQueued; menuQueued = false; return v; },
   takeMap: function () { var v = mapQueued; mapQueued = false; return v; },
+  takeCodex: function () { var v = codexQueued; codexQueued = false; return v; },
   pressDir: pushDir,     // used by the d-pad
   releaseDir: popDir,
   queueInteract: function () { interactQueued = true; },

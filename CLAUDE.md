@@ -23,7 +23,9 @@ Key facts:
   Contracts in `archipelago/DESIGN.md` (interfaces) and `archipelago/PEDAGOGY.md`
   (the teaching loop every puzzle must implement: hook → guide → strip →
   mastery gate → debrief; read it before touching any `js/puzzles/*` file).
-  Shared puzzle kit: `js/core/pzkit.js` (G.pz). Tests: `_smoke/engine_test.mjs`
+  Shared puzzle kit: `js/core/pzkit.js` (G.pz). Codex: `js/codex.js` —
+  13 theory cards keyed to `pz.<type>.taught` flags + island lore pages
+  registered by island files (validator checks them). Tests: `_smoke/engine_test.mjs`
   (engine via dev.html), `_smoke/walkthrough.mjs` (full game in Chrome),
   `_smoke/validate_island.mjs <file> <id> <prefix>` for island content, and
   per-puzzle `_smoke/pz_test_<type>.mjs` (pure logic) + `_smoke/pz_drive_<type>.mjs`

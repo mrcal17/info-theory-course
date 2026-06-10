@@ -186,6 +186,35 @@ G.islands.register({
     /* a small companion at the summit rail, post-finale, to sit with the light */
     { id: 'gb-turtle', type: 'npc', x: 20, y: 5, sprite: 'turtle', ifFlag: 'gb.done',
       dialogue: 'gb-turtle' },
+
+    /* ================= SIDE QUEST 'gb.sq1.*' — the first keeper's logbook ====
+       The storm has scattered three loose pages of the FIRST keeper's logbook
+       across the lower switchbacks. Each is a 'letter' prop (solid:false, so it
+       never blocks the single-file shelf) sitting in a dead-end stub off the
+       through-run — found in ascent order as the climb opens each gate above.
+       Picking one up sets a gb.sq1.pageN flag and shows a short read; carrying
+       all three to Dr. Shannon (routed inside his gate dialogues) earns a
+       reading of the final entry and sets gb.sq1.done. No sparks — the budget
+       stays frozen at 3 — and nothing here touches a gate flag or the summit
+       trigger, so the finale fires exactly as before. */
+    { id: 'gb-log-p1', type: 'prop', x: 13, y: 33, sprite: 'letter', solid: false,
+      dialogue: 'gb-log-p1', ifNotFlag: 'gb.sq1.page1' },
+    { id: 'gb-log-p2', type: 'prop', x: 26, y: 29, sprite: 'letter', solid: false,
+      dialogue: 'gb-log-p2', ifFlag: 'gb.sq1.page1', ifNotFlag: 'gb.sq1.page2' },
+    { id: 'gb-log-p3', type: 'prop', x: 13, y: 25, sprite: 'letter', solid: false,
+      dialogue: 'gb-log-p3', ifFlag: 'gb.sq1.page2', ifNotFlag: 'gb.sq1.page3' },
+
+    /* ================= AMBIENT FLAVOR (storm / spiral) ================= */
+    /* an old transmission plaque on the high shelf, two switchbacks below the lamp */
+    { id: 'gb-sign-plaque', type: 'sign', x: 20, y: 9, text: [
+        'OLD TRANSMISSION PLAQUE — pitted by a hundred winters.',
+        'FIRST LIGHT, THIS CRAG. May it never want for a keeper, nor the keeper for a message worth the climb.' ] },
+    /* the keeper's workbench at the summit, where the lamp was tended */
+    { id: 'gb-workbench', type: 'prop', x: 18, y: 5, sprite: 'chest', solid: true,
+      dialogue: 'gb-workbench' },
+    /* a weather plaque on the dock landing, by the foot of the stair */
+    { id: 'gb-sign-storm', type: 'sign', x: 16, y: 36, text:
+        'KEEPER’S WARNING. In the worst gales the spiral takes one climber at a time. Trust the rail; trust the rings.' },
   ],
 
   objectives: [
@@ -210,11 +239,14 @@ G.islands.register({
       { who: 'pip', text: 'The Last Message?' },
       { who: 'shannon', text: 'Every island gave a line. The dunes, the wood, the strait, the caves, the spires.' },
       { who: 'shannon', text: 'Pooled into one. We will send it ONCE, and it must arrive whole.' },
+      { who: 'shannon', text: 'One more thing. The gale tore the FIRST keeper’s logbook loose — pages all up the stair.' },
+      { who: 'shannon', text: 'Bring me any you find on the climb. I knew the hand that wrote them. I’d read the last one again.' },
       { actions: [{ set: 'gb.intro' }, { sfx: 'save' }] },
     ],
 
     /* ---------------- Shannon, gate by gate ---------------- */
     'gb-shannon-compress': [
+      { ifFlag: 'gb.sq1.page3', ifNotFlag: 'gb.sq1.done', goto: 'gb-shannon-log' },
       { who: 'shannon', text: 'Up you go, then. Four gates, four things we learned. Take them in order.' },
       { who: 'shannon', text: 'GATE ONE. Six lines, some sent far more than others. The plan you found in Huff’s wood:' },
       { who: 'shannon', text: 'merge the two quietest, again and again. Shortest plan, cheapest send.' },
@@ -222,24 +254,28 @@ G.islands.register({
       { who: 'shannon', text: 'Always first. You never armor what you have not yet made small. Go.' },
     ],
     'gb-shannon-protect': [
+      { ifFlag: 'gb.sq1.page3', ifNotFlag: 'gb.sq1.done', goto: 'gb-shannon-log' },
       { who: 'shannon', text: 'Hoo — compressed and clean. Now GATE TWO: protect it before the storm.' },
       { who: 'shannon', text: 'The sisters’ charms. But they are not here. You rig the rings alone tonight.' },
       { who: 'pip', text: 'Alone?' },
       { who: 'shannon', text: 'They taught you; now the rings are yours. Set each group even. A single flip cannot hide.' },
     ],
     'gb-shannon-send': [
+      { ifFlag: 'gb.sq1.page3', ifNotFlag: 'gb.sq1.done', goto: 'gb-shannon-log' },
       { who: 'shannon', text: 'Armored. Good. GATE THREE is the worst stretch — the open boardwalk, full storm.' },
       { who: 'shannon', text: 'Six spans, every plank snapping at thirty in a hundred. Spend your driftwood well.' },
       { who: 'pip', text: 'More copies where the noise is loudest.' },
       { who: 'shannon', text: 'That is the whole secret of crossing a thing that wants you to fall. Go carefully.' },
     ],
     'gb-shannon-verify': [
+      { ifFlag: 'gb.sq1.page3', ifNotFlag: 'gb.sq1.done', goto: 'gb-shannon-log' },
       { who: 'shannon', text: 'Across. You are nearly to the lamp. GATE FOUR is the beacon’s own lock.' },
       { who: 'shannon', text: 'Three rings. It mends one error every time — but tonight the storm tries the old trick.' },
       { who: 'pip', text: 'Two flips, wearing the mask of one.' },
       { who: 'shannon', text: 'Read it as it was designed to read. Trust the rings, even when they are fooled.' },
     ],
     'gb-shannon-summit': [
+      { ifFlag: 'gb.sq1.page3', ifNotFlag: 'gb.sq1.done', goto: 'gb-shannon-log' },
       { who: 'shannon', text: 'Compressed, protected, sent, verified. The Last Message is whole, small one.' },
       { who: 'shannon', text: 'The lamp is at the top of the stair. I will wait here. Go and light it.' },
     ],
@@ -261,6 +297,7 @@ G.islands.register({
     /* ---------------- post-ending (calmer weather, dialogues change) ---------------- */
     'gb-shannon-post': [
       { who: 'shannon', text: 'Quieter tonight. The storm spent itself the moment the lamp caught.' },
+      { ifFlag: 'gb.sq1.done', who: 'shannon', text: 'I keep the old keeper’s pages by me now. They read kinder under a lit lamp.' },
       { who: 'shannon', text: 'Some lights you climbed past too fast — sparks still waiting on the old islands.' },
       { who: 'shannon', text: 'Go back when you like. The ferry runs both ways now. Nothing is dark anymore.' },
       { choice: [
@@ -306,7 +343,81 @@ G.islands.register({
       { who: 'turtle', text: 'I climbed up after the storm broke. Took me a while. Worth every stair.' },
       { who: 'turtle', text: 'You can see all seven lights from here. Sit a minute. They are not going dark again.' },
     ],
+
+    /* ---------------- SIDE QUEST: the first keeper's logbook pages ---------------- */
+    /* Each page is a loose leaf in the keeper's own hand; reading it sets its
+       flag (the prop then vanishes), and the next page begins to glow above. */
+    'gb-log-p1': [
+      { who: 'pip', text: '*A waterlogged page, pinned under a stone. The hand is old, careful.*' },
+      { who: 'sign', text: '“Day one. They gave me a lamp and a crag and said: keep the light. As if light were a thing one keeps.”' },
+      { actions: [{ set: 'gb.sq1.page1' }, { sfx: 'talk' }] },
+      { who: 'pip', text: 'The first keeper. Dr. Shannon will want this. Two more pages, the gale said.' },
+    ],
+    'gb-log-p2': [
+      { who: 'pip', text: '*The second leaf, snagged on the rail. The ink has run, but it holds.*' },
+      { who: 'sign', text: '“Day nine hundred. I have learned the lamp is not the light. The lamp only asks the dark a question, ' +
+        'over and over: are you still there? And the far shore answers.”' },
+      { actions: [{ set: 'gb.sq1.page2' }, { sfx: 'talk' }] },
+      { who: 'pip', text: 'One question, asked into the night. One bit, answered. One page left.' },
+    ],
+    'gb-log-p3': [
+      { who: 'pip', text: '*The last loose page, almost over the edge. The writing here is faint, unfinished.*' },
+      { who: 'sign', text: '“My hands are slower now. But a younger keeper will climb this stair one storm, and the lamp will not ' +
+        'know the difference. That is the whole comfort of it. The message outlasts the messenger—”' },
+      { actions: [{ set: 'gb.sq1.page3' }, { sfx: 'talk' }] },
+      { who: 'pip', text: 'It stops there. The final entry must be the one bound IN the book — the one Shannon keeps.' },
+    ],
+    /* hand-in: routed from the top of every Shannon gate dialogue while carrying
+       all three pages, before gb.sq1.done is set. Sets gb.sq1.done (no spark). */
+    'gb-shannon-log': [
+      { who: 'pip', text: 'Three pages of the first keeper’s logbook. Blown all up the stair.' },
+      { who: 'shannon', text: 'Hoo... look at that hand. Steady as a horizon. *turns each leaf slowly* I trained under the keeper who trained under this one.' },
+      { who: 'shannon', text: 'The bound book lost its loose pages, but it kept the LAST entry. Sit. I’ll read it to you.' },
+      { who: 'shannon', text: '“If you are reading this, the light still burns, and so the climb was worth it. A beacon is only ' +
+        'a promise kept in the dark: I am here, are you there. Keep answering. — the first keeper.”' },
+      { who: 'pip', text: 'I am here. Are you there.' },
+      { who: 'shannon', text: 'Every signal we have sent all the way up this archipelago says exactly that, small one. Now go and light the last.' },
+      { actions: [{ set: 'gb.sq1.done' }, { sfx: 'spark' }] },
+    ],
+
+    /* ---------------- ambient: the keeper's workbench ---------------- */
+    'gb-workbench': [
+      { ifFlag: 'gb.done', who: 'pip', text: '*The keeper’s old workbench. A spare wick, a tin of oil, and a window full of seven lights.*' },
+      { who: 'pip', text: '*The keeper’s workbench: trimming knives, a coil of fresh wick, an oil tin worn smooth by hand.*' },
+      { ifNotFlag: 'gb.done', who: 'pip', text: '*Everything laid out ready, as if the keeper only just stepped out to watch the storm.*' },
+    ],
   },
+});
+
+/* ================= CODEX LORE (Grand Beacon) =================
+   Registered after the island; G.codex loads before islands in the page, so
+   the API is ready. Each entry unlocks on a gb.* flag and speaks in-world. */
+G.codex.register({
+  id: 'lore.gb.first-light', kind: 'lore', island: 'grand-beacon',
+  title: 'The first light in the chain',
+  body: 'They raised this crag-lamp before any of the others — a single promise flung at an empty horizon. ' +
+    'For years it answered no one; it simply asked, every night, <i>is anyone there?</i> Then a second light ' +
+    'answered from the dark, and a third, and the archipelago stopped being alone.',
+  unlock: 'gb.compress.done',
+  hint: 'Climb past GATE I and compress the Last Message.',
+});
+G.codex.register({
+  id: 'lore.gb.keeper-log', kind: 'lore', island: 'grand-beacon',
+  title: 'The first keeper’s last entry',
+  body: 'Three loose pages, gathered off the storm-stair and read back under the lamp. The keeper learned, across ' +
+    'a thousand nights, that the light was never the point — only the <b>question</b> it kept asking: <i>I am here, ' +
+    'are you there?</i> A beacon is a promise to keep answering, long after the hand that lit it has gone.',
+  unlock: 'gb.sq1.done',
+  hint: 'Gather the keeper’s scattered logbook pages and bring them to Dr. Shannon.',
+});
+G.codex.register({
+  id: 'lore.gb.network', kind: 'lore', island: 'grand-beacon',
+  title: 'What the network carries now',
+  body: 'Seven lights, lit end to end, and the Last Message ran the whole length of them and arrived whole. ' +
+    'Compressed, protected, sent, verified — the entire curriculum, composed into one clean signal. And the signal, ' +
+    'in the end, was never the cargo. <b>The network is people.</b> Every bit you ever sent was someone saying: I am still here.',
+  unlock: 'gb.done',
+  hint: 'Light the Grand Beacon.',
 });
 
 })();

@@ -73,7 +73,11 @@ G.islands.register({
       flag: 'br.lostletter.got', ifNotFlag: 'br.lostletter.got' },
 
     { id: 'br-villager-turtle', type: 'npc', x: 12, y: 26, sprite: 'turtle', wander: true,
-      dialogue: 'br-turtle' },
+      dialogue: [
+        { ifFlag: 'br.sq1.start', ifNotFlag: 'br.sq1.clue-turtle', use: 'br-turtle-sq1' },
+        { ifFlag: 'br.done', use: 'br-turtle-done' },
+        { use: 'br-turtle' },
+      ] },
 
     /* the harbor scales — a door near the dock; ferry won't sail unbalanced */
     { id: 'br-scales', type: 'door', x: 18, y: 28, sprite: 'gate',
@@ -82,6 +86,16 @@ G.islands.register({
       lockedText: 'The ballast scales. Nine coins, one shaved light.' },
     { id: 'br-sign-scales', type: 'sign', x: 20, y: 27,
       text: ['THE HARBOR SCALES', 'No ferry sails on crooked ballast.'] },
+
+    /* ---------- ambient flavor (off the main path, walkable margins) ---------- */
+    { id: 'br-sign-tides', type: 'sign', x: 11, y: 26,
+      text: ['TIDE BOARD', 'High at dawn, low at dusk. Letters ride the low.',
+             'Someone has chalked: "still no boats from the south."'] },
+
+    { id: 'br-mailbox-cove', type: 'prop', x: 33, y: 26, sprite: 'mailbox', solid: false,
+      ifNotFlag: 'br.done' },
+    { id: 'br-sign-mailbox', type: 'sign', x: 13, y: 24,
+      text: ['OUTGOING POST', 'Slot empty. The flag is down. It has been down a while.'] },
 
     /* ---------- the village square (middle) ---------- */
     { id: 'br-sign-square', type: 'sign', x: 11, y: 21,
@@ -93,6 +107,17 @@ G.islands.register({
       dialogue: [
         { ifFlag: 'game.finished', use: 'br-maren-post' },
         { ifFlag: 'br.lostletter.got', ifNotFlag: 'br.lostletter.done', use: 'br-maren-letter' },
+        /* side quest: the smudged letter. The ACTIVE-quest branches sit highest
+           so an in-progress errand stays completable even after the beacon is
+           lit; the plain OFFER yields to the post-completion greeting. */
+        { ifFlag: 'br.sq1.ready', ifNotFlag: 'br.sq1.done', use: 'br-maren-sq1-clues' },
+        { ifFlag: 'br.sq1.start', ifNotFlag: 'br.sq1.done', use: 'br-maren-sq1-ask' },
+        /* post-completion: the network is alight again */
+        { ifFlag: 'br.done', use: 'br-maren-done' },
+        /* offered once Pip has met her and has not yet started the errand */
+        { ifFlag: 'br.met-maren', ifNotFlag: 'br.sq1.start', use: 'br-maren-sq1-offer' },
+        /* mid-progress: sorter fixed, scales still crooked */
+        { ifFlag: 'br.sorter.open', ifNotFlag: 'br.scales.done', use: 'br-maren-mid' },
         { ifFlag: 'br.met-maren', use: 'br-maren-again' },
         { use: 'br-maren-1' },
       ] },
@@ -124,8 +149,16 @@ G.islands.register({
     { id: 'br-sign-deadletter', type: 'sign', x: 29, y: 17,
       text: ['DEAD LETTER OFFICE', 'Eight lost names. Three questions find any one.'] },
 
+    { id: 'br-sign-network', type: 'sign', x: 33, y: 16,
+      text: ['NETWORK NOTICE', 'All beacons dark. Service suspended until further light.',
+             'Posted by order of nobody, since nobody is left to post it.'] },
+
     { id: 'br-villager-crab', type: 'npc', x: 31, y: 16, sprite: 'crab', wander: true,
-      dialogue: 'br-crab' },
+      dialogue: [
+        { ifFlag: 'br.sq1.start', ifNotFlag: 'br.sq1.clue-crab', use: 'br-crab-sq1' },
+        { ifFlag: 'br.done', use: 'br-crab-done' },
+        { use: 'br-crab' },
+      ] },
 
     /* ---------- the path choke + the mail sorter gate ---------- */
     /* The sorter sits on the path's one choke tile (x=21,y=7): the single
@@ -150,7 +183,10 @@ G.islands.register({
       text: ['TO THE LIGHTHOUSE', 'The old sorter blocks the path. Ask it well.'] },
 
     { id: 'br-villager-gull', type: 'npc', x: 22, y: 11, sprite: 'gullsmall', wander: true,
-      dialogue: 'br-gullsmall' },
+      dialogue: [
+        { ifFlag: 'br.done', use: 'br-gullsmall-done' },
+        { use: 'br-gullsmall' },
+      ] },
 
     /* ---------- the bluff + lighthouse (north) ---------- */
     { id: 'br-shannon', type: 'npc', x: 16, y: 6, sprite: 'shannon', name: 'Dr. Shannon', dir: 's',
@@ -246,6 +282,63 @@ G.islands.register({
       { end: true },
     ],
 
+    /* mid-progress: sorter fixed, scales still crooked (before br.done) */
+    'br-maren-mid': [
+      { who: 'maren', text: 'You got the old sorter clicking again! I heard it from here. Lovely sound.' },
+      { who: 'maren', text: 'The keeper will have you at the scales next. Nine coins, one light — fiddly.' },
+      { who: 'maren', text: 'Weigh true and the ferry sails. Then the light. Then, dare I say it, MAIL.' },
+      { end: true },
+    ],
+
+    /* post-completion: the beacon is lit (br.done) */
+    'br-maren-done': [
+      { who: 'maren', text: 'The light is BACK. I saw it sweep the cove and I dropped a whole tray.' },
+      { who: 'maren', text: 'You lit it with yes and no, dear. Just questions, asked well. Click-click.' },
+      { choice: [
+        { label: 'What happens now?', goto: 'br-maren-done2' },
+        { label: 'On to the next island.', end: true },
+      ] },
+    ],
+    'br-maren-done2': [
+      { who: 'maren', text: 'Now? Now the next dock down the chain can see us. And we can see them.' },
+      { who: 'maren', text: 'One light at a time, courier. Go wake the rest of them.' },
+      { end: true },
+    ],
+
+    /* ---------- SIDE QUEST: the smudged letter (optional) ---------- */
+    /* Offered after meeting Maren. Pip must deduce the addressee from clues
+       gathered by talking to the crab and turtle, then deliver to Dr. Shannon.
+       No spark — the reward is the payoff + an unlocked field note. */
+    'br-maren-sq1-offer': [
+      { who: 'maren', text: 'Before you climb — one nuisance. A letter the seawater near ruined.' },
+      { who: 'maren', text: 'The name ran right off it. All that is left is the WORDS inside.' },
+      { who: 'maren', text: '"By your lamp, in your slanted hand — keep the long watch for us all."' },
+      { who: 'maren', text: 'I cannot read who it is FOR. But you are a courier. Puzzle it out?' },
+      { choice: [
+        { label: 'I will find the addressee.', goto: 'br-maren-sq1-take' },
+        { label: 'Maybe later.', end: true },
+      ] },
+    ],
+    'br-maren-sq1-take': [
+      { who: 'maren', text: 'Bless you. Ask around — the crab and the old turtle know everyone.' },
+      { who: 'maren', text: 'Whoever the clues fit, hand it to them. The letter wants its reader.' },
+      { actions: [{ set: 'br.sq1.start' }, { sfx: 'talk' }] },
+    ],
+    /* if Pip re-talks before gathering clues */
+    'br-maren-sq1-ask': [
+      { who: 'maren', text: 'The smudged letter, dear. "By your lamp, in your slanted hand."' },
+      { who: 'maren', text: 'Ask the crab and the turtle who that sounds like. Then deliver it.' },
+      { end: true },
+    ],
+    /* both clues gathered — Maren confirms the deduction */
+    'br-maren-sq1-clues': [
+      { who: 'maren', text: 'A lamp. A slanted hand. The long watch. Goodness — who else but the keeper?' },
+      { who: 'maren', text: 'Take it UP the hill to Dr. Shannon. That letter has been waiting for him.' },
+      { end: true },
+    ],
+
+    /* ---------- Dr. Shannon ---------- */
+
     /* ---------- Dr. Shannon ---------- */
     'br-shannon-1': [
       { who: 'shannon', text: 'Hoo. A courier. On foot. I had stopped expecting them.' },
@@ -254,6 +347,7 @@ G.islands.register({
       { actions: [{ set: 'br.letter.delivered' }, { sfx: 'good' }] },
       { who: 'shannon', text: 'You sorted the gate to reach me. You already know the trick, then.' },
       { choice: [
+        { ifFlag: 'br.sq1.ready', ifNotFlag: 'br.sq1.done', label: 'Actually — one more letter.', goto: 'br-shannon-sq1' },
         { label: 'What IS a bit, really?', goto: 'br-shannon-bits' },
         { label: 'Maren said you would explain.', goto: 'br-shannon-bits' },
         { label: 'Just doing my round.', goto: 'br-shannon-task' },
@@ -275,6 +369,7 @@ G.islands.register({
     'br-shannon-wait': [
       { who: 'shannon', text: 'The scales, small one. Nine coins, one light. The ferry waits on them.' },
       { choice: [
+        { ifFlag: 'br.sq1.ready', ifNotFlag: 'br.sq1.done', label: 'A nameless letter, first.', goto: 'br-shannon-sq1' },
         { label: 'Why three answers per weighing?', goto: 'br-shannon-scaleshint' },
         { label: 'Going now.', end: true },
       ] },
@@ -295,6 +390,7 @@ G.islands.register({
     'br-shannon-done': [
       { who: 'shannon', text: 'The light holds. Steady as you go, courier. The chain is long.' },
       { choice: [
+        { ifFlag: 'br.sq1.ready', ifNotFlag: 'br.sq1.done', label: 'I have a letter with no name.', goto: 'br-shannon-sq1' },
         { label: 'Any advice for the road?', goto: 'br-shannon-advice' },
         { label: 'Goodbye, keeper.', end: true },
       ] },
@@ -325,15 +421,97 @@ G.islands.register({
       { who: 'turtle', text: 'Slow morning. Then again, every morning is, for me.' },
       { who: 'turtle', text: 'See the corner of the screen? That little hint up top tells you what to do next.' },
     ],
+    /* side-quest clue from the turtle */
+    'br-turtle-sq1': [
+      { who: 'turtle', text: 'A letter with no name? Read me the words. ..."keep the long watch."' },
+      { who: 'turtle', text: 'Hm. Only one soul here keeps a watch all night, and never sleeps for it.' },
+      { who: 'turtle', text: 'The one on the bluff. Always awake, always squinting at the dark.' },
+      { actions: [{ set: 'br.sq1.clue-turtle' }, { sfx: 'talk' }] },
+      { ifFlag: 'br.sq1.clue-crab', actions: [{ set: 'br.sq1.ready' }] },
+    ],
+    'br-turtle-done': [
+      { who: 'turtle', text: 'The light went round the cove last night. Woke me. I did not mind.' },
+      { who: 'turtle', text: 'Slow and steady wins, courier. You are neither, but you won anyway.' },
+    ],
     'br-crab': [
       { who: 'crab', text: 'Click! That east door is the dead-letter office. Eight lost names in there.' },
       { who: 'crab', text: 'Crack it and they give you a spark. Three good questions is all it takes.' },
+    ],
+    /* side-quest clue from the crab */
+    'br-crab-sq1': [
+      { who: 'crab', text: 'The smudged one? Click. Show me the clues, courier.' },
+      { who: 'crab', text: '"By your lamp." "Your slanted hand." That is somebody who WRITES, and reads late.' },
+      { who: 'crab', text: 'A lamp-keeper, then. We have exactly one of those, up the hill.' },
+      { actions: [{ set: 'br.sq1.clue-crab' }, { sfx: 'talk' }] },
+      { ifFlag: 'br.sq1.clue-turtle', actions: [{ set: 'br.sq1.ready' }] },
+    ],
+    'br-crab-done': [
+      { who: 'crab', text: 'Click-click! The dead-letter pile can move again now the light is up.' },
+      { who: 'crab', text: 'You ask a fine yes/no, courier. Come crack our door before you sail.' },
     ],
     'br-gullsmall': [
       { who: 'gullsmall', text: 'You smell like seawater and far-off sand.' },
       { who: 'gullsmall', text: 'The Dunes are next, across the water. Surprising place, they say. You will see.' },
     ],
+    'br-gullsmall-done': [
+      { who: 'gullsmall', text: 'The big lamp is ON! I can see my shadow on the water. Look at me!' },
+      { who: 'gullsmall', text: 'Are you sailing now? Bring me back something surprising from the Dunes.' },
+    ],
+
+    /* side-quest delivery: handed to Dr. Shannon (reached via a conditional
+       choice in his dialogues, only shown when br.sq1.ready and not done) */
+    'br-shannon-sq1': [
+      { who: 'pip', text: 'One more, keeper. No name on it — only the words inside.' },
+      { who: 'shannon', text: '"By your lamp, in your slanted hand... keep the long watch for us all."' },
+      { who: 'shannon', text: 'Hoo. That is my own hand. I posted this — to MYSELF — the night the lights died.' },
+      { who: 'shannon', text: 'A reminder, in case I forgot why I sit up here. The sea sent it back to me.' },
+      { who: 'shannon', text: 'You read a letter that had lost its name, small one. From its words alone.' },
+      { who: 'shannon', text: 'That is the whole craft: meaning survives even when the address is washed away.' },
+      { actions: [{ set: 'br.sq1.done' }, { sfx: 'solve' }] },
+    ],
   },
 });
+
+/* ---------------- codex lore (Pip's field notes for Beacon Rock) ----------------
+   Registered at load time; codex.js loads before islands. Each is kind:'lore',
+   island:'beacon-rock', and unlocks on a br.* flag. */
+if (G.codex && G.codex.register) {
+  /* unlocked by finding the lost beach bag (existing minor item flag) */
+  G.codex.register({
+    id: 'lore.br.dead-letters', kind: 'lore', island: 'beacon-rock',
+    title: 'The dead-letter office',
+    body: 'Maren keeps a back room of letters no one could place — names blurred, ' +
+      'islands sunk off the map, readers long gone. She will not burn a single one. ' +
+      '"A letter is a question," she says, "and a question deserves an answer, even ' +
+      'a late one." The pile only grew once the beacons went dark.',
+    unlock: 'br.lostletter.got',
+    hint: 'Recover Maren\'s lost second-post bag from the cove beach.',
+  });
+
+  /* unlocked by the optional side quest (the smudged, nameless letter) */
+  G.codex.register({
+    id: 'lore.br.nameless', kind: 'lore', island: 'beacon-rock',
+    title: 'The letter that addressed itself',
+    body: 'Its name had washed clean away, yet the words inside still pointed home: ' +
+      'a lamp, a slanted hand, a long night watch. Only one reader fit them all. ' +
+      'A message can carry its own address in its meaning — strip the label and the ' +
+      'content still says who it is for, if you read it closely enough.',
+    unlock: 'br.sq1.done',
+    hint: 'Read the smudged letter\'s clues, then deliver it to whom they fit.',
+  });
+
+  /* unlocked when the first beacon is relit (br.done) */
+  G.codex.register({
+    id: 'lore.br.quiet', kind: 'lore', island: 'beacon-rock',
+    title: 'Why the network went quiet',
+    body: 'The beacons were never just lamps — each one relayed the next, a chain of ' +
+      'signals hopping island to island. When one failed, its neighbor had nothing to ' +
+      'repeat, and the silence spread outward like a tide going out. No single light ' +
+      'broke; the <i>connections</i> did. Relight them in order and the whole chain ' +
+      'remembers how to speak.',
+    unlock: 'br.done',
+    hint: 'Light the Beacon Rock lamp with Dr. Shannon.',
+  });
+}
 
 })();

@@ -127,8 +127,9 @@ function loop(ts) {
   if (G.state === 'world') {
     if (G.input.takeMenu()) G.ui.openMenu();
     if (G.input.takeMap()) G.ui.openMapScreen();
+    if (G.input.takeCodex() && G.ui.openCodex) G.ui.openCodex();
   } else {
-    G.input.takeMenu(); G.input.takeMap(); // drain
+    G.input.takeMenu(); G.input.takeMap(); G.input.takeCodex(); // drain
   }
   updateHudThrottled();
 }

@@ -124,6 +124,23 @@ G.sparks = {
     if (save.sparks >= 7) return 'cap';
     return null;
   },
+  unlockedHats: function () {
+    var u = [];
+    if (save.sparks >= 7) u.push('cap');
+    if (save.sparks >= 14) u.push('sunhat');
+    if (save.sparks >= 21) u.push('crown');
+    return u;
+  },
+  /* what Pip actually wears: explicit wardrobe choice if unlocked, else the
+     earned hat ('auto'); 'none' bares the antenna. */
+  wornHat: function () {
+    var c = save.hatChoice;
+    if (c === 'none') return null;
+    if (c && c !== 'auto' && G.sparks.unlockedHats().indexOf(c) >= 0) return c;
+    return G.sparks.hat();
+  },
+  setHatChoice: function (c) { save.hatChoice = c; persist(); },
+  hatChoice: function () { return save.hatChoice || 'auto'; },
 };
 
 /* ---------------- utils ---------------- */

@@ -84,7 +84,12 @@ G.islands.register({
     { id: 'ms-warden', type: 'npc', x: 25, y: 24, sprite: 'warden', name: 'Mirror Warden',
       dialogue: [
         { ifFlag: 'game.finished', use: 'ms-warden-post' },
+        /* the wager pays off the instant two overlooks are reached */
+        { ifFlag: 'ms.sq1.two', ifNotFlag: 'ms.sq1.done', use: 'ms-warden-bet-reveal' },
         { ifFlag: 'ms.done', use: 'ms-warden-done' },
+        /* mid-progress: dials tuned, corridor not yet walked — the Warden
+           predicts the question before you ask it (prediction is the theme). */
+        { ifFlag: 'ms.dials.done', ifNotFlag: 'ms.oracle.done', use: 'ms-warden-midpredict' },
         { ifFlag: 'ms.dials.done', use: 'ms-warden-readytune' },
         { ifFlag: 'ms.oracle.done', use: 'ms-warden-readytune' },
         { ifFlag: 'ms.met-warden', use: 'ms-warden-again' },
@@ -100,6 +105,32 @@ G.islands.register({
       text: ['EAST TOWER — THE TWIN DIALS', 'Watch the west, and the east owes you no surprise.'] },
     { id: 'ms-sign-break', type: 'sign', x: 44, y: 14,
       text: 'A weathered placard: "The towers differ in one stone only. The keen eye finds the odd one — and its empty twin."' },
+
+    /* ---------- ambient flavour: prophecy fragments + mirror shards ----------
+       The "prophecies" are plainly just frequency tables; the Warden's faith in
+       prediction rests on counting, not magic. Pure flavour, no flags. */
+    { id: 'ms-sign-prophW', type: 'sign', x: 16, y: 12,
+      text: ['PROPHECY FRAGMENT (west)', 'After a hush, "the" comes 4 times in 7; after "the", a tower-word 5 in 6. Just a tally, scrawled like an oracle.'] },
+    { id: 'ms-sign-prophE', type: 'sign', x: 34, y: 12,
+      text: ['PROPHECY FRAGMENT (east)', 'A column of glyphs and tick-marks: ☾ 12, ☀ 1, ✶ 1. "Thus is the future known," it claims. It is only how often each fell.'] },
+    { id: 'ms-shard-w', type: 'sign', x: 4, y: 9, sprite: 'sign',
+      text: 'A mirror shard, half-buried. Your reflection lags by nothing at all — it moves exactly when you do. Two of you, sharing every bit.' },
+    { id: 'ms-shard-e', type: 'sign', x: 46, y: 9, sprite: 'sign',
+      text: 'A mirror shard, twin to one on the far crag. Tilt it and the other seems to tilt too — though of course it cannot. Or can it?' },
+
+    /* ---------- side quest: the three wager overlooks (W / N / E) ----------
+       Invisible triggers, live only after the wager begins (ms.sq1.start) and
+       until each is reached. Each sets its own ms.sq1.ov-* flag and tells its
+       reach dialogue, which records the FIRST lean and resolves the count. */
+    { id: 'ms-ov-w', type: 'trigger', x: 7, y: 11,
+      ifFlag: 'ms.sq1.start', ifNotFlag: 'ms.sq1.ov-w', flag: 'ms.sq1.ov-w',
+      actions: [{ goto: 'ms-sq1-reach-w' }] },
+    { id: 'ms-ov-n', type: 'trigger', x: 25, y: 8,
+      ifFlag: 'ms.sq1.start', ifNotFlag: 'ms.sq1.ov-n', flag: 'ms.sq1.ov-n',
+      actions: [{ goto: 'ms-sq1-reach-n' }] },
+    { id: 'ms-ov-e', type: 'trigger', x: 43, y: 11,
+      ifFlag: 'ms.sq1.start', ifNotFlag: 'ms.sq1.ov-e', flag: 'ms.sq1.ov-e',
+      actions: [{ goto: 'ms-sq1-reach-e' }] },
 
     /* ---------- MAIN GATE A: pair-lock at the east tower entrance ---------- */
     /* sits on the east tower's only doorway (37,7); blocks the tower with no bypass. */
@@ -223,6 +254,9 @@ G.islands.register({
       { choice: [
         { label: 'How do the dials work?', goto: 'ms-warden-dials' },
         { label: 'And the corridor?', goto: 'ms-warden-corridor' },
+        /* the wager appears once and is purely optional */
+        { ifNotFlag: 'ms.sq1.start', label: 'You keep watching me. Why?', goto: 'ms-warden-bet-offer' },
+        { ifFlag: 'ms.sq1.start', ifNotFlag: 'ms.sq1.two', label: 'About that wager of yours...', goto: 'ms-warden-bet-remind' },
         { label: 'I will go and listen.', end: true },
       ] },
     ],
@@ -246,7 +280,28 @@ G.islands.register({
     ],
     'ms-warden-post': [
       { who: 'warden', text: 'Quiet at last, the whole chain lit — and you the one who tied it together.' },
+      { who: 'warden', text: 'The towers still hum their one note; now you are the third voice that knew to listen.' },
+      /* a small wink back to the wager, only if it was played */
+      { ifFlag: 'ms.sq1.done', who: 'warden',
+        text: 'And yes — I knew you would come back this way. I always know the next step. You taught me how to say why.' },
+      { ifFlag: 'ms.sq1.done', who: 'pip', text: 'One bit. It was only ever one bit, wasn\'t it.' },
+      { ifFlag: 'ms.sq1.done', who: 'warden', text: 'It was enough. It usually is. Travel light, courier.' },
+      { ifNotFlag: 'ms.sq1.done', who: 'warden', text: 'Go gently. The far beacon keeps your shape warm.' },
       { end: true },
+    ],
+
+    /* ---------- mid-progress: the Warden predicts what you'll say ----------
+       Shown after the dials are tuned but before the corridor is walked. The
+       Warden answers the question before you ask it — prediction made flesh. */
+    'ms-warden-midpredict': [
+      { who: 'warden', text: 'Before you speak — you were going to ask whether the corridor is like the dials.' },
+      { who: 'pip', text: '...I was about to ask exactly that. How—' },
+      { who: 'warden', text: 'You tuned the east tower; your eyes then went to the corridor; your foot half-turned to it.' },
+      { who: 'warden', text: 'I did not read your mind. I read the part of you that already leans, and guessed the rest.' },
+      { who: 'warden', text: 'That is all prediction is: spend the bits you already have, pay only for the surprise.' },
+      { who: 'pip', text: 'So a good guess costs less to write down.' },
+      { who: 'warden', text: 'Just so. Go read the floor; it has been waiting to be guessed. Then we sing.' },
+      { actions: [{ sfx: 'talk' }] },
     ],
 
     /* the Warden's branch while one or both gates are tuned but not yet sung.
@@ -304,12 +359,123 @@ G.islands.register({
       { who: 'gullsmall', text: 'Tell her I am fine. And mind the pale feather in the grass; it is hers, not mine.' },
     ],
 
+    /* ====================================================================
+       SIDE QUEST — THE WARDEN'S WAGER  (flags ms.sq1.*, final ms.sq1.done)
+       Beat 1: the Warden bets it can predict your path. You agree.
+       Beat 2: three overlooks (W / N / E) glow; visit any TWO, in any order.
+       Beat 3: the second visit trips ms.sq1.two; the Warden's wager resolves.
+       Beat 4: the reveal — it watched only your FIRST step. One bit was enough.
+       No new sparks (the Warden gives nothing but a truth and a lore page).
+       ==================================================================== */
+    'ms-warden-bet-offer': [
+      { who: 'warden', text: 'Because watching you is cheaper than asking you. Let me show you with a wager.' },
+      { who: 'warden', text: 'Three overlooks ring this channel — west crag, north step, east crag. Visit any two.' },
+      { who: 'warden', text: 'Any two, in any order. I have already written down which two you will choose.' },
+      { who: 'pip', text: 'You can\'t have. I haven\'t decided yet.' },
+      { who: 'warden', text: 'Neither had the tide, until it leaned. Go. Reach two overlooks; then read my note with me.' },
+      { choice: [
+        { label: 'Fine. I\'ll prove you wrong.', goto: 'ms-warden-bet-accept' },
+        { label: 'Maybe later.', end: true },
+      ] },
+    ],
+    'ms-warden-bet-accept': [
+      { who: 'warden', text: 'The note is sealed. The overlooks are lit. Choose freely — that is the whole game.' },
+      { actions: [{ set: 'ms.sq1.start' }, { sfx: 'spark' }] },
+      { who: 'pip', text: 'Three overlooks, pick two. West, north, east. (And mind which one I skip.)' },
+    ],
+    'ms-warden-bet-remind': [
+      { who: 'warden', text: 'My note still waits. Two overlooks of the three — then bring your choice back to me.' },
+      { end: true },
+    ],
+
+    /* The overlook trigger itself sets ms.sq1.ov-{w,n,e} (engine sets a
+       trigger's flag before running its actions), so by the time these run
+       the overlook flag already holds. We only need to record the FIRST lean
+       and then resolve the running count. */
+    'ms-sq1-reach-w': [
+      { ifNotFlag: 'ms.sq1.firstpicked', actions: [{ set: 'ms.sq1.first-w' }, { set: 'ms.sq1.firstpicked' }] },
+      { who: 'sign', text: 'WEST OVERLOOK — the channel narrows here; the far tower looks close enough to touch.' },
+      { actions: [{ sfx: 'select' }, { goto: 'ms-sq1-count-decide' }] },
+    ],
+    'ms-sq1-reach-n': [
+      { ifNotFlag: 'ms.sq1.firstpicked', actions: [{ set: 'ms.sq1.first-n' }, { set: 'ms.sq1.firstpicked' }] },
+      { who: 'sign', text: 'NORTH STEP — both towers hum at once from here, perfectly in tune. Eerie. Lovely.' },
+      { actions: [{ sfx: 'select' }, { goto: 'ms-sq1-count-decide' }] },
+    ],
+    'ms-sq1-reach-e': [
+      { ifNotFlag: 'ms.sq1.firstpicked', actions: [{ set: 'ms.sq1.first-e' }, { set: 'ms.sq1.firstpicked' }] },
+      { who: 'sign', text: 'EAST OVERLOOK — the water mirrors the dusk so cleanly you cannot find its seam.' },
+      { actions: [{ sfx: 'select' }, { goto: 'ms-sq1-count-decide' }] },
+    ],
+    /* sets ms.sq1.two only when at least two of the three overlook flags hold.
+       Reads all three pair-combinations; the flag-set is idempotent, so the
+       order in which the overlooks were visited does not matter. */
+    'ms-sq1-count-decide': [
+      /* the three pairs — any one present means two distinct overlooks are lit */
+      { ifFlag: 'ms.sq1.ov-w', actions: [{ ifFlag: 'ms.sq1.ov-n', set: 'ms.sq1.two' }] },
+      { ifFlag: 'ms.sq1.ov-w', actions: [{ ifFlag: 'ms.sq1.ov-e', set: 'ms.sq1.two' }] },
+      { ifFlag: 'ms.sq1.ov-n', actions: [{ ifFlag: 'ms.sq1.ov-e', set: 'ms.sq1.two' }] },
+      { ifFlag: 'ms.sq1.two', who: 'pip', text: 'That\'s two. The Warden is waiting on the causeway with its "note."' },
+      { ifNotFlag: 'ms.sq1.two', who: 'pip', text: 'One overlook seen. One more of the three, then back to the fox.' },
+    ],
+
+    /* the wager resolves: the Warden reveals it predicted from the first step.
+       It reads whichever first-* flag was set and names it back to you. */
+    'ms-warden-bet-reveal': [
+      { who: 'warden', text: 'You reached two. Here is my sealed note — read it aloud.' },
+      { ifFlag: 'ms.sq1.first-w', who: 'pip', text: 'It says: "She steps WEST first." ...I did. I went to the west crag first.' },
+      { ifFlag: 'ms.sq1.first-n', who: 'pip', text: 'It says: "She steps NORTH first." ...I did. I climbed the north step first.' },
+      { ifFlag: 'ms.sq1.first-e', who: 'pip', text: 'It says: "She steps EAST first." ...I did. I crossed to the east crag first.' },
+      { who: 'pip', text: 'But two overlooks of three — there were so many ways I could have gone!' },
+      { who: 'warden', text: 'There were. Three to skip; the order; many paths. More than a bit of choice in all.' },
+      { who: 'warden', text: 'But I did not predict your path. I predicted your FIRST step — one lean, one bit.' },
+      { who: 'warden', text: 'Watch which way a courier first turns, and most of what follows is already written.' },
+      { who: 'pip', text: 'So knowing one thing about me cut down everything else you had to guess.' },
+      { who: 'warden', text: 'That is the bond between us, measured: what your first step tells of all your steps.' },
+      { who: 'warden', text: 'You came to learn how two towers share their bits. You just shared one with me.' },
+      { actions: [{ set: 'ms.sq1.done' }, { sfx: 'beacon' }] },
+      { who: 'warden', text: 'Keep it. Knowing how little it takes to be read — that is worth more than a spark.' },
+    ],
+
     /* ---------- turtle (dock flavour + a gentle nudge) ---------- */
     'ms-turtle': [
       { who: 'turtle', text: 'Slow water today. The channel between the crags is thin — barely a swim across.' },
       { who: 'turtle', text: 'Thin channel, close towers. The closer two things sit, the more one tells of the other.' },
     ],
   },
+});
+
+/* ---------------- codex lore (Pip's field notes for the Mirror Spires) ----------------
+   Registered against G.codex (loaded before islands). Each unlocks on a quest
+   flag; written in-world, in Pip's voice with the Warden's paired cadence. */
+G.codex.register({
+  id: 'lore.ms.wager', kind: 'lore', island: 'spires',
+  title: 'The Warden\'s Wager',
+  body: 'The fox bet it could name my path before I walked it, and it won with a sealed note — ' +
+    'but the note only guessed my <i>first</i> step. From that one lean it read the rest of me, ' +
+    'because once you know which way someone turns first, most of what follows is no longer a surprise. ' +
+    'That shrinking-of-surprise is what the towers mean by a bond: knowing one thing pays down the cost of guessing the other.',
+  unlock: 'ms.sq1.done',
+  hint: 'Take the Warden\'s wager on the causeway and reach two overlooks.',
+});
+G.codex.register({
+  id: 'lore.ms.twin-towers', kind: 'lore', island: 'spires',
+  title: 'Why the Towers Move Together',
+  body: 'The Warden says the spires were raised as a single instrument split in two, one crag echoing the other, ' +
+    'so that anyone watching the west tower would already half-know the east. They do not echo — an echo lags; ' +
+    'these answer in the same breath. The chord they finally sang for me <i>was</i> their shared bits made audible: ' +
+    'mutual information you can hear, the exact amount one tower tells you about its twin.',
+  unlock: 'ms.done',
+  hint: 'Tune both towers and let them sing in unison.',
+});
+G.codex.register({
+  id: 'lore.ms.prophecies', kind: 'lore', island: 'spires',
+  title: 'Prophecies That Were Only Tallies',
+  body: 'Every "prophecy fragment" pinned around the channel turned out to be a frequency table — ☾ twelve, ☀ once, ✶ once — ' +
+    'dressed up as fate. The Warden never foretold anything; it counted. Prediction here is just honest bookkeeping of how often ' +
+    'each thing has happened, spent forward: pay one bit for what you expected, more only for what you did not.',
+  unlock: 'ms.met-warden',
+  hint: 'Meet the Mirror Warden and read the placards by the channel.',
 });
 
 })();
